@@ -1,0 +1,11 @@
+rPref 0.3
+=========
+
+
+* Translation of preferences to other preference query languages via `show.query`
+
+* Optimized evaluation of preferences with long prioritization chains
+
+* Neutral element `empty()` for preference composition
+
+* Fixed memory leak

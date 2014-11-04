@@ -10,6 +10,12 @@
 # RStudio files
 .Rproj.user/
 
+# R Check Output
+rPref.Rcheck/
+
+# zip output
+*.tar.gz
+
 # Compiler output
 *.o
 *.so
