@@ -70,11 +70,11 @@ basepref <- setRefClass("basepref",
     },
     
     cmp = function(i, j, score_df) { # TRUE if i is better than j
-      return(score_df[i, score_id] < score_df[j, score_id])
+      return(score_df[i, .self$score_id] < score_df[j, .self$score_id])
     },
     
     eq = function(i, j, score_df) { # TRUE if i is equal to j
-      return(score_df[i, score_id] == score_df[j, score_id])
+      return(score_df[i, .self$score_id] == score_df[j, .self$score_id])
     },
     
     get_str = function(parent_op = "") {
@@ -154,7 +154,7 @@ reversepref <- setRefClass("reversepref",
     },
     
     cmp = function(i, j, score_df) { # TRUE if i is better than j
-      return(p$eq(j, i, score_df))
+      return(p$cmp(j, i, score_df))
     },
     
     eq = function(...) p$eq(...),
@@ -168,17 +168,18 @@ is.reversepref <- function(x) inherits(x, "reversepref")
 
 
 # Binary complex preferences
+# cmpcom and eqcomp functions are set via constructor and are just compositions (refering to $cmp and $eq)
 complexpref <- setRefClass("complexpref",
   contains = "preference",
   fields = list(p1 = "preference", p2 = "preference", op = "character", 
-                cmp = "function", eq = "function", prior_chain = "logical"),
+                cmpcomp = "function", eqcomp = "function", prior_chain = "logical"),
   methods = list(
     initialize = function(p1_ = preference(), p2_ = preference(), op_ = '', cmp_ = function() NULL, eq_ = function() NULL) {
-      .self$p1  <- p1_
-      .self$p2  <- p2_
-      .self$op  <- op_
-      .self$cmp <- cmp_
-      .self$eq  <- eq_
+      .self$p1      <- p1_
+      .self$p2      <- p2_
+      .self$op      <- op_
+      .self$cmpcomp <- cmp_ # composition of cmp function
+      .self$eqcomp  <- eq_
       .self$prior_chain <- FALSE
       return(.self)
     },
@@ -200,7 +201,12 @@ complexpref <- setRefClass("complexpref",
     # Serialization for C++ Interface
     serialize = function() {
       return(list(kind = .self$op, p1 = .self$p1$serialize(), p2 = .self$p2$serialize()))
-    }
+    },
+    
+    # Simple wrapper for cmp/eq compositions
+    cmp = function(...) .self$cmpcomp(...),
+    eq  = function(...) .self$eqcomp(...)
+    
   )
 )
 is.complexpref <- function(x) inherits(x, "complexpref")
@@ -210,7 +216,7 @@ MAX_CHAIN_LENGTH <- 52
 
 priorpref <- setRefClass("priorpref",
   contains = "complexpref",
-  fields = list(chain_size = "numeric", prior_chain = "logical"),
+  fields = list(chain_size = "numeric", prior_chain = "logical", prior_score_id = "numeric"),
   methods = list(   
     
     # Check if we have a purely prioritization chain - calculate highest value
@@ -260,11 +266,13 @@ priorpref <- setRefClass("priorpref",
       
       if (get_greatest_subtree) { # It's a prior-chain, but perhaps to large
         
-        if (.self$chain_size <= MAX_CHAIN_LENGTH) {
+        if (.self$chain_size <= MAX_CHAIN_LENGTH) { # subtree which is sufficiently small
+          # Set prior-chain (pseudo score preference)
           .self$prior_chain = TRUE
+          .self$prior_score_id = next_id
           scores <- .self$get_prior_scores(1, .self$chain_size, df)$score_vals
           return(list(next_id = next_id + 1, scores = scores))
-        } # -> else: see "All else-paths"
+        } # -> else: see block "** All else-paths"
       
       } else {
       
@@ -274,8 +282,9 @@ priorpref <- setRefClass("priorpref",
         if (!is.null(prior_res_len) && (prior_res_len > 1)) {
           # check if maxval is suffcient small to get distinctive score vals (double precision!)
           if (prior_res_len <= MAX_CHAIN_LENGTH) { 
+            # Set prior-chain (pseudo score preference)
             .self$prior_chain = TRUE
-            # Generate score-pref for prior-chain
+            .self$prior_score_id = next_id
             scores <- .self$get_prior_scores(1, prior_res_len, df)$score_vals
             return(list(next_id = next_id + 1, scores = scores))
           } else {
@@ -285,11 +294,11 @@ priorpref <- setRefClass("priorpref",
             if (is.priorpref(.self$p1) && .self$p1$chain_size > MAX_CHAIN_LENGTH && is.truepref(.self$p2) ||
                 is.priorpref(.self$p2) && .self$p2$chain_size > MAX_CHAIN_LENGTH && is.truepref(.self$p1))
               warning(paste0("Prioritization chain exceeded maximal size (", MAX_CHAIN_LENGTH, ") and the operator tree is unbalanced. ",
-                              "This is a performance issue. Try to build chains like ",
+                              "This is a performance issue. It is recommended to build chains like ",
                               "(P1 & ... & P", MAX_CHAIN_LENGTH, ") & ... & (P1 & ... & P", MAX_CHAIN_LENGTH, ") ",
                               "for better performance of the preference evaluation."))
             
-            # Chainge to search with known chain_sizes
+            # Change to search with known chain_sizes and use flag get_greatest_subtree = TRUE
             return(.self$get_scorevals(next_id, df, get_greatest_subtree = TRUE))
           }
         }
@@ -307,7 +316,23 @@ priorpref <- setRefClass("priorpref",
         return(list(kind = 's'))
       else
         return(callSuper())
-    }
+    },
+    
+    # Wrapper for Compare/Prioritization
+    cmp = function(i, j, score_df) {
+      if (.self$prior_chain) # Prior-Chain => Score Pref
+        return(score_df[i, .self$prior_score_id] < score_df[j, .self$prior_score_id])
+      else
+        return(.self$cmpcomp(i, j, score_df)) # Usual composition function
+    },
+    
+    # Wrapper for Equal/Prioritization
+    eq = function(i, j, score_df) {
+      if (.self$prior_chain) # Prior-Chain => Score Pref
+        return(score_df[i, .self$prior_score_id] == score_df[j, .self$prior_score_id])
+      else
+        return(.self$eqcomp(i, j, score_df)) # Usual composition function
+    }  
   )
 )
   

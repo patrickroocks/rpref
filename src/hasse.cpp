@@ -1,12 +1,12 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-#include "pref-classes.h"
-
+#include "hasse.h"
 
 // Return hasse diagramm for given dataframe and preference
 // [[Rcpp::export]]
 NumericVector get_hasse_impl(DataFrame scores, List serial_pref) {
+  
   
   NumericVector col1 = scores[0];  
   int ntuples = col1.size();
@@ -14,66 +14,11 @@ NumericVector get_hasse_impl(DataFrame scores, List serial_pref) {
   // De-Serialize preference
   pref* p = CreatePreference(serial_pref, scores);
 
-  // The edgelist (concatenated, to be transformed to a matrix afterwards)
-  std::list<int> edges;
+  // Get edgelist (concatenated, to be transformed to a matrix afterwards)
+  std::list<int> edges = get_transitive_reduction(p, ntuples);
   
-  // Helper variables
-  std::list<int> window;
-  std::list<int> remainder_el;
-  std::list<int> new_remainder_el;
-  std::list<int>::iterator i, j, j_del;
-  std::list<int> last_window;
-  bool dominated;
-    
-  // Fill remainder initially
-  for (int k=0; k<ntuples; k++) remainder_el.push_back(k);
-  
-  // Loop as long as remainder is not 0
-  while(remainder_el.size() != 0) {
-    
-    // Save last window and prepare new window
-    last_window = window;
-    window.clear();
-    
-    
-    // Run BNL to get the next window
-    for (i=remainder_el.begin(); i != remainder_el.end(); ++i) {
-      dominated = false;
-      for (j=window.begin(); j != window.end(); ++j) {
-        if (p->cmp(*j, *i)) { // *j (window element) is better
-          dominated = true;
-          break; 
-        } else if (p->cmp(*i, *j)) { // *i (picked element) is better
-          // delete j and add j to new_v
-          j_del = j;
-          new_remainder_el.push_back(*j);
-          ++j;
-          window.erase(j_del);
-  		    --j;
-        }
-      }
-      if (!dominated) {
-        window.push_back(*i);
-      } else {
-  	    new_remainder_el.push_back(*i);
-  	  }
-    }
-    
-    
-    // Swap remainder elements
-    remainder_el = new_remainder_el;
-    new_remainder_el.clear();
-    
-    // Get all the better-than-relationships between current and last windows (not done in first step)
-    for (i = last_window.begin(); i != last_window.end(); ++i) {
-      for (j = window.begin(); j != window.end(); ++j) {
-        if (p->cmp(*i, *j)) { // *i is better
-          edges.push_back(*i);
-          edges.push_back(*j);
-        }
-      }
-    }
-  }
+  // Delete preference
+  delete p;
     
   NumericMatrix res(2, edges.size()/2);
   std::copy(edges.begin(), edges.end(), res.begin());
@@ -81,3 +26,37 @@ NumericVector get_hasse_impl(DataFrame scores, List serial_pref) {
   return(res);
 }
 
+
+// --------------------------------------------------------------------------------------------------------------------------------
+// From here from VS
+// --------------------------------------------------------------------------------------------------------------------------------
+
+
+// Return transitive reduction as 1-dim list (x1,x2,x3,x4) means
+// x1 < x2 and x3 < x4 in the sense of the transitive reduction
+std::list<int> get_transitive_reduction(pref* p, int& ntuples) {
+
+  // The edgelist
+	std::list<int> edges;
+
+	// Naive approach for transitive reduction: Check all pairs and check if there exits some element between them
+	for (int i = 0; i < ntuples; i++)
+		for (int j = 0; j < ntuples; j++) {
+			if (p->cmp(i, j)) {
+				bool found = false;
+				for (int k = 0; k < ntuples; k++) {
+					if (p->cmp(i, k) && p->cmp(k, j)) {
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					edges.push_back(i);
+					edges.push_back(j);
+				}
+			}
+		}
+
+	return edges;
+}
+  
