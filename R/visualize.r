@@ -26,13 +26,13 @@
 #' 
 #' @examples
 #' 
-#' # Pick a small data set and create preference/BTG 
+#' # Pick a small data set and create preference and BTG 
 #' df <- mtcars[1:10,]
-#' pref <- high(mpg) * high(hp)
+#' pref <- high(mpg) * low(wt)
 #' btg <- get_btg(df, pref)
 #' 
 #' # Create labels for the nodes with relevant values
-#' labels <- paste0(df$mpg, "\n", df$hp)
+#' labels <- paste0(df$mpg, "\n", df$wt)
 #' 
 #' # Plot the graph using igraph
 #' library(igraph)
@@ -56,11 +56,8 @@
 #' @export
 get_btg <- function(df, pref) {
 
-  # Calculate Hasse-Diagramm for pref on df
-  scores <- pref$get_scorevals(1, df)$scores
-  pref_serial <- pref$serialize()
-  
-  links <- t(get_hasse_impl(scores, pref_serial)) + 1
+  # calculate Hasse diagram
+  links <- get_hasse_diag(df, pref)
   
   # Create graph with all the vertices
   g <- graph.empty()
@@ -79,6 +76,36 @@ get_btg <- function(df, pref) {
   return(list(graph = g, layout = layout))
 }
 
+
+#' Adjacency list of Hasse diagramm
+#' 
+#' Returns the adjacency list as a (n x 2) matrix. 
+#' This is the transitive reduction of the preference relation.
+#' 
+#' @param df A dataframe.
+#' @param pref A preference on the columns of \code{df}, see \code{\link{psel}} for details.
+#' 
+#' @details
+#' 
+#' A row (i, j) in the resulting matrix means that \code{df[i,]} is better than \code{df[j,]} with regard to the preference \code{p}.
+#' The matrix is the transitive reduction (Hasse diagram) of the induced relations,
+#' i.e. if (1,2) and (2,3) occur in the result, than (1,3) will not be contained.
+#' The number of rows in the result depends on the number of non-transitive Better-Than-Relationships in \code{df} w.r.t. \code{p}.
+#' 
+#' @seealso \code{\link{get_btg}} to plot the Hasse Diagram.
+#' 
+#' @examples
+#' 
+#' get_hasse_diag(mtcars, low(mpg))
+#' 
+#' @export 
+get_hasse_diag <- function(df, pref) {
+  # Calculate Hasse-Diagramm for pref on df
+  scores <- pref$get_scorevals(1, df)$scores
+  pref_serial <- pref$serialize()
+  links <- t(get_hasse_impl(scores, pref_serial)) + 1
+  return(links)
+}
 
 
 #' Pareto Front Plot

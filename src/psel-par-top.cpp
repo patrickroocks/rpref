@@ -102,6 +102,9 @@ DataFrame pref_select_top_impl(DataFrame scores, List serial_pref, int N, double
   NumericVector col1 = scores[0];  
   int ntuples = col1.size();
   
+  if (ntuples == 0) return(DataFrame::create(Named(".indices") = NumericVector(),
+                                             Named(".level")   = NumericVector()));
+  
   topk_setting ts(top, at_least, toplevel, and_connected);
   
   // De-Serialize preference
@@ -202,6 +205,9 @@ DataFrame grouped_pref_sel_top_impl(DataFrame data, DataFrame scores, List seria
   
   List indices = data.attr("indices"); // Group indices
   int nind = indices.length();
+  
+  if (nind == 0) return(DataFrame::create(Named(".indices") = NumericVector(),
+                                          Named(".level")   = NumericVector()));
   
   topk_setting ts(top, at_least, toplevel, and_connected);
   

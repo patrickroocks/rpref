@@ -1,14 +1,12 @@
 
 
-test_that("Test Hasse function from C", {
+test_that("Test computation of Hasse diagramm", {
 
-  pref <- low(mpg) * low(hp)
-  expect_that(get_hasse_impl(pref$get_scorevals(1, mtcars[1:10,])$scores, pref$serialize()), 
-              equals(matrix(c(2,8,5,0,5,1,5,4,5,9,0,3,1,3),2)))
+  expect_that(get_hasse_diag(mtcars[1:10,], low(mpg) * low(hp)), 
+              equals(t(matrix(c(1,4,2,4,3,9,6,1,6,2,6,5,6,10),2))))
   
-  pref <- pos(cyl, 2) * low(hp+mpg)
-  expect_that(get_hasse_impl(pref$get_scorevals(1, mtcars[1:10,])$scores, pref$serialize()), 
-              equals(matrix(c(7,2,2,8,8,5,5,0,5,1,0,3,1,3,3,9,9,4,4,6),2)))
+  expect_that(get_hasse_diag(mtcars[1:10,], pos(cyl, 2) * low(hp + mpg)), 
+              equals(t(matrix(c(1,4,2,4,3,9,4,10,5,7,6,1,6,2,8,3,9,6,10,5),2))))
   
 })
 

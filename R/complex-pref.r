@@ -34,7 +34,7 @@
 #' \code{low(a) * (high(b) & low(c))}.
 #' 
 #' 
-#' \item A query in the syntax of the "Skyline" feature of the commercial database "EXASolution 5" like 
+#' \item A query in the syntax of the "Skyline" feature of the commercial database "EXASOL EXASolution 5" like 
 #' 
 #' "\code{... PREFERRING LOW a PLUS (b = 1 PRIOR TO LOW c))}" 
 #' 
@@ -43,6 +43,8 @@
 #' \code{low(a) * (true(b == 1) & low(c))}.
 #' 
 #' }
+#' 
+#' Note that these query conversions can be done by \code{\link{show.query}}. 
 #' 
 #' @section Definition of additional preference operators:
 #' 

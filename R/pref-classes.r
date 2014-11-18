@@ -193,7 +193,7 @@ complexpref <- setRefClass("complexpref",
     },
     
     get_str = function(parent_op = "") {
-      res <- paste0(.self$p1$get_str(.self$op), ' ', op, ' ', .self$p2$get_str(.self$op))
+      res <- paste0(.self$p1$get_str(.self$op), ' ', .self$op, ' ', .self$p2$get_str(.self$op))
       if (.self$op != parent_op) res <- embrace(res)
       return(res)
     },
@@ -347,10 +347,9 @@ unbrace <- function(x) {
   else return(x)
 }
 
-# Add brackets to string if not existing
+# Add brackets to string
 embrace <- function(x) {
-  if (!(substr(x, 1, 1) == "(" && substr(x, nchar(x), nchar(x)) == ")")) return(paste0('(', x, ')'))
-  else return(x)
+  return(paste0('(', x, ')'))
 }
   
   

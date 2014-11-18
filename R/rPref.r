@@ -20,6 +20,7 @@
 #' \itemize{
 #' \item The visualization of the preference order in a Better-Than-Graph is possible via the \code{\link{get_btg}} function
 #' in connection with the \code{\link{igraph}} package.
+#' \item The adjacency list of the Better-Than-Graph (Hasse diagramm) can be accessed via \code{\link{get_hasse_diag}}.
 #' \item The pareto frontier can be plotted using the \code{\link{plot_front}} function.
 #' \item The preference query for some preference-supporting DBMS can be given by \code{\link{show.query}}.
 #' }

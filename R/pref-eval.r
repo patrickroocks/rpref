@@ -86,7 +86,8 @@
 #' 
 #' If this option is not set, rPref will use parallel computation by default.
 #' 
-#' @seealso See \code{\link{complex_pref}} on how to construct a Skyline preference. See \code{\link{plot_front}} on how to plot the pareto front of a Skyline
+#' @seealso See \code{\link{complex_pref}} on how to construct a Skyline preference. 
+#' See \code{\link{plot_front}} on how to plot the pareto front of a Skyline.
 #' 
 #' 
 #' @name psel

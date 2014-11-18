@@ -11,9 +11,21 @@ for (parallelity in c(FALSE, TRUE)) {
     expect_that(psel(data.frame(a = c(3,2,1,1,4)), low(a))$a, equals(c(1,1)))
     expect_that(psel.indices(data.frame(a = c(3,3,2,1,1,4)), low(a)), equals(c(4,5)))
   })
-    
+  
+  # Empty preference
+  test_that("Test empty preference", {
+    expect_that(psel(data.frame(a = c(3,2,1,1,4)), empty() & high(a))$a, equals(4))
+    expect_that(psel(data.frame(a = c(3,2,1,1,4)), empty())$a, equals(c(3,2,1,1,4)))
+    expect_that(psel(mtcars, low(mpg) & (empty() * low(hp)))$hp, equals(205))
+  })
+  
+  # Empty dataset
+  test_that("Test empty dataset", {
+    expect_that(psel(data.frame(a = 1)[NULL,,drop=FALSE], low(a)), equals(data.frame(a = 1)[NULL,,drop=FALSE]))
+  })  
 
   # More tests for psel/psel.indices and the preference constructors
+  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   test_that("Test Preference selection", {
     expect_that(psel(mtcars, low(mpg))$mpg, equals(c(10.4, 10.4)))
@@ -27,21 +39,21 @@ for (parallelity in c(FALSE, TRUE)) {
   test_that("Test Preference selection with indices", {
     expect_that(sort(psel.indices(mtcars, high(am) * true(vs == 1))), equals(c(3, 18, 19, 20, 26, 28, 32)))
   })
-  
 
   
-  # Note that dplyr also uses between since v0.3
-  test_that("Test base preference macros", {
+  # Note that dplyr also uses "between" since v0.3
+  test_that("Test base preference macros and prior chains", {
     expect_that(psel(mtcars, pos(carb, 2))$carb, equals(rep(2, 10)))
     expect_that(psel(mtcars, around(mpg, 20))$mpg, equals(19.7))
     expect_that(psel(mtcars, rPref::between(hp, 110, 120))$hp, equals(c(110, 110, 110, 113)))
     expect_that(psel(mtcars, rPref::between(hp, 115, 122))$hp, equals(c(123, 123)))
     
     expect_that(psel(mtcars, -layered(cyl, c(4, 6), 8))$cyl, equals(rep(8, 14)))
+    expect_that(rownames(psel(mtcars, true(mpg < 22) & true(cyl == 4) & true(wt < 3 & gear == 4))), equals("Volvo 142E"))
+    
   })
   
   test_that("Test if environments are found correctly", {
-    
     test_fun <- function() {
       f <- function(x) -x
       return(low(f(mpg)))
