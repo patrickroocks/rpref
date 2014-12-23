@@ -39,7 +39,14 @@ public:
 
 	// for top-k algorithms
 	bool do_break(int level, int ntuples);
-	bool do_cut();
+
+  // Template for top-k cut function (must be completely in header file)
+	template<typename T> void cut(std::list<T> &lst, int ntuples) {
+   // cut if topk is set and {we have and AND - connection OR if topk is the only value}
+    if (topk != -1 && (and_connected || (toplevel == -1 && at_least == -1)))
+		  lst.resize(std::min(topk, ntuples));
+  }
+
 };
 
 

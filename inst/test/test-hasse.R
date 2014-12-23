@@ -11,6 +11,34 @@ test_that("Test computation of Hasse diagramm", {
 })
 
 
+test_that("Test predecessors and successors", {
+  
+  # Generate preference and init succ/pred functions
+  df <- data.frame(id = 1:5)
+  pref <- ((true(id %in% c(1,2)) & true(id == 3)) * true(id == 4)) & true(id == 5)
+  init_pred_succ(df, pref)
+  
+  # ** Do some tests
+  
+  expect_that(all_succ(pref, 1), equals(c(3,5)))
+  expect_that(all_succ(pref, 4), equals(5))
+  expect_that(all_succ(pref, c(2,4)), equals(c(3,5)))
+  
+  expect_that(all_pred(pref, c(2,4)), equals(numeric(0)))
+  expect_that(all_pred(pref, 5), equals(c(1,2,3,4)))
+  
+  expect_that(hasse_succ(pref, c(1,2)), equals(3))
+  expect_that(hasse_succ(pref, c(2,4)), equals(c(3,5)))
+  expect_that(hasse_succ(pref, 5), equals(numeric(0)))
+  
+  expect_that(hasse_pred(pref, 5), equals(c(3,4)))
+  expect_that(hasse_pred(pref, c(3,4)), equals(c(1,2)))
+})
+
+
+# ---------------------------------------------------------------------------
+
+
 library(igraph)
 
 test_that("Test igraph output for mtcars[1:5,] with low(mpg)", {

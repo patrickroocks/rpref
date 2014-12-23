@@ -3,18 +3,20 @@
 \alias{show.query}
 \title{Show preference in usual Query Languages}
 \usage{
-show.query(p, dialect = "EXASOL")
+show.query(p, dialect = "EXASOL", df = NULL)
 }
 \arguments{
 \item{p}{A preference}
 
 \item{dialect}{The preference query dialect, which determines the Syntax of the returned query. This has to be one of the following:
 \describe{
-   \item{\code{'EXASOL'}}{Syntax of the "Skyline" Feature of the commercial database EXASOL EXASolution, version >= 5.}
-    \item{\code{'Preference SQL'}}{Syntax of the Preference SQL system.
+   \item{\code{'EXASOL'}}{Syntax of the "Skyline" feature of the commercial database EXASOL EXASolution 5.}
+   \item{\code{'Preference SQL'}}{Syntax of the Preference SQL system.
      This is a research prototype developed at the Chair of Databases and Information Systems of the University of Augsburg.
      See references for details.}
 }}
+
+\item{df}{Optional to specifiy a dataframe on which the preference operates causing a partial evaluation. See \code{\link{show.pref}} for details.}
 }
 \description{
 For a given preference this shows the \code{PREFERRING} clause of a database query in different SQL dialects which support preferences.

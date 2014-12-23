@@ -102,7 +102,7 @@ NULL
   return(complexpref(p1, p2, '*',
                      (p1$cmp | p1$eq) & p2$cmp |
                      (p2$cmp | p2$eq) & p1$cmp,
-                     p1$eq & p2$eq))
+                      p1$eq & p2$eq))
 }
 
 # Infix Prioritization-Constructor (special constructor as we have to consider prior-chains!)
@@ -127,7 +127,7 @@ NULL
   
   return(complexpref(p1, p2, '|',
                      p1$cmp & p2$cmp,
-                     p1$eq & p2$eq))
+                     p1$eq  & p2$eq))
 }
 
 # Infix-Disjount-Union-Constructor
@@ -138,8 +138,8 @@ NULL
   if (check_empty(p1, p2)) return(get_empty(p1, p2))
   
   return(complexpref(p1, p2, '+',
-                    p1$cmp | p2$cmp,
-                    p1$eq & p2$eq))
+                     p1$cmp | p2$cmp,
+                     p1$eq  & p2$eq))
 }
 
 

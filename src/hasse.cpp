@@ -3,10 +3,10 @@ using namespace Rcpp;
 
 #include "hasse.h"
 
+
 // Return hasse diagramm for given dataframe and preference
 // [[Rcpp::export]]
-NumericVector get_hasse_impl(DataFrame scores, List serial_pref) {
-  
+NumericVector get_hasse_impl(DataFrame scores, List serial_pref) {  
   
   NumericVector col1 = scores[0];  
   int ntuples = col1.size();
@@ -25,6 +25,7 @@ NumericVector get_hasse_impl(DataFrame scores, List serial_pref) {
   
   return(res);
 }
+
 
 
 // --------------------------------------------------------------------------------------------------------------------------------

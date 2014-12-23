@@ -77,6 +77,8 @@ for (parallelity in c(FALSE, TRUE)) {
   # Simple tests of top-K, at_least and toplevel
   test_that("Test TOP-k Preference selection", {
     df <- data.frame(a = c(3,2,1,1,4), b = c(1,1,1,2,2)) # Simple data set
+    
+    expect_that(sort(psel.indices(df, low(a), top=5)), equals(1:5))
     expect_that(psel(df, low(a), at_least = 2), equals(data.frame(c(1,1), c(1, 2), c(1,1)), check.attributes = FALSE))
     expect_that(psel.indices(df, low(a), at_least = 3, top = 2), equals(c(3,4)))
     expect_that(psel(df, low(a), top_level = 2)$b, equals(c(1,2,1)))

@@ -13,11 +13,6 @@ using namespace Rcpp;
 
 // the best level has level == 1 !
 
-bool topk_setting::do_cut() {
-  // cut if topk is set and {we have and AND-connection OR if topk is the only value}
-	return(topk != -1 && (and_connected || (toplevel == -1 && at_least == -1)));
-}
-
 bool topk_setting::do_break(int level, int ntuples) { // gets level of this iteration!
 	if (and_connected) {
 		// Take intersection, break if one limit is reached
@@ -133,7 +128,7 @@ pair_list add_level(const std::list<int>& lst, const int level) {
 // --------------------------------------------------------------------------------------------------------------------------------
 
 
-// Internal top-k BNL (v is NOT reference, will be edited!) returning NO LEVELS
+// Internal top-k BNL (v is NOT a reference, will be edited!) returning NO LEVELS
 // special cases (level=1, no topk) are handled by scalagon!
 std::list<int> bnl_topk_internal(std::vector<int> v, pref* p, topk_setting& ts) {
 
@@ -155,8 +150,9 @@ std::list<int> bnl_topk_internal(std::vector<int> v, pref* p, topk_setting& ts) 
 		if (ts.do_break(level, nres)) break;
 		level++;
 	}
+	
+	ts.cut(final_result, nres);
 
-	if (ts.do_cut()) final_result.resize(ts.topk); // Cut 
 	return final_result;
 }
 
@@ -183,7 +179,8 @@ pair_list bnl_topk_internal_levels(std::vector<int> v, pref* p, topk_setting& ts
 		level++;
 	}
 
-	if (ts.do_cut()) final_result.resize(ts.topk); // Cut 
+	ts.cut(final_result, nres);
+
 	return final_result;
 }
 

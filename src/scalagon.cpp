@@ -1,7 +1,7 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-// includes also pref-classes
+
 #include "scalagon.h"
 
 
@@ -23,7 +23,6 @@ std::vector<int> scalagon::get_sample(int N, int range) {
 // --------------------------------------------------------------------------------------------------------------------------------
 // From here from VS
 // --------------------------------------------------------------------------------------------------------------------------------
-
 
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -186,10 +185,8 @@ flex_list scalagon::run_scalagon_topk(std::vector<int>& v, pref* p, topk_setting
 		}
 
 		// Cut in the top-k case
-		if (ts.do_cut()) {
-			if (show_levels) final_result_pair_list.resize(ts.topk);
-			else final_result_list.resize(ts.topk);
-		}
+		if (show_levels) ts.cut(final_result_pair_list, nres);
+		else             ts.cut(final_result_list, nres);
 
 	} else { // use Standard BNL
 		if (show_levels) final_result_pair_list = bnl_topk_internal_levels(v, p, ts);

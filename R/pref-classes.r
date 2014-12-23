@@ -7,14 +7,81 @@
 
 # General preference (only for internal use)
 preference <- setRefClass("preference",
+  fields = list(expr = "expression", score_id = "numeric", eval_frame = "environment", 
+                # cache for Hasse diagram / scorevals
+                hasse_mtx = "matrix", scorevals = "data.frame", cache_available = "logical"), 
   methods = list(
     show = function() {
       return(cat(paste0('[Preference] ', unbrace(.self$get_str()))))
     },
     
-    get_str = function(parent_op = "") {
+    # Get string representation
+    get_str = function(parent_op = "", static_terms = NULL) {
       return("((empty))") # Outer brackets are removed by "unbrace"
+    },
+    
+    
+    # Predecessor/Successor functions
+    # -------------------------------
+    
+    # Initialize cache for Hasse diagram / Scorevals
+    init_pred_succ = function(df) {
+      .self$scorevals <- .self$get_scorevals(1, df)$scores
+      serialized <- .self$serialize()
+      .self$hasse_mtx <- t(get_hasse_impl(.self$scorevals, serialized)) + 1
+      .self$cache_available <- TRUE
+      return()
+    },
+    
+    check_cache = function() {
+      if (!isTRUE(.self$cache_available)) stop("No data set avaible. Run `init_succ_pref(df)` first.")
+    },
+    
+    # Hasse diagramm successors
+    h_succ = function(inds) {
+      .self$check_cache()
+      if (length(inds) == 1) {
+        return(.self$hasse_mtx[.self$hasse_mtx[,1]==inds,2])
+      } else {
+        res_inds <- lapply(inds, function(x) .self$hasse_mtx[.self$hasse_mtx[,1]==x,2])
+        return(Reduce('union', res_inds[-1], res_inds[[1]]))
+      }
+    },
+      
+    # Hasse diagramm predecessors
+    h_pred = function(inds) {
+      .self$check_cache()
+      if (length(inds) == 1) { 
+        return(.self$hasse_mtx[.self$hasse_mtx[,2]==inds,1])
+      } else {
+        res_inds <- lapply(inds, function(x) .self$hasse_mtx[.self$hasse_mtx[,2]==x,1])
+        return(Reduce('union', res_inds[-1], res_inds[[1]]))
+      }
+    },
+    
+      
+    # All succesors
+    all_succ = function(inds) {
+      .self$check_cache()
+      all_inds <- 1:nrow(.self$scorevals)
+      if (length(inds) == 1) {
+        which(.self$cmp(inds, all_inds, .self$scorevals))
+      } else {
+        return(which(as.logical(do.call("pmax", lapply(inds, function(x) .self$cmp(x, all_inds, .self$scorevals) )))))
+      }
+    },
+      
+    # All predecessors
+    all_pred = function(inds) {
+      .self$check_cache()
+      all_inds <- 1:nrow(.self$scorevals)
+      if (length(inds) == 1) {
+        which(.self$cmp(all_inds, inds, .self$scorevals))
+      } else {
+        return(which(as.logical(do.call("pmax", lapply(inds, function(x) .self$cmp(all_inds, x, .self$scorevals) )))))
+      }
     }
+    
   )
 )
 is.preference <- function(x) inherits(x, "preference")
@@ -76,9 +143,54 @@ basepref <- setRefClass("basepref",
     eq = function(i, j, score_df) { # TRUE if i is equal to j
       return(score_df[i, .self$score_id] == score_df[j, .self$score_id])
     },
+      
+    get_expr_str = function(static_terms = NULL) {
+      if (!is.null(static_terms)) {
+        get_expr_evaled <- function(lexpr) {
+          lexpr <- lexpr[[1]]
+          if (is.symbol(lexpr)) { 
+            if (as.character(lexpr) == '...') # ... cannot be eval'd directly!
+              return(list(str = '...', final = FALSE)) 
+            else if (any(vapply(static_terms, function(x) identical(lexpr, x), TRUE)))
+              return(list(str = as.character(lexpr), final = TRUE)) # static_term => final
+            else
+              return(list(str = deparse(eval(lexpr, .self$eval_frame)), final = FALSE))
+          } else if (length(lexpr) == 1) { # Not a symbol => not final
+            return(list(str = as.character(lexpr), final = FALSE))   
+          } else { # n-ary function/operator
+            
+            # Go into recursion
+            expr_evals <- list()
+            for (i in 2:length(lexpr)) expr_evals[[i-1]] <- get_expr_evaled(lexpr[i])
+            
+            # Check if not final
+            if (all(vapply(expr_evals, function(x) x$final, TRUE) == FALSE)) { 
+              # ** re-eval
+              # Especially eval ... at that level where ... is an operand
+              str <- deparse(eval(lexpr, .self$eval_frame)) # May be a vector
+              return(list(str = str, final = FALSE)) # still not final
+            } else {
+              expr_strs <- lapply(expr_evals, function(x) x$str)
+              # ** Put term together on string level (no re-eval!) 
+              fun_str <- as.character(lexpr[1][[1]])
+              if (fun_str == '(') fun_str <- ''
+              if (substr(deparse(lexpr[1]), 1, 1) == '`') # check if %-infix/classic operator
+                str <- paste0(expr_strs[[1]], ' ', fun_str, ' ', expr_strs[[2]])
+              else
+                str <- paste0(fun_str, '(', paste(expr_strs, collapse = ', '), ')')
+              return(list(str = str, final = TRUE)) # already final!
+            }
+          }
+        } 
+        return(get_expr_evaled(.self$expr)$str)
+      } else {
+        return(as.character(.self$expr))
+      }
+    },
     
-    get_str = function(parent_op = "") {
-      return(paste0(.self$op(), '(', as.character(.self$expr), ')'))
+    # Get string representation
+    get_str = function(parent_op = "", static_terms = NULL) {
+      return(paste0(.self$op(), '(', .self$get_expr_str(static_terms), ')'))
     },
     
     serialize = function() {
@@ -149,8 +261,8 @@ reversepref <- setRefClass("reversepref",
       return(list(next_id = res$next_id + 1, scores = res$scores))
     },
     
-    get_str = function(parent_op = "") {
-      return(paste0('-', .self$p$get_str(parent_op)))
+    get_str = function(parent_op = "", static_terms = NULL) {
+      return(paste0('-', .self$p$get_str(parent_op, static_terms)))
     },
     
     cmp = function(i, j, score_df) { # TRUE if i is better than j
@@ -192,8 +304,9 @@ complexpref <- setRefClass("complexpref",
       return(list(next_id = res2$next_id, scores = cbind(res1$scores, res2$scores)))
     },
     
-    get_str = function(parent_op = "") {
-      res <- paste0(.self$p1$get_str(.self$op), ' ', .self$op, ' ', .self$p2$get_str(.self$op))
+    get_str = function(parent_op = "", static_terms = NULL) {
+      res <- paste0(.self$p1$get_str(.self$op, static_terms), ' ', .self$op, ' ', 
+                    .self$p2$get_str(.self$op, static_terms))
       if (.self$op != parent_op) res <- embrace(res)
       return(res)
     },
@@ -203,7 +316,7 @@ complexpref <- setRefClass("complexpref",
       return(list(kind = .self$op, p1 = .self$p1$serialize(), p2 = .self$p2$serialize()))
     },
     
-    # Simple wrapper for cmp/eq compositions
+    # Simple wrapper for cmp/eq compositions (overwritten by prioritization)
     cmp = function(...) .self$cmpcomp(...),
     eq  = function(...) .self$eqcomp(...)
     

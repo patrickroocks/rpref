@@ -15,14 +15,21 @@
 #'       the maxima of a preference (or Pareto frontier, Skyline), constructed with the functions above, on a given dataset.
 #' }
 #' 
-#' @section Visualization/Conversion of preferences:
+#' @section Visualization and analysis of preferences:
 #' 
 #' \itemize{
 #' \item The visualization of the preference order in a Better-Than-Graph is possible via the \code{\link{get_btg}} function
 #' in connection with the \code{\link{igraph}} package.
 #' \item The adjacency list of the Better-Than-Graph (Hasse diagramm) can be accessed via \code{\link{get_hasse_diag}}.
+#' \item Predecessors/Successors in the Hasse diagram are calculated with the \code{\link{pred_succ}} functions.
 #' \item The pareto frontier can be plotted using the \code{\link{plot_front}} function.
+#' }
+#' 
+#' @section String output of preferences:
+#' 
+#' \itemize{
 #' \item The preference query for some preference-supporting DBMS can be given by \code{\link{show.query}}.
+#' \item A partially evaluated preference is printed with \code{\link{show.pref}}.
 #' }
 #' 
 #' @section Further information:
