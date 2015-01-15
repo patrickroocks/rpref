@@ -4,14 +4,15 @@
 #'
 #' @name base_pref_macros
 #' @param expr A numerical expression (for \code{around} and \code{between}) or an arbitrary expression (for \code{pos} and \code{layered}).
-#'        We search for value where \code{expr} evaluates to a value in the preferred interval, layer, etc. 
+#'        The objective are tuples where \code{expr} evaluates to a value in the preferred interval, layer, etc. 
 #'        Regarding attributes, functions and variables, the same requirements as for \code{\link{base_pref}} apply.
 #' @param center Preferred value for \code{around}.
 #' @param left Lower limit of the preferred interval for \code{between}.
 #' @param right Upper limit of the preferred interval for \code{between}.
 #' @param pos_value A vector containing the preferred values for a \code{pos} preference.
 #'         Has to be of the same type (numeric, logical, character, ...) as \code{expr}.
-#' @param ... Layers (sets) for a \code{layered} preference, where the first set are the most preferred values.
+#' @param ... Layers (sets) for a \code{layered} preference. Each variable corresponds to one layer 
+#'            and the first set characterizes the most preferred values.
 #' 
 #' @section Definition of the preference macros:
 #' 

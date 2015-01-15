@@ -27,7 +27,8 @@ or variables/functions of the environment where \code{pref} was defined.}
     values are given. Then \code{and_connected = TRUE} (which is the default) means that all top-conditions must hold for the returned tuples:
     Let \code{cond1} and \code{cond2} be top-conditions like \code{top=2} or \code{top_level=3}, then
     \code{psel([...], cond1, cond2)} is equivalent to the intersection of \code{psel([...], cond1)} and \code{psel([...], cond2)}. If we have
-    \code{and_connected = FALSE} the conditions are or-connected. This corresponds to the union.}
+    \code{and_connected = FALSE} the conditions are or-connected.
+    This corresponds to the union of \code{psel([...], cond1)} and \code{psel([...], cond2)}.}
     \item{\code{show_level}}{This adds a column '.level' to the returned data frame, containing all level values (see below).
     This is only relevant if at least one of the \{top, at_least, top_level\} values are given.
     For \code{psel} this is \code{TRUE} by default, for \code{psel.indices} this is \code{FALSE} by default.}
@@ -43,7 +44,7 @@ The difference between the two variants of the preference selection is:
 \item The \code{psel} function returns a subset of the dataset which are the maxima according to the given preference.
 \item The function \code{psel.indices} returns just the row indices of the maxima
 (except Top-k queries with \code{show_level = 1}, see Top-k preference selection).
-Hence \code{psel(df,pref)} is equivalent to \code{df[psel.indices(df,pref),]} for non-grouped dataframes.
+Hence \code{psel(df, pref)} is equivalent to \code{df[psel.indices(df, pref),]} for non-grouped dataframes.
 }
 }
 \section{Top-k preference selection}{

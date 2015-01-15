@@ -26,7 +26,7 @@ and the value of the second preference as y-coordinate.
 show_front <- function(pref) {
   plot(mtcars$hp, mtcars$mpg)
   sky <- psel(mtcars, pref)
-  plot_front(mtcars, pref, col = rgb(0,0,1))
+  plot_front(mtcars, pref, col = rgb(0, 0, 1))
   points(sky$hp, sky$mpg, lwd = 3)
 }
 

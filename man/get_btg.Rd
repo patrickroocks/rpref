@@ -44,7 +44,7 @@ plot(btg$graph, layout = btg$layout, vertex.label = labels,
      vertex.size = 25)
 
 # Add colors for the maxima nodes and plot again
-colors <- rep(rgb(1,1,1), nrow(df))
+colors <- rep(rgb(1, 1, 1), nrow(df))
 colors[psel.indices(df, pref)] <- rgb(0,1,0)
 plot(btg$graph, layout = btg$layout, vertex.label = labels,
      vertex.size = 25, vertex.color = colors)

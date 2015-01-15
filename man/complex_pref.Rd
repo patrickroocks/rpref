@@ -20,8 +20,6 @@
 
 reverse(p1)
 
-
-
 empty()
 }
 \arguments{

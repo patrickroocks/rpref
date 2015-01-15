@@ -19,11 +19,11 @@ all_pred(p, v)
 all_succ(p, v)
 }
 \arguments{
-\item{df}{A dataframe.}
+\item{df}{A dataframe characterizing the basic set wherein predecessors/sucessors are seached.}
 
-\item{p}{A preference.}
+\item{p}{A preference. Worse tuples in the induced order are succesors and better tuples are predecessors.}
 
-\item{v}{A numeric vector of indices in df.}
+\item{v}{A numeric vector of indices in df. This describes the set of tuples for which predecessors/successors are searched.}
 }
 \description{
 Function for traversing the BTG (Better-Than-Graph) of a preference.
@@ -32,11 +32,11 @@ Function for traversing the BTG (Better-Than-Graph) of a preference.
 }
 \details{
 These functions return the predecessors and successors in the Better-Than-Graph of a preference which can be plotted via \code{\link{get_btg}}.
-Before any of the successor/predecessor functions can be used the initialization has to be run as follows:
+Before any of the successor/predecessor functions can be used the initialization has to be called as follows:
 
 \code{init_pred_succ(p, df)}
 
-There \code{p} is a preference object and \code{df} a dataframe. This calculates the Better-Than-Relation on \code{df} w.r.t. \code{p}.
+There \code{p} is a preference object and \code{df} a dataframe. This statement calculates the Better-Than-Relation on \code{df} w.r.t. \code{p}.
 Afterwards the subsequent predecessor and sucessor functions can be called.
 The return values and the values of \code{v} are subsets of \code{1:nrow(df)} and characerise a subset of tuples in \code{df}.
 
@@ -63,7 +63,7 @@ show_vals(10)
 # Show (direct) predecessors/successors
 show_vals(hasse_pred(p, 10)) # Next better car
 show_vals(hasse_succ(p, 10)) # Next worse car
-show_vals(all_pred(p, 10)) # All better cars
-show_vals(all_succ(p, 10)) # All worse cars
+show_vals(all_pred(p, 10))   # All better cars
+show_vals(all_succ(p, 10))   # All worse cars
 }
 

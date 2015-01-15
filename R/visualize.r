@@ -40,7 +40,7 @@
 #'      vertex.size = 25)
 #' 
 #' # Add colors for the maxima nodes and plot again
-#' colors <- rep(rgb(1,1,1), nrow(df))
+#' colors <- rep(rgb(1, 1, 1), nrow(df))
 #' colors[psel.indices(df, pref)] <- rgb(0,1,0)
 #' plot(btg$graph, layout = btg$layout, vertex.label = labels,
 #'      vertex.size = 25, vertex.color = colors)
@@ -129,7 +129,7 @@ get_hasse_diag <- function(df, pref) {
 #' show_front <- function(pref) {
 #'   plot(mtcars$hp, mtcars$mpg)
 #'   sky <- psel(mtcars, pref)
-#'   plot_front(mtcars, pref, col = rgb(0,0,1))
+#'   plot_front(mtcars, pref, col = rgb(0, 0, 1))
 #'   points(sky$hp, sky$mpg, lwd = 3)
 #' }
 #'

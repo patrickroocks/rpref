@@ -11,6 +11,8 @@ preference <- setRefClass("preference",
                 # cache for Hasse diagram / scorevals
                 hasse_mtx = "matrix", scorevals = "data.frame", cache_available = "logical"), 
   methods = list(
+    
+    # Default show function
     show = function() {
       return(cat(paste0('[Preference] ', unbrace(.self$get_str()))))
     },
@@ -123,6 +125,7 @@ basepref <- setRefClass("basepref",
       return(.self)
     },
     
+    # Calculate scorevals as dataframe, increment score id
     get_scorevals = function(next_id, df) {
       .self$score_id = next_id
       # Calc score of base preference
@@ -144,19 +147,22 @@ basepref <- setRefClass("basepref",
       return(score_df[i, .self$score_id] == score_df[j, .self$score_id])
     },
       
+    # Get expression string, with partial evaluation if static_terms is not NULL (they are not evaluated)
     get_expr_str = function(static_terms = NULL) {
       if (!is.null(static_terms)) {
         get_expr_evaled <- function(lexpr) {
           lexpr <- lexpr[[1]]
           if (is.symbol(lexpr)) { 
             if (as.character(lexpr) == '...') # ... cannot be eval'd directly!
-              return(list(str = '...', final = FALSE)) 
+              return(list(str = '...', final = FALSE)) # ... is never final, will be evaluated above if possible
             else if (any(vapply(static_terms, function(x) identical(lexpr, x), TRUE)))
               return(list(str = as.character(lexpr), final = TRUE)) # static_term => final
             else
               return(list(str = deparse(eval(lexpr, .self$eval_frame)), final = FALSE))
+          
           } else if (length(lexpr) == 1) { # Not a symbol => not final
-            return(list(str = as.character(lexpr), final = FALSE))   
+            return(list(str = as.character(lexpr), final = FALSE))
+            
           } else { # n-ary function/operator
             
             # Go into recursion

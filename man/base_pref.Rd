@@ -13,7 +13,7 @@ high(expr)
 true(expr)
 }
 \arguments{
-\item{expr}{A numerical/logical expression which is the term for the current preference.
+\item{expr}{A numerical/logical expression which is the term to evaluate for the current preference.
       The objective is to search for minimal/maximal values of this expression (for \code{low}/\code{high}) or for
       logical true values (for \code{true}).}
 }
@@ -31,7 +31,7 @@ The three fundamental base preferences are:
         The values of \code{a} must be numeric values.}
   \item{\code{true(a)}}{Search for true values in logical expressions, i.e., \code{TRUE} is considered to be better than \code{FALSE}.
         The values of \code{a} must be logical values.
-        For a tuplewise evaulation of a complex boolean condition one has to use the \code{&} and \code{|} operators for "and"/"or"
+        For a tuplewise evaulation of a complex boolean condition one has to use the \code{&} and \code{|} operators for logical AND/OR
         (and not the \code{&&} and \code{||} operators).}
 }
 
@@ -46,12 +46,12 @@ must be defined in the same environment (e.g. environment of a function) as the 
 }
 \examples{
 # Define a preference with a score value combining mpg and hp
-p1 <- high(4*mpg + hp)
+p1 <- high(4 * mpg + hp)
 # Perform the preference selection
 psel(mtcars, p1)
 
 # Define a preference with a given function
-f <- function(x, y) (abs(x-mean(x))/max(x) + abs(y-mean(y))/max(y))
+f <- function(x, y) (abs(x - mean(x))/max(x) + abs(y - mean(y))/max(y))
 p2 <- low(f(mpg, hp))
 psel(mtcars, p2)
 }

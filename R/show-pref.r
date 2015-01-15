@@ -134,7 +134,7 @@ show_pref_sql <- function(p, dialect, parent_op = '', static_terms = NULL) {
 # Translate Preference to PrefSQL
 show_base_pref <- function(p, dialect, static_terms = NULL) {
   
-  expr_str <- get_expr(p, static_terms, embrace_term = TRUE)
+  expr_str <- get_expr_sql(p, static_terms)
   
   if (dialect == EXA) {
     if (is.lowpref(p)) {
@@ -157,9 +157,9 @@ show_base_pref <- function(p, dialect, static_terms = NULL) {
 
 
 # Get (evaluated, if static_terms is given) expression of base preference
-# embrace_term = TRUE embraces non-single term (for SQL dialects)
-get_expr <- function(p, static_terms = NULL, embrace_term = FALSE) {
+# Add braces for non-single term 
+get_expr_sql <- function(p, static_terms = NULL) {
   expr_str <- p$get_expr_str(static_terms)
-  if (embrace_term || length(p$expr[[1]]) == 1) return(expr_str)
-  else return(paste0('(', expr_str, ')')) # embrace complex expressions
+  if (length(p$expr[[1]]) != 1) return(paste0('(', expr_str, ')'))  # embrace complex expressions
+  else return(expr_str) 
 }
