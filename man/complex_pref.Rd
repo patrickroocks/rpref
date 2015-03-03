@@ -18,12 +18,14 @@
 
 \method{+}{preference}(p1, p2)
 
-reverse(p1)
+reverse(p)
+
+\method{-}{preference}(p1, p2)
 
 empty()
 }
 \arguments{
-\item{p1,p2}{Preferences to be composed (either base preferences via \code{\link{base_pref}} or also complex preferences)}
+\item{p,p1,p2}{Preferences to be composed (either base preferences via \code{\link{base_pref}} or also complex preferences)}
 }
 \description{
 Complex preferences are used to compose different preferences orders. For example the Pareto composition (via operator \code{*}) is the usual operator

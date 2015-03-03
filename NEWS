@@ -1,8 +1,10 @@
-rPref 0.4
+rPref 0.5
 =========
 
-* New functions for retrieving successors and predecessors of objetcts w.r.t. a preference (see ?pred_succ)
+* New functions for string output (pref.str) and partial evaluation (eval.pref)
 
-* New function for partially evaluated string output of preference (show.string)
-  
-* Fixed bug in parallel Top-k preference selection
+* Predecessor/successor (hasse_pred, etc.) result vectors are ordered ascending
+
+* Parameters of 0-length-vectors are supported for predecessor/successor functions
+
+* New base preferences for defining preferences on expressions (low_, high_, true_)

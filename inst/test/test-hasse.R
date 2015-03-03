@@ -20,6 +20,7 @@ test_that("Test predecessors and successors", {
   
   # ** Do some tests
   
+  expect_that(all_succ(pref, numeric(0)), equals(numeric(0)))
   expect_that(all_succ(pref, 1), equals(c(3,5)))
   expect_that(all_succ(pref, 4), equals(5))
   expect_that(all_succ(pref, c(2,4)), equals(c(3,5)))
@@ -27,8 +28,10 @@ test_that("Test predecessors and successors", {
   expect_that(all_pred(pref, c(2,4)), equals(numeric(0)))
   expect_that(all_pred(pref, 5), equals(c(1,2,3,4)))
   
+  expect_that(hasse_succ(pref, numeric(0)), equals(numeric(0)))
   expect_that(hasse_succ(pref, c(1,2)), equals(3))
   expect_that(hasse_succ(pref, c(2,4)), equals(c(3,5)))
+  expect_that(hasse_succ(pref, c(4,2)), equals(c(3,5)))
   expect_that(hasse_succ(pref, 5), equals(numeric(0)))
   
   expect_that(hasse_pred(pref, 5), equals(c(3,4)))

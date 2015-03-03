@@ -38,7 +38,10 @@ Before any of the successor/predecessor functions can be used the initialization
 
 There \code{p} is a preference object and \code{df} a dataframe. This statement calculates the Better-Than-Relation on \code{df} w.r.t. \code{p}.
 Afterwards the subsequent predecessor and sucessor functions can be called.
-The return values and the values of \code{v} are subsets of \code{1:nrow(df)} and characerise a subset of tuples in \code{df}.
+The return values and the values of \code{v} are numeric vectors within \code{1:nrow(df)}
+and characerise a subset of tuples in \code{df}.
+The numbers in the result are always ordered ascending, independent of the order of the indices in \code{v}.
+
 
 \describe{
   \item{\code{all_pred(p, v)}}{Returns all predecessors of \code{v}, i.e. indices of better tuples than \code{v}.}

@@ -2,15 +2,24 @@
 \name{base_pref}
 \alias{base_pref}
 \alias{high}
+\alias{high_}
 \alias{low}
+\alias{low_}
 \alias{true}
+\alias{true_}
 \title{Base preferences}
 \usage{
 low(expr)
 
+low_(expr)
+
 high(expr)
 
+high_(expr)
+
 true(expr)
+
+true_(expr)
 }
 \arguments{
 \item{expr}{A numerical/logical expression which is the term to evaluate for the current preference.
@@ -43,6 +52,28 @@ Functions contained in \code{expr} are evaluated over the entire dataset, i.e.,
 it is possible to use aggregate functions (\code{min}, \code{mean}, etc.).
 Note that all functions (and also variables which are not columns of the dataset, where \code{expr} will be evaluated on)
 must be defined in the same environment (e.g. environment of a function) as the base preference.
+}
+\section{Using expressions in preferences}{
+
+
+The \code{low_(e)}, \code{high_(e)} and \code{true_(e)} preferences have the same functionality,
+but expect an expression \code{e} as argument.
+For example, \code{low(a)} is equivalent to \code{low(expression(a))}.
+This is helpful for devoloping your own base preferences. Assume you want to define a base Preference \code{false}
+as the dual of \code{true}. The code
+
+\code{false <- function(x) -true(x)}
+
+works as expected, but \code{false(a)} (preferring logically false values for \code{a}) prints
+\code{[Preference] -true(x)} on the console (and not "a" instead of "x").
+The inner variable \code{x} will be correctly substituted when the preference is evaluated (via e.g. \code{\link{psel}})
+but this is hidden to the user.
+By defining
+
+\code{false <- function(x) -true_(as.expression(substitute(x)))}
+
+one gets a preference which behaves much more like a "built-in" preference. The object \code{false(a)} will output
+\code{[Preference] -true(a)} on the console.
 }
 \examples{
 # Define a preference with a score value combining mpg and hp

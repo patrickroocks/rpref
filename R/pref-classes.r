@@ -14,12 +14,12 @@ preference <- setRefClass("preference",
     
     # Default show function
     show = function() {
-      return(cat(paste0('[Preference] ', unbrace(.self$get_str()))))
+      return(cat(paste0('[Preference] ', .self$get_str())))
     },
     
     # Get string representation
     get_str = function(parent_op = "", static_terms = NULL) {
-      return("((empty))") # Outer brackets are removed by "unbrace"
+      return("(empty)") 
     },
     
     
@@ -42,42 +42,50 @@ preference <- setRefClass("preference",
     # Hasse diagramm successors
     h_succ = function(inds) {
       .self$check_cache()
-      if (length(inds) == 1) {
+      if (length(inds) == 0) {
+        return(numeric(0))
+      } else if (length(inds) == 1) { 
         return(.self$hasse_mtx[.self$hasse_mtx[,1]==inds,2])
       } else {
         res_inds <- lapply(inds, function(x) .self$hasse_mtx[.self$hasse_mtx[,1]==x,2])
-        return(Reduce('union', res_inds[-1], res_inds[[1]]))
+        return(sort(Reduce('union', res_inds[-1], res_inds[[1]])))
       }
     },
       
     # Hasse diagramm predecessors
     h_pred = function(inds) {
       .self$check_cache()
-      if (length(inds) == 1) { 
+      if (length(inds) == 0) {
+        return(numeric(0))
+      } else if (length(inds) == 1) { 
         return(.self$hasse_mtx[.self$hasse_mtx[,2]==inds,1])
       } else {
         res_inds <- lapply(inds, function(x) .self$hasse_mtx[.self$hasse_mtx[,2]==x,1])
-        return(Reduce('union', res_inds[-1], res_inds[[1]]))
+        return(sort(Reduce('union', res_inds[-1], res_inds[[1]])))
       }
     },
     
       
-    # All succesors
+    # All succesors (sorting not necessary because of "which")
     all_succ = function(inds) {
       .self$check_cache()
       all_inds <- 1:nrow(.self$scorevals)
-      if (length(inds) == 1) {
+      if (length(inds) == 0) {
+        return(numeric(0))
+      } else if (length(inds) == 1) {
         which(.self$cmp(inds, all_inds, .self$scorevals))
       } else {
         return(which(as.logical(do.call("pmax", lapply(inds, function(x) .self$cmp(x, all_inds, .self$scorevals) )))))
       }
     },
       
-    # All predecessors
+    # All predecessors (sorting not necessary because of "which")
     all_pred = function(inds) {
       .self$check_cache()
       all_inds <- 1:nrow(.self$scorevals)
-      if (length(inds) == 1) {
+      if (length(inds) == 0) {
+        return(numeric(0))
+      } else if (length(inds) == 1) {
         which(.self$cmp(all_inds, inds, .self$scorevals))
       } else {
         return(which(as.logical(do.call("pmax", lapply(inds, function(x) .self$cmp(all_inds, x, .self$scorevals) )))))
@@ -110,6 +118,7 @@ empty.pref <- setRefClass("empty.pref",
     }
   )    
 )
+
 is.empty.pref <- function(x) inherits(x, "empty.pref")
 
 # cmp/eq functions are not needed for C++ BNL algorithms, but for igraph, etc.
@@ -145,6 +154,46 @@ basepref <- setRefClass("basepref",
     
     eq = function(i, j, score_df) { # TRUE if i is equal to j
       return(score_df[i, .self$score_id] == score_df[j, .self$score_id])
+    },
+    
+    # Get expression string, with partial evaluation if static_terms is not NULL (they are not evaluated)
+    substitute_expr = function(static_terms = NULL) {
+      if (!is.null(static_terms)) {
+        get_expr_evaled <- function(lexpr) {
+          lexpr <- lexpr[[1]]
+          if (is.symbol(lexpr)) { 
+            if (as.character(lexpr) == '...') # ... cannot be eval'd directly!
+              return(list(expr = lexpr, final = FALSE)) # ... is never final, will be evaluated above if possible
+            else if (any(vapply(static_terms, function(x) identical(lexpr, x), TRUE)))
+              return(list(expr = lexpr, final = TRUE)) # static_term => final
+            else
+              return(list(expr = as.expression(list(eval(lexpr, .self$eval_frame))), final = FALSE))
+          
+          } else if (length(lexpr) == 1) { # Not a symbol => not final
+            return(list(expr = lexpr, final = FALSE))
+            
+          } else { # n-ary function/operator
+            
+            # Go into recursion
+            expr_evals <- list()
+            for (i in 2:length(lexpr)) {
+              expr_evals[[i-1]] <- get_expr_evaled(lexpr[i])
+              lexpr[i] <- as.expression(expr_evals[[i-1]]$expr)
+            }
+            
+            # Check if not final
+            if (all(vapply(expr_evals, function(x) x$final, TRUE) == FALSE)) { 
+              # ** re-eval
+              # Especially eval ... at that level where ... is an operand
+              return(list(expr = as.expression(list(eval(lexpr, .self$eval_frame))), final = FALSE)) # still not final
+            } else {
+              return(list(expr = lexpr, final = TRUE)) # already final!
+            }
+          }
+        }
+        return(as.expression(get_expr_evaled(.self$expr)$expr))
+      }
+      return(.self$expr) # nothing to return
     },
       
     # Get expression string, with partial evaluation if static_terms is not NULL (they are not evaluated)
@@ -205,7 +254,6 @@ basepref <- setRefClass("basepref",
   )
 )
 is.basepref <- function(x) inherits(x, "basepref")
-
 
 lowpref <- setRefClass("lowpref", 
   contains = "basepref",
@@ -313,7 +361,7 @@ complexpref <- setRefClass("complexpref",
     get_str = function(parent_op = "", static_terms = NULL) {
       res <- paste0(.self$p1$get_str(.self$op, static_terms), ' ', .self$op, ' ', 
                     .self$p2$get_str(.self$op, static_terms))
-      if (.self$op != parent_op) res <- embrace(res)
+      if (.self$op != "" && .self$op != parent_op) res <- embrace(res)
       return(res)
     },
     

@@ -1,7 +1,7 @@
 Package: rPref
-Version: 0.4
+Version: 0.4.1
 Date: 2015-01-15
-Title: Database preferences and Skyline computation
+Title: Database Preferences and Skyline Computation
 Author: Patrick Roocks <mail@p-roocks.de>
 Maintainer: Patrick Roocks <mail@p-roocks.de>
 Description: Routines to select and visualize the maxima for a given strict

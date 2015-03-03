@@ -33,6 +33,28 @@
 #' Note that all functions (and also variables which are not columns of the dataset, where \code{expr} will be evaluated on)
 #' must be defined in the same environment (e.g. environment of a function) as the base preference.
 #' 
+#' @section Using expressions in preferences:
+#' 
+#' The \code{low_(e)}, \code{high_(e)} and \code{true_(e)} preferences have the same functionality,
+#' but expect an expression \code{e} as argument.
+#' For example, \code{low(a)} is equivalent to \code{low(expression(a))}. 
+#' This is helpful for devoloping your own base preferences. Assume you want to define a base Preference \code{false}
+#' as the dual of \code{true}. The code
+#' 
+#' \code{false <- function(x) -true(x)}
+#' 
+#' works as expected, but \code{false(a)} (preferring logically false values for \code{a}) prints 
+#' \code{[Preference] -true(x)} on the console (and not "a" instead of "x").
+#' The inner variable \code{x} will be correctly substituted when the preference is evaluated (via e.g. \code{\link{psel}})
+#' but this is hidden to the user.
+#' By defining
+#' 
+#' \code{false <- function(x) -true_(as.expression(substitute(x)))}
+#' 
+#' one gets a preference which behaves much more like a "built-in" preference. The object \code{false(a)} will output 
+#' \code{[Preference] -true(a)} on the console.
+#' 
+#' 
 #' @seealso See \code{\link{complex_pref}} how to compose complex preferences to retrieve e.g. the Skyline.
 #' 
 #' See \code{\link{base_pref_macros}} for more base preferences.
@@ -59,6 +81,12 @@ low <- function(expr) {
 
 #' @rdname base_pref
 #' @export
+low_ <- function(expr) {
+  return(lowpref(expr, parent.frame()))
+}
+
+#' @rdname base_pref
+#' @export
 high <- function(expr) {
   expr <- as.expression(substitute(expr))
   return(highpref(expr, parent.frame()))
@@ -66,7 +94,19 @@ high <- function(expr) {
 
 #' @rdname base_pref
 #' @export
+high_ <- function(expr) {
+  return(highpref(expr, parent.frame()))
+}
+
+#' @rdname base_pref
+#' @export
 true <- function(expr) {
   expr <- as.expression(substitute(expr))
+  return(truepref(expr, parent.frame()))
+}
+
+#' @rdname base_pref
+#' @export
+true_ <- function(expr) {
   return(truepref(expr, parent.frame()))
 }

@@ -29,7 +29,7 @@
 #' 
 #' \itemize{
 #' \item The preference query for some preference-supporting DBMS can be given by \code{\link{show.query}}.
-#' \item A partially evaluated preference is printed with \code{\link{show.pref}}.
+#' \item A preference is partially evaluated and printed with \code{\link{show.pref}}.
 #' }
 #' 
 #' @section Further information:

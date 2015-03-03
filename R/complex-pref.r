@@ -6,7 +6,7 @@
 #' All complex preferences are mathematically strict partial orders (irreflexive and transitive).
 #' 
 #' @name complex_pref
-#' @param p1,p2 Preferences to be composed (either base preferences via \code{\link{base_pref}} or also complex preferences)
+#' @param p,p1,p2 Preferences to be composed (either base preferences via \code{\link{base_pref}} or also complex preferences)
 #' 
 #' @section Skylines:
 #' 
@@ -146,23 +146,25 @@ NULL
 # Reverse preference
 #' @rdname complex_pref
 #' @export
-reverse <- function(p1) {
-  check_pref(p1)
-  if (is.empty.pref(p1)) return(p1)
-  return(reversepref(p1))
+reverse <- function(p) {
+  check_pref(p)
+  if (is.empty.pref(p)) return(p)
+  return(reversepref(p))
 }
 
+# This entry will be deleted in the final man-files as "-" is just used unary!
 #' @rdname complex_pref
 #' @export
 "-.preference" <- function(p1, p2) {
   if (nargs() == 1) return(reverse(p1))
-  else stop("Operation not defined")
+  else stop("Operation not defined.")
 }
 
 # Neutral element
 #' @rdname complex_pref
 #' @export
 empty <- function() empty.pref()
+
  
 # Helper functions
 # ----------------
