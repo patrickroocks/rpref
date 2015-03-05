@@ -7,17 +7,13 @@ using namespace Rcpp;
 
 // There is no scalagon_implementation here, this is done in psel-par.cpp and psel-par-top.cpp
 
-
 // R specific
 std::vector<int> scalagon::get_sample(int N, int range) {
   std::vector<int> res(N);
-  GetRNGstate();
 	for (int i = 0; i < N; i++)
 		res[i] = std::floor(range * unif_rand());
-  PutRNGstate();
 	return(res);
 }
-
 
 
 // --------------------------------------------------------------------------------------------------------------------------------
