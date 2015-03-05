@@ -95,30 +95,28 @@ show.query <- function(p, dialect = 'EXASOL', df = NULL) {
 #' 
 #' @export
 show.pref <- function(p, df = NULL) {
-  # Output string representation
+  # Output string representation on the console
   return(cat(paste0('[Preference] ', pref.str(p, df))))
 }
 
 #' @export
 #' @rdname show.pref
 pref.str <- function(p, df = NULL) {
-  # Generate string representation
-  return(p$get_str(static_terms = get_static_terms(df)))
+  if (is.null(df)) return(p$get_str())
+  else return(eval.pref(p, df)$get_str())
 }
 
 #' @export
 #' @rdname show.pref
 eval.pref <- function(p, df = NULL) {
   p <- p$copy()
-  p$expr <- p$substitute_expr(static_terms = get_static_terms(df))
+  p$substitute_expr(static_terms = get_static_terms(df))
   return(p)
 }
 
 #' @export
 #' @rdname show.pref
 as.character.preference <- function(p) p$get_str()
-
-#as.character.preference <- function(x, ...) x$get_str()
 
 # Get attributes of a data set as symbols
 get_static_terms <- function(df) {
@@ -200,7 +198,9 @@ show_base_pref <- function(p, dialect, static_terms = NULL) {
 # Get (evaluated, if static_terms is given) expression of base preference
 # Add braces for non-single term 
 get_expr_sql <- function(p, static_terms = NULL) {
-  expr_str <- p$get_expr_str(static_terms)
+  p <- p$copy()
+  p$substitute_expr(static_terms = static_terms)
+  expr_str <- as.character(p$expr)
   if (length(p$expr[[1]]) != 1) return(paste0('(', expr_str, ')'))  # embrace complex expressions
   else return(expr_str) 
 }

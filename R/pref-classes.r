@@ -191,61 +191,14 @@ basepref <- setRefClass("basepref",
             }
           }
         }
-        return(as.expression(get_expr_evaled(.self$expr)$expr))
+        .self$expr <- as.expression(get_expr_evaled(.self$expr)$expr)
       }
-      return(.self$expr) # nothing to return
-    },
-      
-    # Get expression string, with partial evaluation if static_terms is not NULL (they are not evaluated)
-    get_expr_str = function(static_terms = NULL) {
-      if (!is.null(static_terms)) {
-        get_expr_evaled <- function(lexpr) {
-          lexpr <- lexpr[[1]]
-          if (is.symbol(lexpr)) { 
-            if (as.character(lexpr) == '...') # ... cannot be eval'd directly!
-              return(list(str = '...', final = FALSE)) # ... is never final, will be evaluated above if possible
-            else if (any(vapply(static_terms, function(x) identical(lexpr, x), TRUE)))
-              return(list(str = as.character(lexpr), final = TRUE)) # static_term => final
-            else
-              return(list(str = deparse(eval(lexpr, .self$eval_frame)), final = FALSE))
-          
-          } else if (length(lexpr) == 1) { # Not a symbol => not final
-            return(list(str = as.character(lexpr), final = FALSE))
-            
-          } else { # n-ary function/operator
-            
-            # Go into recursion
-            expr_evals <- list()
-            for (i in 2:length(lexpr)) expr_evals[[i-1]] <- get_expr_evaled(lexpr[i])
-            
-            # Check if not final
-            if (all(vapply(expr_evals, function(x) x$final, TRUE) == FALSE)) { 
-              # ** re-eval
-              # Especially eval ... at that level where ... is an operand
-              str <- deparse(eval(lexpr, .self$eval_frame)) # May be a vector
-              return(list(str = str, final = FALSE)) # still not final
-            } else {
-              expr_strs <- lapply(expr_evals, function(x) x$str)
-              # ** Put term together on string level (no re-eval!) 
-              fun_str <- as.character(lexpr[1][[1]])
-              if (fun_str == '(') fun_str <- ''
-              if (substr(deparse(lexpr[1]), 1, 1) == '`') # check if %-infix/classic operator
-                str <- paste0(expr_strs[[1]], ' ', fun_str, ' ', expr_strs[[2]])
-              else
-                str <- paste0(fun_str, '(', paste(expr_strs, collapse = ', '), ')')
-              return(list(str = str, final = TRUE)) # already final!
-            }
-          }
-        } 
-        return(get_expr_evaled(.self$expr)$str)
-      } else {
-        return(as.character(.self$expr))
-      }
+      return(NULL) # nothing to return
     },
     
     # Get string representation
-    get_str = function(parent_op = "", static_terms = NULL) {
-      return(paste0(.self$op(), '(', .self$get_expr_str(static_terms), ')'))
+    get_str = function(parent_op = "") {
+      return(paste0(.self$op(), '(', as.character(.self$expr), ')'))
     },
     
     serialize = function() {
@@ -305,7 +258,7 @@ reversepref <- setRefClass("reversepref",
   contains = "preference",
   fields = list(p = "preference"),
   methods = list(
-    initialize = function(p_) {
+    initialize = function(p_ = preference()) {
       .self$p <- p_
       return(.self)
     },
@@ -315,8 +268,9 @@ reversepref <- setRefClass("reversepref",
       return(list(next_id = res$next_id + 1, scores = res$scores))
     },
     
-    get_str = function(parent_op = "", static_terms = NULL) {
-      return(paste0('-', .self$p$get_str(parent_op, static_terms)))
+    # Get string representation
+    get_str = function(parent_op = "") {
+      return(paste0('-', .self$p$get_str(parent_op)))
     },
     
     cmp = function(i, j, score_df) { # TRUE if i is better than j
@@ -327,6 +281,11 @@ reversepref <- setRefClass("reversepref",
     
     serialize = function() {
       return(list(kind = '-', p = .self$p$serialize()));
+    },
+    
+    substitute_expr = function(static_terms = NULL) {
+      .self$p$substitute_expr(static_terms)
+      return(NULL)
     }
   )
 )
@@ -358,16 +317,22 @@ complexpref <- setRefClass("complexpref",
       return(list(next_id = res2$next_id, scores = cbind(res1$scores, res2$scores)))
     },
     
-    get_str = function(parent_op = "", static_terms = NULL) {
-      res <- paste0(.self$p1$get_str(.self$op, static_terms), ' ', .self$op, ' ', 
-                    .self$p2$get_str(.self$op, static_terms))
-      if (.self$op != "" && .self$op != parent_op) res <- embrace(res)
+    # Get string representation
+    get_str = function(parent_op = "") {
+      res <- paste0(.self$p1$get_str(.self$op), ' ', .self$op, ' ', .self$p2$get_str(.self$op))
+      if (parent_op != "" && .self$op != parent_op) res <- embrace(res)
       return(res)
     },
     
     # Serialization for C++ Interface
     serialize = function() {
       return(list(kind = .self$op, p1 = .self$p1$serialize(), p2 = .self$p2$serialize()))
+    },
+    
+    substitute_expr = function(static_terms = NULL) {
+      .self$p1$substitute_expr(static_terms)
+      .self$p2$substitute_expr(static_terms)
+      return(NULL)
     },
     
     # Simple wrapper for cmp/eq compositions (overwritten by prioritization)

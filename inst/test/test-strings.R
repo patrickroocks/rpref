@@ -28,7 +28,7 @@ test_that("Test SQL output", {
 })
 
 
-test_that("Test string output of preference on data set", {
+test_that("Test string output of preferences on a given data set", {
   
   f <- function(x) (2*x)
   y <- 1
@@ -36,8 +36,14 @@ test_that("Test string output of preference on data set", {
   expect_that(show.pref(low(wt) * low(hp) * low(f(cyl + y)), df = mtcars), 
               prints_text('[Preference] low(wt) * low(hp) * low(f(cyl + 1))', fixed = TRUE))
   
-  expect_that(pref.str((low(wt) * low(hp)) & high(y + f(cyl)), df = mtcars), 
-              prints_text('(low(wt) * low(hp)) & high(1 + f(cyl))', fixed = TRUE))
+  expect_that(eval.pref(low(wt) * low(hp) * true(f(cyl + y) > y + y), df = mtcars), 
+              prints_text('[Preference] low(wt) * low(hp) * true(f(cyl + 1) > 2)', fixed = TRUE))
+  
+  expect_that(pref.str((low(wt) * low(hp)) & reverse(high(y + f(cyl))), df = mtcars), 
+              prints_text('(low(wt) * low(hp)) & -high(1 + f(cyl))', fixed = TRUE))
+  
+  expect_that(as.character(eval.pref(-high(f(y) + f(cyl)), df = mtcars)), 
+              prints_text('-high(2 + f(cyl))', fixed = TRUE))
   
   expect_that(show.query((low(wt) * low(hp)) & high(cyl + f(wt + y)), df = mtcars),
               matches("PREFERRING (LOW wt PLUS LOW hp) PRIOR TO HIGH (cyl + f(wt + 1))", fixed = TRUE))
