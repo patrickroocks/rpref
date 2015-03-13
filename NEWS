@@ -5,6 +5,8 @@ rPref 0.5
 
 * Predecessor/successor (hasse_pred, etc.) result vectors are ordered ascending
 
-* Parameters of 0-length-vectors are supported for predecessor/successor functions
+* New functionality predecessor/successor functions (support empty vectors, new parameter "intersect")
 
-* New base preferences for defining preferences on expressions (low_, high_, true_)
+* New base preferences for defining preferences on expressions/symbols (low_, high_, true_)
+
+* Fixed bug in multihtreaded calculation of preferences

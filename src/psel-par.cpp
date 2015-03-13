@@ -31,15 +31,19 @@ public:
   
   double alpha;
   
+  // Sample indices
+  std::vector< std::vector<int> > samples_ind;
+  
   // initialize from Rcpp input and output matrixes (the RMatrix class
   // can be automatically converted to from the Rcpp matrix type)
-  Psel_worker(std::vector< std::vector<int> > vs, pref* p, int N, double alpha) : 
-    vs(vs), p(p), results(N), alpha(alpha) { }
+  Psel_worker(std::vector< std::vector<int> >& vs, pref* p, int N, double alpha, std::vector< std::vector<int> >& samples_ind) : 
+    vs(vs), p(p), results(N), alpha(alpha), samples_ind(samples_ind) { }
    
    // function call operator that work for the specified range (begin/end)
   void operator()(std::size_t begin, std::size_t end) {
     for (std::size_t k = begin; k < end; k++) {
-      scalagon scal_alg;
+      scalagon scal_alg(true);
+      scal_alg.sample_ind = samples_ind[k];
       results[k] = scal_alg.run_scalagon(vs[k], p, alpha);
     }
   }
@@ -91,6 +95,7 @@ NumericVector pref_select_impl(DataFrame scores, List serial_pref, int N, double
   
     // Create N_parts index vectors (for parallelization)
     std::vector< std::vector<int> > vs(N_parts);
+    std::vector< std::vector<int> > samples_ind(N_parts);
   
     int count = 0;
     for (int k=0; k<N_parts; k++) {
@@ -98,6 +103,7 @@ NumericVector pref_select_impl(DataFrame scores, List serial_pref, int N, double
       if (k == N_parts-1) local_n = ntuples - count;
       else                local_n = tuples_part;
       
+      samples_ind[k] = get_sample(local_n);
       vs[k] = std::vector<int>(local_n);
       for (int i=0; i<local_n; i++) {
         vs[k][i] = count;
@@ -106,7 +112,7 @@ NumericVector pref_select_impl(DataFrame scores, List serial_pref, int N, double
     }
     
     // Create worker and execute parallel
-    Psel_worker worker(vs, p, N_parts, alpha);
+    Psel_worker worker(vs, p, N_parts, alpha, samples_ind);
     parallelFor(0, N_parts, worker);
     
     // Clue together
@@ -151,11 +157,14 @@ NumericVector grouped_pref_sel_impl(DataFrame data, DataFrame scores, List seria
   
     // Compose indices
     std::vector< std::vector<int> > vs(nind);
-    for (int i=0; i<nind; i++) 
+    std::vector< std::vector<int> > samples_ind(nind);
+    for (int i=0; i<nind; i++) {
       vs[i] = as< std::vector<int> >(indices[i]);
+      samples_ind[i] = get_sample(vs[i].size()); // Sample indices for this partition
+    }
   
     // Create worker
-    Psel_worker worker(vs, p, nind, alpha); 
+    Psel_worker worker(vs, p, nind, alpha, samples_ind); 
     
     // Execute parallel
     parallelFor(0, nind, worker);

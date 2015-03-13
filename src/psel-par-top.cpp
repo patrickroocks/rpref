@@ -9,7 +9,7 @@ using namespace RcppParallel;
 
 #include "scalagon.h" // Includes BNL, pref classes and Scalagon
 
-// Scalagon/BNL Wrapper for parallel and non-parallel TOP-(LEVEL-)k SELCTION
+// Scalagon/BNL Wrapper for parallel and non-parallel TOP-(LEVEL-)k SELECTION
 
 
 // --------------------------------------------------------------------------------------------------------------------------------
@@ -34,15 +34,20 @@ public:
   // TOP-k settings
   topk_setting ts;
   
+  // Sample indices
+  std::vector< std::vector<int> > samples_ind;
+  
   // initialize from Rcpp input and output matrixes (the RMatrix class
   // can be automatically converted to from the Rcpp matrix type)
-  Psel_worker_top(std::vector< std::vector<int> >& vs, pref* p, int N, double alpha, topk_setting& ts) : 
-    vs(vs), p(p), results(N), alpha(alpha), ts(ts) { }
+  Psel_worker_top(std::vector< std::vector<int> >& vs, pref* p, int N, double alpha, 
+    topk_setting& ts, std::vector< std::vector<int> >& samples_ind) : 
+    vs(vs), p(p), results(N), alpha(alpha), ts(ts), samples_ind(samples_ind) { }
    
    // function call operator that work for the specified range (begin/end)
   void operator()(std::size_t begin, std::size_t end) {
     for (std::size_t k = begin; k < end; k++) {
-      scalagon scal_alg;
+      scalagon scal_alg(true);
+      scal_alg.sample_ind = samples_ind[k];
       // Levels make no sense in parallel runs! Take only the indices here (first member of flex_list)
       results[k] = scal_alg.run_scalagon_topk(vs[k], p, ts, alpha, false).first; 
     }
@@ -71,15 +76,20 @@ public:
   // TOP-k settings
   topk_setting ts;
   
+  // Sample indices
+  std::vector< std::vector<int> > samples_ind;
+  
   // initialize from Rcpp input and output matrixes (the RMatrix class
   // can be automatically converted to from the Rcpp matrix type)
-  Psel_worker_top_level(std::vector< std::vector<int> >& vs, pref* p, int N, double alpha, topk_setting& ts) : 
-    vs(vs), p(p), results(N), alpha(alpha), ts(ts) { }
+  Psel_worker_top_level(std::vector< std::vector<int> >& vs, pref* p, int N, double alpha,
+                        topk_setting& ts, std::vector< std::vector<int> >& samples_ind) : 
+    vs(vs), p(p), results(N), alpha(alpha), ts(ts), samples_ind(samples_ind) { }
    
    // function call operator that work for the specified range (begin/end)
   void operator()(std::size_t begin, std::size_t end) {
     for (std::size_t k = begin; k < end; k++) {
-      scalagon scal_alg;
+      scalagon scal_alg(true);
+      scal_alg.sample_ind = samples_ind[k];
       // Levels are true in this class!
       results[k] = scal_alg.run_scalagon_topk(vs[k], p, ts, alpha, true).second; // second is pair_list
     }
@@ -90,8 +100,8 @@ public:
 // --------------------------------------------------------------------------------------------------------------------------------
 
 
-// Parallel grouped preference TOP K selection
-// ===========================================
+// Parallel NON-grouped preference TOP K selection
+// ===============================================
 
 // (NON-grouped!) subdivide dataset in N parts
 
@@ -113,7 +123,7 @@ DataFrame pref_select_top_impl(DataFrame scores, List serial_pref, int N, double
   // Result list
   flex_list res;
   
-  // Scalagon instance for non-parallel run or final run in parallel case
+  // Scalagon instance
   scalagon scal_alg;
   
   // Execute algorithm for non-parallel case
@@ -135,6 +145,7 @@ DataFrame pref_select_top_impl(DataFrame scores, List serial_pref, int N, double
   
     // Create N_parts index vectors (for parallelization)
     std::vector< std::vector<int> > vs(N_parts);
+    std::vector< std::vector<int> > samples_ind(N_parts);
   
     int count = 0;
     for (int k = 0; k < N_parts; k++) {
@@ -142,6 +153,7 @@ DataFrame pref_select_top_impl(DataFrame scores, List serial_pref, int N, double
       if (k == N_parts-1) local_n = ntuples - count;
       else                local_n = tuples_part;
       
+      samples_ind[k] = get_sample(local_n); // Sample indices for this partition
       vs[k] = std::vector<int>(local_n);
       for (int i = 0; i < local_n; i++) {
         vs[k][i] = count;
@@ -150,7 +162,7 @@ DataFrame pref_select_top_impl(DataFrame scores, List serial_pref, int N, double
     }
     
     // Create worker and execute parallel
-    Psel_worker_top worker(vs, p, N_parts, alpha, ts);
+    Psel_worker_top worker(vs, p, N_parts, alpha, ts, samples_ind);
     parallelFor(0, N_parts, worker);
     
     std::list<int> list_merged;
@@ -204,7 +216,7 @@ DataFrame grouped_pref_sel_top_impl(DataFrame data, DataFrame scores, List seria
                                         int top, int at_least, int toplevel, bool and_connected, bool show_levels) {
   
   List indices = data.attr("indices"); // Group indices
-  int nind = indices.length();
+  int nind = indices.length(); // Number of groups
   
   if (nind == 0) return(DataFrame::create(Named(".indices") = NumericVector(),
                                           Named(".level")   = NumericVector()));
@@ -217,10 +229,14 @@ DataFrame grouped_pref_sel_top_impl(DataFrame data, DataFrame scores, List seria
   
   // Compose indices for parallel case (for show_levels \in {FALSE, TRUE})
   std::vector< std::vector<int> > vs;
+  std::vector< std::vector<int> > samples_ind;
   if (N > 1) { // vs is only used for the parallel case!
-    vs = std::vector< std::vector<int> >(nind);
-    for (int i = 0; i < nind; i++) 
+    vs          = std::vector< std::vector<int> >(nind);
+    samples_ind = std::vector< std::vector<int> >(nind);
+    for (int i = 0; i < nind; i++) {
       vs[i] = as< std::vector<int> >(indices[i]);
+      samples_ind[i] = get_sample(vs[i].size()); // Sample indices for this partition
+    }
   }
   
   DataFrame result_df;
@@ -234,7 +250,7 @@ DataFrame grouped_pref_sel_top_impl(DataFrame data, DataFrame scores, List seria
     if (N > 1) { // parallel case - process groups in parallel
     
       // Create worker
-      Psel_worker_top worker(vs, p, nind, alpha, ts); 
+      Psel_worker_top worker(vs, p, nind, alpha, ts, samples_ind); 
       
       // Execute parallel
       parallelFor(0, nind, worker);
@@ -263,7 +279,7 @@ DataFrame grouped_pref_sel_top_impl(DataFrame data, DataFrame scores, List seria
     if (N > 1) { // parallel case - process groups in parallel
     
       // Create worker for top-k WITH levels
-      Psel_worker_top_level worker(vs, p, nind, alpha, ts); 
+      Psel_worker_top_level worker(vs, p, nind, alpha, ts, samples_ind); 
       
       // Execute parallel
       parallelFor(0, nind, worker);

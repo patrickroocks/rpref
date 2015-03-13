@@ -36,23 +36,21 @@
 #' @section Using expressions in preferences:
 #' 
 #' The \code{low_(e)}, \code{high_(e)} and \code{true_(e)} preferences have the same functionality,
-#' but expect an expression \code{e} as argument.
-#' For example, \code{low(a)} is equivalent to \code{low(expression(a))}. 
-#' This is helpful for devoloping your own base preferences. Assume you want to define a base Preference \code{false}
-#' as the dual of \code{true}. The code
+#' but expects an expression \code{e} or symbol \code{e} as argument.
+#' For example, \code{low(a)} is equivalent to \code{low(expression(a))} or \code{low(as.symbol("a"))}. 
 #' 
-#' \code{false <- function(x) -true(x)}
 #' 
-#' works as expected, but \code{false(a)} (preferring logically false values for \code{a}) prints 
-#' \code{[Preference] -true(x)} on the console (and not "a" instead of "x").
-#' The inner variable \code{x} will be correctly substituted when the preference is evaluated (via e.g. \code{\link{psel}})
-#' but this is hidden to the user.
+#' This is very helpful for developing your own base preferences. Assume you want to define a base Preference \code{false}
+#' as the dual of \code{true}. A definition like \code{false <- function(x) -true(x)} is the wrong approach, as 
+#' \code{psel(data.frame(a = c(1,2)), false(a == 1))} will result in the error "object 'a' not found".
+#' This is because \code{a} is handled as a variable and not as a (abstract) symbol to be evaluated later on the data set.
 #' By defining
 #' 
-#' \code{false <- function(x) -true_(as.expression(substitute(x)))}
+#' \code{false <- function(x) -true_(substitute(x))}
 #' 
-#' one gets a preference which behaves much more like a "built-in" preference. The object \code{false(a)} will output 
-#' \code{[Preference] -true(a)} on the console.
+#' one gets a preference which behaves like a "built-in" preference. The object \code{false(a == 1)} will output 
+#' \code{[Preference] -true(a == 1)} on the console and 
+#' \code{psel(data.frame(a = c(1,2)), false(a==1))} returns correctly the second tuple with \code{a==2}.
 #' 
 #' 
 #' @seealso See \code{\link{complex_pref}} how to compose complex preferences to retrieve e.g. the Skyline.
@@ -82,7 +80,7 @@ low <- function(expr) {
 #' @rdname base_pref
 #' @export
 low_ <- function(expr) {
-  return(lowpref(expr, parent.frame()))
+  return(lowpref(as.expression(expr), parent.frame()))
 }
 
 #' @rdname base_pref
@@ -95,7 +93,7 @@ high <- function(expr) {
 #' @rdname base_pref
 #' @export
 high_ <- function(expr) {
-  return(highpref(expr, parent.frame()))
+  return(highpref(as.expression(expr), parent.frame()))
 }
 
 #' @rdname base_pref
@@ -108,5 +106,5 @@ true <- function(expr) {
 #' @rdname base_pref
 #' @export
 true_ <- function(expr) {
-  return(truepref(expr, parent.frame()))
+  return(truepref(as.expression(expr), parent.frame()))
 }

@@ -118,6 +118,9 @@ eval.pref <- function(p, df = NULL) {
 #' @rdname show.pref
 as.character.preference <- function(p) p$get_str()
 
+#' @export
+length.preference <- function(p) p$get_length()
+
 # Get attributes of a data set as symbols
 get_static_terms <- function(df) {
   # Get static terms (all attributes of dataset, if given)

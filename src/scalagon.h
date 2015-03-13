@@ -6,6 +6,10 @@
 // includes also pref-classes
 #include "bnl.h"
 
+
+std::vector<int> get_sample(int ntuples);
+
+
 // --------------------------------------------------------------------------------------------------------------------------------
 // From here from VS
 // --------------------------------------------------------------------------------------------------------------------------------
@@ -14,7 +18,7 @@
 
 class scalagon {
 public:
-  scalagon();
+	scalagon(bool sample_precalc = false);
 	~scalagon();
 
 	// run Scalagon prefiltering together with BNL
@@ -23,7 +27,18 @@ public:
 	// with and without top-k
 	flex_list run_scalagon_topk(std::vector<int>& v, pref* p, topk_setting& ts, double alpha, bool show_levels);
 	
+  // consts for sampling
+	static const int sample_size = 1000; // public and static to access it before class is constructed
+  static const int scalagon_min_tuples = 10000;
+  
+  // sample of random numbers (to be calculated outside from the worker thread)
+  std::vector<int> sample_ind;
+  
 private:
+
+  // set by the constructor: true if sample indices will be precalculated and assigned to the public sample_ind
+  // this is important if this class is used in a parallel worker thread, where the random generator from the R API may not be called!
+  bool sample_precalc;
 
 	int m_dim; // Number of dimensions
 
@@ -59,6 +74,4 @@ private:
 	// Domination phase, while scaling is fixed
 	void dominate(std::vector<int>& s_ind, pref* p);
 
-	// Random sample
-	std::vector<int> get_sample(int N, int range);
 };

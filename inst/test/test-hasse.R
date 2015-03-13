@@ -13,12 +13,10 @@ test_that("Test computation of Hasse diagramm", {
 
 test_that("Test predecessors and successors", {
   
-  # Generate preference and init succ/pred functions
+  # ** Generate preference,  init succ/pred functions and do some test
   df <- data.frame(id = 1:5)
   pref <- ((true(id %in% c(1,2)) & true(id == 3)) * true(id == 4)) & true(id == 5)
   init_pred_succ(df, pref)
-  
-  # ** Do some tests
   
   expect_that(all_succ(pref, numeric(0)), equals(numeric(0)))
   expect_that(all_succ(pref, 1), equals(c(3,5)))
@@ -36,6 +34,23 @@ test_that("Test predecessors and successors", {
   
   expect_that(hasse_pred(pref, 5), equals(c(3,4)))
   expect_that(hasse_pred(pref, c(3,4)), equals(c(1,2)))
+  
+  # Another test case
+  p <- (((true(id == 1) * true(id == 2)) & true(id == 3)) * (true(id == 2) & true(id == 4))) & true(id == 5)
+  init_pred_succ(df, p)
+  
+  expect_that(hasse_pred(p, c(3,4)), equals(c(1,2)))
+  expect_that(hasse_pred(p, c(3,4), intersect = TRUE), equals(2))
+  
+  expect_that(hasse_succ(p, c(1,2)), equals(c(3,4)))
+  expect_that(hasse_succ(p, c(1,2), intersect = TRUE), equals(3))
+
+  expect_that(all_pred(p, c(3,5)), equals(c(1,2,3,4)))
+  expect_that(all_pred(p, c(3,5), intersect = TRUE), equals(c(1,2)))
+
+  expect_that(all_succ(p, c(1,4)), equals(c(3,5)))
+  expect_that(all_succ(p, c(1,4), intersect = TRUE), equals(5))
+  
 })
 
 

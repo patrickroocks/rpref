@@ -7,11 +7,15 @@ using namespace Rcpp;
 
 // There is no scalagon_implementation here, this is done in psel-par.cpp and psel-par-top.cpp
 
-// R specific
-std::vector<int> scalagon::get_sample(int N, int range) {
-  std::vector<int> res(N);
-	for (int i = 0; i < N; i++)
-		res[i] = std::floor(range * unif_rand());
+
+// Helper for getting random numbers (R specific)
+// should not be in the worker thread, as this accesses the R API (unif_rand())
+std::vector<int> get_sample(int ntuples) {
+  if (ntuples < scalagon::scalagon_min_tuples) return(std::vector<int>()); // no sample needed, not enough tuples
+  std::vector<int> res(scalagon::sample_size);
+  ntuples--;
+  for (int i = 0; i < scalagon::sample_size; i++)
+  	res[i] = std::floor(ntuples * unif_rand());
 	return(res);
 }
 
@@ -21,12 +25,19 @@ std::vector<int> scalagon::get_sample(int N, int range) {
 // --------------------------------------------------------------------------------------------------------------------------------
 
 
-// ------------------------------------------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------------------
+
+// Main class of the Scalagon Algorithm
+//
+// See "Scalagon: An Efficient Skyline Algorithm for all Seasons",
+// M.Endres, P.Roocks, W.Kieﬂling
+// 20th International Conference on Database Systems for Advanced Applications(DASFAA 2015), Hanoi, Vietnam
+
+// --------------------------------------------------------------------------------------------------------------------------------
 
 
 // Constructors / Destructors
-scalagon::scalagon() {}
-
+scalagon::scalagon(bool sample_precalc) : sample_precalc(sample_precalc) {}
 scalagon::~scalagon() {}
 
 
@@ -271,7 +282,6 @@ std::vector<int> scalagon::iterated_scaling(std::vector<int>& domain_size, const
 bool scalagon::scalagon_init(std::vector<int>& v, pref* p, double alpha) {
 
 	// consts for sampling
-	const int sample_size = 1000;
 	const int lower_quantile = 19; // 2 % and 98 % quantile
 	const int upper_quantile = 979;
 	const double add_spread_fct = 0.2; // Add to lower/upper quantiles 
@@ -290,6 +300,9 @@ bool scalagon::scalagon_init(std::vector<int>& v, pref* p, double alpha) {
 	int ntuples = v.size();
 	if (ntuples < 10 * sample_size) return(false); // not enough tuples, DO NOT USE Scalagon, use BNL
 	m_dim = m_prefs.size();
+  
+  // Calc samples
+	if (!sample_precalc) sample_ind = get_sample(ntuples);
 
 	// lower and upper bounds for the "center" where most tuples are expected
 	std::vector<double> upper_bound(m_dim);
@@ -298,10 +311,8 @@ bool scalagon::scalagon_init(std::vector<int>& v, pref* p, double alpha) {
 	// estimation of domain size
 	std::vector<int> est_domain_size(m_dim);
 
-	// Generate sample indices
-	std::vector<int> sample_ind = get_sample(sample_size, ntuples - 1);
-
 	// Cacluclate upper/lower bound by considering the sample in each dimension
+  // Note that sample_ind is already calculated (is given to the constructor)
 	for (int k = 0; k < m_dim; k++) {
 
 		// Set for calculating domain size

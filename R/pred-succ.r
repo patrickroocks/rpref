@@ -7,6 +7,8 @@
 #' @param df A dataframe characterizing the basic set wherein predecessors/sucessors are seached.
 #' @param v A numeric vector of indices in df. This describes the set of tuples for which predecessors/successors are searched.
 #' @param p A preference. Worse tuples in the induced order are succesors and better tuples are predecessors.
+#' @param intersect Logical value. If \code{FALSE} (by default) the union of all predecessors/successors of \code{v} are returned.
+#'        For \code{intersect = TRUE} the intersection of those is returned.
 #' 
 #' @details
 #' 
@@ -31,6 +33,14 @@
 #'         i.e. indices of worse tuples than \code{v} where the Better-Than-Relation lies in the transitive reduction.}
 #' }
 #' 
+#' If \code{v} has length 1 than the value of \code{intersect} does not matter, as there is nothing to intersect or join. 
+#' For scalar values \code{x} and \code{y} the following identities hold, where \code{f} is one of the predecessor/successor functions:
+#' 
+#' \code{f(p, c(x, y), intersect = FALSE) == union(f(p, x), f(p, y))}
+#' 
+#' \code{f(p, c(x, y), intersect = TRUE) == intersect(f(p, x), f(p, y))}
+#' 
+#' 
 #' @examples
 #' 
 #' # Preference on mtcars for high mpg and low weight
@@ -43,7 +53,7 @@
 #' # Pick some tuple "in the middle"
 #' show_vals(10)
 #' 
-#' # Show (direct) predecessors/successors
+#' # Show (direct) predecessors/successors of tuple 10
 #' show_vals(hasse_pred(p, 10)) # Next better car
 #' show_vals(hasse_succ(p, 10)) # Next worse car
 #' show_vals(all_pred(p, 10))   # All better cars
@@ -65,24 +75,24 @@ init_pred_succ <- function(df, p) {
 
 #' @rdname pred_succ
 #' @export
-hasse_pred <- function(p, v) {
-  p$h_pred(v)
+hasse_pred <- function(p, v, intersect = FALSE) {
+  p$h_predsucc(v, do_intersect = intersect, succ = FALSE)
 }
 
 #' @rdname pred_succ
 #' @export
-hasse_succ <- function(p, v) {
-  p$h_succ(v)
+hasse_succ <- function(p, v, intersect = FALSE) {
+  p$h_predsucc(v, do_intersect = intersect, succ = TRUE)
 }
 
 #' @rdname pred_succ
 #' @export
-all_pred <- function(p, v) {
-  p$all_pred(v)
+all_pred <- function(p, v, intersect = FALSE) {
+  p$all_predsucc(v, do_intersect = intersect, succ = FALSE)
 }
 
 #' @rdname pred_succ
 #' @export
-all_succ <- function(p, v) {
-  p$all_succ(v)
+all_succ <- function(p, v, intersect = FALSE) {
+  p$all_predsucc(v, do_intersect = intersect, succ = TRUE)
 }

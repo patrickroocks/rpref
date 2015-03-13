@@ -32,63 +32,65 @@ preference <- setRefClass("preference",
       serialized <- .self$serialize()
       .self$hasse_mtx <- t(get_hasse_impl(.self$scorevals, serialized)) + 1
       .self$cache_available <- TRUE
-      return()
+      # returns nothing
     },
     
     check_cache = function() {
-      if (!isTRUE(.self$cache_available)) stop("No data set avaible. Run `init_succ_pref(df)` first.")
+      if (!isTRUE(.self$cache_available)) 
+        stop("In calculation of predecessors/successors : No data set avaible. Run `init_succ_pref(df)` first.", call. = FALSE)
     },
     
-    # Hasse diagramm successors
-    h_succ = function(inds) {
+    # Hasse diagramm successors/predecessors
+    h_predsucc = function(inds, do_intersect, succ) {
       .self$check_cache()
+      
+      # Select indices predecessors/successors
+      if (succ) {
+        l_index <- 1
+        r_index <- 2
+      } else {
+        l_index <- 2
+        r_index <- 1
+      }
+      
+      # Selection aggregation method, if inds is a vector (and not a single value)
+      if (do_intersect) agg <- intersect
+      else              agg <- union
+      
+      # Do the calculation
       if (length(inds) == 0) {
         return(numeric(0))
       } else if (length(inds) == 1) { 
-        return(.self$hasse_mtx[.self$hasse_mtx[,1]==inds,2])
+        return(.self$hasse_mtx[.self$hasse_mtx[,l_index]==inds,r_index])
       } else {
-        res_inds <- lapply(inds, function(x) .self$hasse_mtx[.self$hasse_mtx[,1]==x,2])
-        return(sort(Reduce('union', res_inds[-1], res_inds[[1]])))
-      }
-    },
-      
-    # Hasse diagramm predecessors
-    h_pred = function(inds) {
-      .self$check_cache()
-      if (length(inds) == 0) {
-        return(numeric(0))
-      } else if (length(inds) == 1) { 
-        return(.self$hasse_mtx[.self$hasse_mtx[,2]==inds,1])
-      } else {
-        res_inds <- lapply(inds, function(x) .self$hasse_mtx[.self$hasse_mtx[,2]==x,1])
-        return(sort(Reduce('union', res_inds[-1], res_inds[[1]])))
+        res_inds <- lapply(inds, function(x) .self$hasse_mtx[.self$hasse_mtx[,l_index]==x,r_index])
+        return(sort(Reduce(agg, res_inds[-1], res_inds[[1]])))
       }
     },
     
+    # All succesors/predecessors (sorting not necessary because of "which")
+    all_predsucc = function(inds, do_intersect, succ) {
+      .self$check_cache()
       
-    # All succesors (sorting not necessary because of "which")
-    all_succ = function(inds) {
+      # Select indices predecessors/successors
+      if (succ) {
+        cmpfun <- function(x, y) .self$cmp(x, y, .self$scorevals)
+      } else {
+        cmpfun <- function(x, y) .self$cmp(y, x, .self$scorevals)
+      }
+      
+      # Selection aggregation method, if inds is a vector (and not a single value)
+      if (do_intersect) agg <- pmin  # min is logically equivalent to intersection
+      else              agg <- pmax  # max is logically equivalent to union
+      
       .self$check_cache()
       all_inds <- 1:nrow(.self$scorevals)
       if (length(inds) == 0) {
         return(numeric(0))
       } else if (length(inds) == 1) {
-        which(.self$cmp(inds, all_inds, .self$scorevals))
+        return(which(cmpfun(inds, all_inds)))
       } else {
-        return(which(as.logical(do.call("pmax", lapply(inds, function(x) .self$cmp(x, all_inds, .self$scorevals) )))))
-      }
-    },
-      
-    # All predecessors (sorting not necessary because of "which")
-    all_pred = function(inds) {
-      .self$check_cache()
-      all_inds <- 1:nrow(.self$scorevals)
-      if (length(inds) == 0) {
-        return(numeric(0))
-      } else if (length(inds) == 1) {
-        which(.self$cmp(all_inds, inds, .self$scorevals))
-      } else {
-        return(which(as.logical(do.call("pmax", lapply(inds, function(x) .self$cmp(all_inds, x, .self$scorevals) )))))
+        return(which(as.logical(do.call(agg, lapply(inds, function(x) cmpfun(x, all_inds) )))))
       }
     }
     
@@ -103,6 +105,11 @@ empty.pref <- setRefClass("empty.pref",
     
     get_scorevals = function(next_id, df) {
       return(list(next_id = next_id + 1, scores = as.data.frame(rep(0, nrow(df)))))
+    },
+    
+    # Term length (Number of base preferences)
+    get_length = function() {
+      return(0)
     },
     
     cmp = function(i, j, score_df) { # TRUE if i is better than j
@@ -146,6 +153,11 @@ basepref <- setRefClass("basepref",
       }
       # Increase next_id after base preference
       return(list(next_id = next_id + 1, scores = as.data.frame(scores)))
+    },
+    
+    # Term length (Number of base preferences)
+    get_length = function() {
+      return(1)
     },
     
     cmp = function(i, j, score_df) { # TRUE if i is better than j
@@ -241,6 +253,19 @@ is.highpref <- function(x) inherits(x, "highpref")
 truepref <- setRefClass("truepref", 
   contains = "basepref",
   methods = list(
+    
+    initialize = function(...) {
+      callSuper(...)
+      if (isTRUE(getOption("rPref.checkLogicalAndOr", default = TRUE))) {
+        if (length(as.character(.self$expr) > 0) && grepl(" \\|\\||\\&\\& ", as.character(.self$expr)))
+          warning(paste0("In true(...) :\n", 
+                   "Detected logical operator '&&' or '||' in logical expreesion -- possibly unexpected behavior. ",
+                   "Probably you intended '&' or '|'? Set \n'options(rPref.checkLogicalAndOr = FALSE)' \nto disable this warning."),
+                   call. = FALSE)
+      }
+      return(.self)
+    },
+    
     op = function() 'true',
     
     calc_scores = function(df, frm) {
@@ -281,6 +306,11 @@ reversepref <- setRefClass("reversepref",
     
     serialize = function() {
       return(list(kind = '-', p = .self$p$serialize()));
+    },
+    
+    # Term length (Number of base preferences)
+    get_length = function() {
+      return(.self$p$get_length())
     },
     
     substitute_expr = function(static_terms = NULL) {
@@ -329,6 +359,12 @@ complexpref <- setRefClass("complexpref",
       return(list(kind = .self$op, p1 = .self$p1$serialize(), p2 = .self$p2$serialize()))
     },
     
+    # Term length (Number of base preferences)
+    get_length = function() {
+      return(.self$p1$get_length() + .self$p2$get_length())
+    },
+    
+    # Substitute all evaluatable parts of expression by their evaluations
     substitute_expr = function(static_terms = NULL) {
       .self$p1$substitute_expr(static_terms)
       .self$p2$substitute_expr(static_terms)
