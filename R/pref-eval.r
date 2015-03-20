@@ -13,17 +13,18 @@
 #'    \item{\code{top}}{A \code{top} value of k means that the k-best tuples of the dataset are returned. 
 #'     This may be non-deterministic, see below for details.}
 #'     \item{\code{at_least}}{A \code{at_least} value of k returns the Top-k tuples and additionally all tuples which are 
-#'     not dominated by the worst tuple (i.e., the minima) of the Top-k set. The number of tuples returned is greater or equal than
+#'     not dominated by the worst tuple (i.e. the minima) of the Top-k set. The number of tuples returned is greater or equal than
 #'      \code{at_least}. In contrast to top-k, this is deterministic.}
 #'     \item{\code{top_level}}{A \code{top_level} value of k returns all tuples from the k-best levels. See below for the definition of a level.}
-#'     \item{\code{and_connected}}{Logical value, which is only relevant if more than one of the above \{top, at_least, top_level\} 
+#'     \item{\code{and_connected}}{Logical value, which is only relevant if more than one of the above \{\code{top}, \code{at_least}, \code{top_level}\} 
 #'     values are given. Then \code{and_connected = TRUE} (which is the default) means that all top-conditions must hold for the returned tuples: 
 #'     Let \code{cond1} and \code{cond2} be top-conditions like \code{top=2} or \code{top_level=3}, then
 #'     \code{psel([...], cond1, cond2)} is equivalent to the intersection of \code{psel([...], cond1)} and \code{psel([...], cond2)}. If we have
-#'     \code{and_connected = FALSE} the conditions are or-connected. 
+#'     \code{and_connected = FALSE} these conditions are or-connected. 
 #'     This corresponds to the union of \code{psel([...], cond1)} and \code{psel([...], cond2)}.}
-#'     \item{\code{show_level}}{This adds a column '.level' to the returned data frame, containing all level values (see below). 
-#'     This is only relevant if at least one of the \{top, at_least, top_level\} values are given. 
+#'     \item{\code{show_level}}{Logical value. If \code{TRUE}, a column \code{.level} 
+#'     is added to the returned data frame, containing all level values (see below for details). 
+#'     This is only relevant if at least one of the \{\code{top}, \code{at_least}, \code{top_level}\} values are given. 
 #'     For \code{psel} this is \code{TRUE} by default, for \code{psel.indices} this is \code{FALSE} by default.}
 #' }
 #' 
@@ -34,7 +35,7 @@
 #' \itemize{
 #' \item The \code{psel} function returns a subset of the dataset which are the maxima according to the given preference. 
 #' \item The function \code{psel.indices} returns just the row indices of the maxima 
-#' (except Top-k queries with \code{show_level = 1}, see Top-k preference selection).
+#' (except Top-k queries with \code{show_level = TRUE}, see Top-k preference selection).
 #' Hence \code{psel(df, pref)} is equivalent to \code{df[psel.indices(df, pref),]} for non-grouped dataframes. 
 #' }
 #' 
@@ -44,11 +45,11 @@
 #' 
 #' \itemize{
 #' \item{All the maxima of a dataset w.r.t. a preference have level 1.}
-#' \item{The maxima of the remainder, i.e. the dataset without the level-1 maxima, have level 2.}
+#' \item{The maxima of the remainder, i.e. the dataset without the level 1 maxima, have level 2.}
 #' \item{The n-th iteration of "Take the maxima from the remainder" leads to tuples of level n.}
 #' }
 #' 
-#' By default \code{psel.indices} does not return the level values. By setting \code{show_level = TRUE} this function
+#' By default, \code{psel.indices} does not return the level values. By setting \code{show_level = TRUE} this function
 #' returns a dataframe with the columns '.indices' and '.level'. 
 #' 
 #' By definition, a top-k preference selection is non-deterministic. A top-1 query of two equivalent tuples (equivalence according to \code{pref})
@@ -57,10 +58,10 @@
 #' 
 #' On the contrary a preference selection with \code{at_least} is deterministic by adding all tuples having the same level as the worst level 
 #' of the corresponding top-k query, i.e., which are incomparable to the minimum of the top-k result. 
-#' A preference selection with \code{top_level} k returns all tuples having level k or better. 
+#' A preference selection with top-level-k returns all tuples having level k or better. 
 #'  
 #' If the \code{top} or \code{at_least} value is greater than the number of elements in \code{df} 
-#' (i.e. \code{nrow(df)}) or \code{top_level} is greater then the highest level in \code{df}
+#' (i.e. \code{nrow(df)}), or \code{top_level} is greater than the highest level in \code{df},
 #' then all elements of \code{df} will be returned without further warning.
 #' 
 #' @section Grouped preference selection:
@@ -69,13 +70,15 @@
 #' The groups have to be created with \code{\link{group_by}} from the dplyr package. The preference selection preserves the grouping, i.e.,
 #' the groups are restored after the preference selection.
 #' 
-#' For example the \code{summarize} function from dplyr refers to the set of maxima of each group. 
+#' For example, if the \code{summarize} function from dplyr is applied to
+#' \code{psel(group_by(...), pref)}, the summarizing is done for the set of maxima of each group. 
 #' This can be used to e.g. calculate the number of maxima in each group, see examples below.
 #' 
-#' A \{top, at_least, top_level\} preference selection is applied to each group seperately.
+#' A \{\code{top}, \code{at_least}, \code{top_level}\} preference selection
+#' is applied to each group seperately.
 #' A \code{top=k} selection returns the k best tuples for each group. 
 #' Hence if there are 3 groups in \code{df}, each containing at least 2 elements, 
-#' and we have \code{top = 2} then 6 tuples will be returned.
+#' and we have \code{top = 2}, then 6 tuples will be returned.
 #' 
 #' @section Parallel computation:
 #' 

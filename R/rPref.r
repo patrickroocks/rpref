@@ -21,7 +21,7 @@
 #' \item The visualization of the preference order in a Better-Than-Graph is possible via the \code{\link{get_btg}} function
 #' in connection with the \code{\link{igraph}} package.
 #' \item The adjacency list of the Better-Than-Graph (Hasse diagramm) can be accessed via \code{\link{get_hasse_diag}}.
-#' \item Predecessors/Successors in the Hasse diagram are calculated with the \code{\link{pred_succ}} functions.
+#' \item Predecessors/successors in the Hasse diagram are calculated with the \code{\link{pred_succ}} functions.
 #' \item The pareto frontier can be plotted using the \code{\link{plot_front}} function.
 #' }
 #' 

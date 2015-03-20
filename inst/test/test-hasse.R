@@ -8,6 +8,9 @@ test_that("Test computation of Hasse diagramm", {
   expect_that(get_hasse_diag(mtcars[1:10,], pos(cyl, 2) * low(hp + mpg)), 
               equals(t(matrix(c(1,4,2,4,3,9,4,10,5,7,6,1,6,2,8,3,9,6,10,5),2))))
   
+  df <- data.frame(id = 1:4)
+  expect_that(get_hasse_diag(df, (true(id == 1) | -true(id == 2)) + (true(id == 3) | -true(id == 4)) ), 
+              equals(t(matrix(c(1, 2, 3, 4),2))))
 })
 
 
@@ -51,6 +54,27 @@ test_that("Test predecessors and successors", {
   expect_that(all_succ(p, c(1,4)), equals(c(3,5)))
   expect_that(all_succ(p, c(1,4), intersect = TRUE), equals(5))
   
+  # A test case with eval and reverse
+  df <- data.frame(id = 1:5)
+  a <- 1
+  b <- 2
+  c <- 3
+  p <- ((true(id == a) * true(id == b)) & true(id == c)) * (true(id == b) & -true(id %in% c(a,b,c)) & -true(id == 5))
+  
+  expect_that(all_succ(p, 1), throws_error()) # Need to call init_pred_succ first!
+  
+  # One does not need to re-init p after evaluation!
+  init_pred_succ(df, p)
+  p <- eval.pref(p, df)
+  
+  expect_that(as.character(p), 
+              matches('((true(id == 1) * true(id == 2)) & true(id == 3)) * (true(id == 2) & -true(id %in% c(1, 2, 3)) & -true(id == 5))', fixed = TRUE))
+  
+  expect_that(all_succ(p, 1), equals(3))
+  expect_that(all_pred(p, 5), equals(c(2,4)))
+  expect_that(hasse_succ(p, 2), equals(c(3,4)))
+  expect_that(all_succ(p, c(1,2), intersect = TRUE), equals(3))
+  expect_that(all_pred(p, c(3,4), intersect = TRUE), equals(2))  
 })
 
 

@@ -6,14 +6,14 @@
 #' All complex preferences are mathematically strict partial orders (irreflexive and transitive).
 #' 
 #' @name complex_pref
-#' @param p,p1,p2 Preferences to be composed (either base preferences via \code{\link{base_pref}} or also complex preferences)
+#' @param p,p1,p2,x Preferences (they can be either base preferences, see \code{\link{base_pref}}, or complex preferences)
 #' 
 #' @section Skylines:
 #' 
 #' The most important preference composition operator is the Pareto operator (\code{p1 * p2}) to formulate a Skyline query. 
 #' A tuple t1 is better than t2 w.r.t. \code{p1 * p2} if it is strictly better w.r.t. one of the preferences p1, p2 and is better or equal w.r.t. the other preference.
 #' 
-#' The syntactical translation from other query languages supporting skylines/Preferences to rPref is as follows:
+#' The syntactical translation from other query languages supporting Skylines/Preferences to rPref is as follows:
 #' 
 #' \itemize{
 #' \item A query in the syntax from Borzsonyi et. al (2001) like
@@ -65,6 +65,10 @@
 #'  It holds that \code{op(empty(), p)} is equal to \code{p} for all preference operators \code{op} and all preferences \code{p}.}
 #' }
 #' 
+#' @section Preference term length:
+#' 
+#' The function \code{length(p)} gives the term length of the preference term \code{p} which is defined as the number of base preferences
+#' in a complex preference term.
 #'
 #' @seealso See \code{\link{base_pref}} for the construction of base preferences. See \code{\link{psel}} for the evaluation of preferences. 
 #' 
@@ -75,6 +79,9 @@
 #' S. Borzsonyi, D. Kossmann, K. Stocker (2001): The Skyline Operator. In Data Engineering (ICDE '01), pages 421-430.
 #' 
 #' W. Kiessling (2002): Foundations of Preferences in Database Systems. In Very Large Data Bases (VLDB '02), pages 311-322.
+#' 
+#' S. Mandl, O. Kozachuk, M. Endres, W. Kiessling (2015): Preference Analytics in EXASolution. 
+#' 16th Conference on Database Systems for Business, Technology, and Web.
 #' 
 #' @examples
 #' # Define preference for cars with low consumption (high mpg-value) 
@@ -97,12 +104,7 @@ NULL
 "*.preference" <- function(p1, p2) {
   check_pref(p1, p2)
   if (check_empty(p1, p2)) return(get_empty(p1, p2))
-
-  # Create new preference function according to the Pareto Definition
-  return(complexpref(p1, p2, '*',
-                     (p1$cmp | p1$eq) & p2$cmp |
-                     (p2$cmp | p2$eq) & p1$cmp,
-                      p1$eq & p2$eq))
+  return(paretopref(p1, p2))
 }
 
 # Infix Prioritization-Constructor (special constructor as we have to consider prior-chains!)
@@ -111,10 +113,7 @@ NULL
 "&.preference" <- function(p1, p2) {
   check_pref(p1, p2)
   if (check_empty(p1, p2)) return(get_empty(p1, p2))
-  
-  return(priorpref(p1, p2, '&',
-                   p1$cmp | p1$eq & p2$cmp,
-                   p1$eq & p2$eq))
+  return(priorpref(p1, p2))
 }
 
 
@@ -124,10 +123,7 @@ NULL
 "|.preference" <- function(p1, p2) {
   check_pref(p1, p2)
   if (check_empty(p1, p2)) return(get_empty(p1, p2))
-  
-  return(complexpref(p1, p2, '|',
-                     p1$cmp & p2$cmp,
-                     p1$eq  & p2$eq))
+  return(intersectionpref(p1, p2))
 }
 
 # Infix-Disjount-Union-Constructor
@@ -136,10 +132,7 @@ NULL
 "+.preference" <- function(p1, p2) {
   check_pref(p1, p2)
   if (check_empty(p1, p2)) return(get_empty(p1, p2))
-  
-  return(complexpref(p1, p2, '+',
-                     p1$cmp | p2$cmp,
-                     p1$eq  & p2$eq))
+  return(unionpref(p1, p2))
 }
 
 
@@ -165,6 +158,11 @@ reverse <- function(p) {
 #' @export
 empty <- function() empty.pref()
 
+# Length of a preference term (number of base preferences)
+#' @export
+#' @rdname complex_pref
+length.preference <- function(x) x$get_length()
+
  
 # Helper functions
 # ----------------
@@ -185,12 +183,3 @@ get_empty <- function(p1, p2) {
   else
     return(p1)
 }    
-
-
-# Overload arithmetic operators for arbitrary functions - used for the composition of complex preferences
-"Ops.function" = function(e1, e2) {
-  res <- function(...) .Primitive(.Generic)(e1(...), e2(...))
-  # Equip this function with the function class attribute (to ensure that Ops.function cares about it!) and return it
-  class(res) <- "function"
-  return(res)
-}

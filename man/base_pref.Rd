@@ -25,7 +25,7 @@ true_(expr)
 \arguments{
 \item{expr}{A numerical/logical expression which is the term to evaluate for the current preference.
       The objective is to search for minimal/maximal values of this expression (for \code{low}/\code{high}) or for
-      logical true values (for \code{true}).}
+      logical \code{TRUE} values (for \code{true}).}
 }
 \description{
 Base preferences are used to describe the different goals of a preference query.
@@ -41,31 +41,31 @@ The three fundamental base preferences are:
         The values of \code{a} must be numeric values.}
   \item{\code{true(a)}}{Search for true values in logical expressions, i.e., \code{TRUE} is considered to be better than \code{FALSE}.
         The values of \code{a} must be logical values.
-        For a tuplewise evaulation of a complex boolean condition one has to use the \code{&} and \code{|} operators for logical AND/OR
+        For a tuplewise evaluation of a complex logical expression one has to use the \code{&} and \code{|} operators for logical AND/OR
         (and not the \code{&&} and \code{||} operators).}
 }
 
 
-The term \code{expr} can be just a single attribute or an arbitrary expression, e.g., \code{low(a+2*b+f(c))}.
+The term \code{expr} may be just a single attribute or may contain an arbitrary expression, e.g., \code{low(a+2*b+f(c))}.
 There \code{a}, \code{b} and \code{c} are columns of the addressed dataset and \code{f} is a previously defined function.
 
 Functions contained in \code{expr} are evaluated over the entire dataset, i.e.,
 it is possible to use aggregate functions (\code{min}, \code{mean}, etc.).
 Note that all functions (and also variables which are not columns of the dataset, where \code{expr} will be evaluated on)
-must be defined in the same environment (e.g. environment of a function) as the base preference.
+must be defined in the same environment (e.g. environment of a function or global scope) as the base preference.
 }
 \section{Using expressions in preferences}{
 
 
 The \code{low_(e)}, \code{high_(e)} and \code{true_(e)} preferences have the same functionality,
-but expects an expression \code{e} or symbol \code{e} as argument.
+but expect an expression \code{e} or symbol \code{e} as argument.
 For example, \code{low(a)} is equivalent to \code{low(expression(a))} or \code{low(as.symbol("a"))}.
 
 
 This is very helpful for developing your own base preferences. Assume you want to define a base Preference \code{false}
 as the dual of \code{true}. A definition like \code{false <- function(x) -true(x)} is the wrong approach, as
-\code{psel(data.frame(a = c(1,2)), false(a == 1))} will result in the error "object 'a' not found".
-This is because \code{a} is handled as a variable and not as a (abstract) symbol to be evaluated later on the data set.
+\code{psel(data.frame(a = c(1,2)), false(a == 1))} will result in the error \code{object 'a' not found}.
+This is because \code{a} is considered as a variable and not as an (abstract) symbol to be evaluated later on the data set.
 By defining
 
 \code{false <- function(x) -true_(substitute(x))}

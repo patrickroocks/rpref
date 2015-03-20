@@ -10,7 +10,8 @@ plot_front(df, pref, ...)
 \item{df}{The dataframe for which the Pareto front is plotted. This may be already a maxima set w.r.t. the preference \code{pref},
 but anyway the maxima set is recalculated via \code{psel(df, pref)}.}
 
-\item{pref}{The preference representing the Skyline goals. This must be a pareto (\code{p1 * p2}) or intersection (\code{p1 | p2}) composition of
+\item{pref}{The preference representing the Skyline goals. This must be a pareto composition (\code{p1 * p2}) or
+   intersection composition (\code{p1 | p2}) of
 two \code{\link{low}} or \code{\link{high}} preferences.}
 
 \item{...}{Additional graphic parameters which are passed to the \code{\link{segments}} function (internally used to plot the front).}

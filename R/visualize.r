@@ -89,7 +89,7 @@ get_btg <- function(df, pref) {
 #' 
 #' A row (i, j) in the resulting matrix means that \code{df[i,]} is better than \code{df[j,]} with regard to the preference \code{p}.
 #' The matrix is the transitive reduction (Hasse diagram) of the induced relations,
-#' i.e. if (1,2) and (2,3) occur in the result, than (1,3) will not be contained.
+#' i.e., if (1,2) and (2,3) occur in the result, then (1,3) will not be contained.
 #' The number of rows in the result depends on the number of non-transitive Better-Than-Relationships in \code{df} w.r.t. \code{p}.
 #' 
 #' @seealso \code{\link{get_btg}} to plot the Hasse Diagram.
@@ -114,7 +114,8 @@ get_hasse_diag <- function(df, pref) {
 #' 
 #' @param df The dataframe for which the Pareto front is plotted. This may be already a maxima set w.r.t. the preference \code{pref}, 
 #'           but anyway the maxima set is recalculated via \code{psel(df, pref)}.
-#' @param pref The preference representing the Skyline goals. This must be a pareto (\code{p1 * p2}) or intersection (\code{p1 | p2}) composition of 
+#' @param pref The preference representing the Skyline goals. This must be a pareto composition (\code{p1 * p2}) or
+#'                intersection composition (\code{p1 | p2}) of 
 #'             two \code{\link{low}} or \code{\link{high}} preferences.
 #' @param ... Additional graphic parameters which are passed to the \code{\link{segments}} function (internally used to plot the front).
 #'             

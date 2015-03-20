@@ -7,17 +7,17 @@
 show.query(p, dialect = "EXASOL", df = NULL)
 }
 \arguments{
-\item{p}{A preference}
+\item{p}{A preference.}
 
 \item{dialect}{The preference query dialect, which determines the Syntax of the returned query. This has to be one of the following:
 \describe{
-   \item{\code{'EXASOL'}}{Syntax of the "Skyline" feature of the commercial database EXASOL EXASolution 5.}
-   \item{\code{'Preference SQL'} or \code{'PSQL'}}{Syntax of the Preference SQL system.
+   \item{\code{'EXASOL'}:}{Syntax of the "Skyline" feature of the commercial database EXASOL EXASolution 5.}
+   \item{\code{'Preference SQL'} or \code{'PSQL'}:}{Syntax of the Preference SQL system.
      This is a research prototype developed at the Chair of Databases and Information Systems of the University of Augsburg.
      See references for details.}
 }}
 
-\item{df}{Optional to specifiy a dataframe on which the preference operates causing a partial evaluation. See \code{\link{show.pref}} for details.}
+\item{df}{Optional parameter to specifiy a dataframe on which the preference operates causing a partial evaluation. See \code{\link{show.pref}} for details.}
 }
 \description{
 For a given preference this shows the \code{PREFERRING} clause of a database query in different SQL dialects which support preferences.
@@ -29,11 +29,11 @@ For example consider a database table r(a,b). The preference selection \code{pse
 
 \code{SELECT * FROM r PREFERRING LOW a PLUS HIGH b}
 
-The \code{show.query} function generates just the PREFERRING-clause, i.e. \code{show.query(low(a) * high(b))} returns
+The \code{show.query} function generates just the \code{PREFERRING}-clause, i.e. \code{show.query(low(a) * high(b))} returns
 
 \code{PREFERRING LOW a PLUS HIGH b}
 
-As usual in SQL queries all keywords are not case sensitive, i.e., \code{PLUS} or \code{plus} does not make any difference.
+As usual in SQL queries, all keywords are not case sensitive, i.e., \code{PLUS} or \code{plus} does not make any difference.
 }
 \examples{
 show.query(low(a) * high(b))
@@ -42,5 +42,8 @@ show.query(low(a) * high(b), dialect = 'Preference SQL')
 }
 \references{
 W. Kiessling, M. Endres, F. Wenzel (2011): The Preference SQL System - An Overview. IEEE Data Engineering Bulletin, Vol. 34 No. 3, pages 12-19.
+
+S. Mandl, O. Kozachuk, M. Endres, W. Kiessling (2015): Preference Analytics in EXASolution.
+16th Conference on Database Systems for Business, Technology, and Web.
 }
 

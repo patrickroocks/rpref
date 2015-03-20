@@ -13,12 +13,14 @@ pref.str(p, df = NULL)
 
 eval.pref(p, df = NULL)
 
-\method{as.character}{preference}(p)
+\method{as.character}{preference}(x, ...)
 }
 \arguments{
-\item{p}{The preference to be shown.}
+\item{p,x}{The preference to be shown or partially evaluated.}
 
 \item{df}{(Optional) A dataframe on which the preference operates.}
+
+\item{...}{Optional arguments passed to \code{as.character}.}
 }
 \description{
 Functions to substitute variables and functions in preferences which can be calculated before the preference is evaluated on a dataframe.
@@ -29,22 +31,22 @@ The function \code{pref.str} (or \code{as.character(p)} for a preference \code{p
 while \code{show.pref} outputs it directly to the console, preceded by \code{'[Preference]'}.
 If \code{df} is specified, then a partial evaluation of the preference is done before converting it to a string.
 
-The function \code{eval.pref} (with given \code{df}) partially evaluates the internal preference expression and
-returns again a preference object.
+The function \code{eval.pref} (with given dataframe \code{df}) partially evaluates the internal preference expression and
+returns again a preference object. All expressions in \code{p} are evaluated in the environment
+where \code{p} was defined, except the the column names in \code{df} (which are potential attributes in \code{p}).
+The content of the dataframe \code{df} does not matter; only \code{names(df)} is used to get the "free variables" in \code{p}.
+}
+\section{Partial evaluation before string output}{
+
 
 The functions \code{show.pref} and \code{pref.str} have the optinal paramter \code{df}.
-If this paramter is not given these functions are identical to \code{show(p)} and \code{as.character{p}}.
-These functions do not do any evaluation and just convert the preference terms and expressions to characters.
-If a dataframe \code{df} is given, then all expressions in \code{p} are evaluated in the environment
-\code{where} p was defined. Except the the column names in \code{df} (which are potential attributes in \code{p})
-are excluded from the evaluation. The content of the dataframe \code{df} does not matter;
-only \code{names(df)} is used to get the "free variables" in \code{p}.
+If this paramter is given, these functions call \code{eval.pref} before they output/return the preference string.
+The following equalities hold:
 
-This partial evaluation can be also done via \code{eval.pref}. The following equality hold:
-
-\code{as.character(eval.pref(p, df)) == pref.str(p, df)}
-
-Additionally \code{eval.pref(p, df)} produces the same output on the console as \code{show.pref(p, df)}.
+\itemize{
+  \item \code{as.character(eval.pref(p, df)) == pref.str(p, df)}
+  \item \code{show(eval.pref(p, df))} produces the same console output as \code{show.pref(p, df)}
+}
 }
 \examples{
 f <- function(x) 2*x

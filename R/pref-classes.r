@@ -143,7 +143,7 @@ basepref <- setRefClass("basepref",
     
     # Calculate scorevals as dataframe, increment score id
     get_scorevals = function(next_id, df) {
-      .self$score_id = next_id
+      .self$score_id <- next_id
       # Calc score of base preference
       scores <- .self$calc_scores(df, .self$eval_frame)
       # Check if length ok
@@ -290,7 +290,7 @@ reversepref <- setRefClass("reversepref",
     
     get_scorevals = function(next_id, df) {
       res <- p$get_scorevals(next_id, df)
-      return(list(next_id = res$next_id + 1, scores = res$scores))
+      return(list(next_id = res$next_id, scores = res$scores))
     },
     
     # Get string representation
@@ -326,16 +326,12 @@ is.reversepref <- function(x) inherits(x, "reversepref")
 # cmpcom and eqcomp functions are set via constructor and are just compositions (refering to $cmp and $eq)
 complexpref <- setRefClass("complexpref",
   contains = "preference",
-  fields = list(p1 = "preference", p2 = "preference", op = "character", 
-                cmpcomp = "function", eqcomp = "function", prior_chain = "logical"),
+  fields = list(p1 = "preference", p2 = "preference", op = "character"),
   methods = list(
-    initialize = function(p1_ = preference(), p2_ = preference(), op_ = '', cmp_ = function() NULL, eq_ = function() NULL) {
+    initialize = function(p1_ = preference(), p2_ = preference(), op_ = '') {
       .self$p1      <- p1_
       .self$p2      <- p2_
       .self$op      <- op_
-      .self$cmpcomp <- cmp_ # composition of cmp function
-      .self$eqcomp  <- eq_
-      .self$prior_chain <- FALSE
       return(.self)
     },
       
@@ -371,13 +367,59 @@ complexpref <- setRefClass("complexpref",
       return(NULL)
     },
     
-    # Simple wrapper for cmp/eq compositions (overwritten by prioritization)
-    cmp = function(...) .self$cmpcomp(...),
-    eq  = function(...) .self$eqcomp(...)
+    # Equivalence composition for all complex preferences
+    eq  = function(...) (.self$p1$eq(...) & .self$p2$eq(...))
     
   )
 )
 is.complexpref <- function(x) inherits(x, "complexpref")
+
+
+paretopref <- setRefClass("paretopref",
+  contains = "complexpref",
+  methods = list(   
+    
+    initialize = function(p1_ = preference(), p2_ = preference()) {
+      callSuper(p1_, p2_, '*')
+      return(.self)
+    },
+
+    cmp = function(...) 
+      ( (p1$cmp(...) | p1$eq(...)) & p2$cmp(...) |
+        (p2$cmp(...) | p2$eq(...)) & p1$cmp(...)   )
+  )
+)
+
+
+unionpref <- setRefClass("unionpref",
+  contains = "complexpref",
+  methods = list(   
+    
+    initialize = function(p1_ = preference(), p2_ = preference()) {
+      callSuper(p1_, p2_, '+')
+      return(.self)
+    },
+
+    cmp = function(...) 
+      (p1$cmp(...) | p2$cmp(...))
+  )
+)
+
+
+intersectionpref <- setRefClass("intersectionpref",
+  contains = "complexpref",
+  methods = list(   
+    
+    initialize = function(p1_ = preference(), p2_ = preference()) {
+      callSuper(p1_, p2_, '|')
+      return(.self)
+    },
+
+    cmp = function(...) 
+      (p1$cmp(...) & p2$cmp(...))
+  )
+)
+
 
 # double has 52 bits significand, thus the largest double number d which surely fulfills "d \neq d+1" is 2^52
 MAX_CHAIN_LENGTH <- 52 
@@ -386,6 +428,12 @@ priorpref <- setRefClass("priorpref",
   contains = "complexpref",
   fields = list(chain_size = "numeric", prior_chain = "logical", prior_score_id = "numeric"),
   methods = list(   
+    
+    initialize = function(p1_ = preference(), p2_ = preference()) {
+      callSuper(p1_, p2_, '&')
+      .self$prior_chain <- FALSE # false by default
+      return(.self)
+    },
     
     # Check if we have a purely prioritization chain - calculate highest value
     get_prior_length = function() {
@@ -472,7 +520,7 @@ priorpref <- setRefClass("priorpref",
         }
       }
       
-      # ** All else-paths: Handle like usual complex preference, but propagete get_greatest_subtree
+      # ** All else-paths: Handle like usual complex preference, but propagate get_greatest_subtree
       res1 <- if (is.priorpref(.self$p1)) .self$p1$get_scorevals(next_id,      df, get_greatest_subtree) else .self$p1$get_scorevals(next_id,      df)
       res2 <- if (is.priorpref(.self$p2)) .self$p2$get_scorevals(res1$next_id, df, get_greatest_subtree) else .self$p2$get_scorevals(res1$next_id, df)
       return(list(next_id = res2$next_id, scores = cbind(res1$scores, res2$scores)))
@@ -486,20 +534,21 @@ priorpref <- setRefClass("priorpref",
         return(callSuper())
     },
     
-    # Wrapper for Compare/Prioritization
+    # Compare/Prioritization
     cmp = function(i, j, score_df) {
       if (.self$prior_chain) # Prior-Chain => Score Pref
         return(score_df[i, .self$prior_score_id] < score_df[j, .self$prior_score_id])
       else
-        return(.self$cmpcomp(i, j, score_df)) # Usual composition function
+        return( .self$p1$cmp(i, j, score_df) | 
+               (.self$p1$eq( i, j, score_df) & .self$p2$cmp( i, j, score_df)) ) # Usual composition function
     },
     
-    # Wrapper for Equal/Prioritization
+    # Equal/Prioritization
     eq = function(i, j, score_df) {
       if (.self$prior_chain) # Prior-Chain => Score Pref
         return(score_df[i, .self$prior_score_id] == score_df[j, .self$prior_score_id])
       else
-        return(.self$eqcomp(i, j, score_df)) # Usual composition function
+        return(callSuper(i, j, score_df)) 
     }  
   )
 )

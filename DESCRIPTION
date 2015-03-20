@@ -1,6 +1,6 @@
 Package: rPref
-Version: 0.4.5
-Date: 2015-03-13
+Version: 0.5
+Date: 2015-03-20
 Title: Database Preferences and Skyline Computation
 Author: Patrick Roocks <mail@p-roocks.de>
 Maintainer: Patrick Roocks <mail@p-roocks.de>

@@ -7,6 +7,7 @@
 \alias{-.preference}
 \alias{complex_pref}
 \alias{empty}
+\alias{length.preference}
 \alias{reverse}
 \alias{|.preference}
 \title{Complex preferences}
@@ -21,12 +22,12 @@
 
 reverse(p)
 
-\method{-}{preference}(p1, p2)
-
 empty()
+
+\method{length}{preference}(x)
 }
 \arguments{
-\item{p,p1,p2}{Preferences to be composed (either base preferences via \code{\link{base_pref}} or also complex preferences)}
+\item{p,p1,p2,x}{Preferences (they can be either base preferences, see \code{\link{base_pref}}, or complex preferences)}
 }
 \description{
 Complex preferences are used to compose different preferences orders. For example the Pareto composition (via operator \code{*}) is the usual operator
@@ -39,7 +40,7 @@ All complex preferences are mathematically strict partial orders (irreflexive an
 The most important preference composition operator is the Pareto operator (\code{p1 * p2}) to formulate a Skyline query.
 A tuple t1 is better than t2 w.r.t. \code{p1 * p2} if it is strictly better w.r.t. one of the preferences p1, p2 and is better or equal w.r.t. the other preference.
 
-The syntactical translation from other query languages supporting skylines/Preferences to rPref is as follows:
+The syntactical translation from other query languages supporting Skylines/Preferences to rPref is as follows:
 
 \itemize{
 \item A query in the syntax from Borzsonyi et. al (2001) like
@@ -93,6 +94,13 @@ Additionally, rPref supports the following preference composition operators:
  It holds that \code{op(empty(), p)} is equal to \code{p} for all preference operators \code{op} and all preferences \code{p}.}
 }
 }
+
+\section{Preference term length}{
+
+
+The function \code{length(p)} gives the term length of the preference term \code{p} which is defined as the number of base preferences
+in a complex preference term.
+}
 \examples{
 # Define preference for cars with low consumption (high mpg-value)
 # and simultanously high horsepower
@@ -105,6 +113,9 @@ psel(mtcars, p1)
 S. Borzsonyi, D. Kossmann, K. Stocker (2001): The Skyline Operator. In Data Engineering (ICDE '01), pages 421-430.
 
 W. Kiessling (2002): Foundations of Preferences in Database Systems. In Very Large Data Bases (VLDB '02), pages 311-322.
+
+S. Mandl, O. Kozachuk, M. Endres, W. Kiessling (2015): Preference Analytics in EXASolution.
+16th Conference on Database Systems for Business, Technology, and Web.
 }
 \seealso{
 See \code{\link{base_pref}} for the construction of base preferences. See \code{\link{psel}} for the evaluation of preferences.

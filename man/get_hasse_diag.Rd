@@ -18,7 +18,7 @@ This is the transitive reduction of the preference relation.
 \details{
 A row (i, j) in the resulting matrix means that \code{df[i,]} is better than \code{df[j,]} with regard to the preference \code{p}.
 The matrix is the transitive reduction (Hasse diagram) of the induced relations,
-i.e. if (1,2) and (2,3) occur in the result, than (1,3) will not be contained.
+i.e., if (1,2) and (2,3) occur in the result, then (1,3) will not be contained.
 The number of rows in the result depends on the number of non-transitive Better-Than-Relationships in \code{df} w.r.t. \code{p}.
 }
 \examples{

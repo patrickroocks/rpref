@@ -20,11 +20,11 @@ all_pred(p, v, intersect = FALSE)
 all_succ(p, v, intersect = FALSE)
 }
 \arguments{
-\item{df}{A dataframe characterizing the basic set wherein predecessors/sucessors are seached.}
+\item{df}{A dataframe characterizing the set wherein predecessors/sucessors are searched.}
 
 \item{p}{A preference. Worse tuples in the induced order are succesors and better tuples are predecessors.}
 
-\item{v}{A numeric vector of indices in df. This describes the set of tuples for which predecessors/successors are searched.}
+\item{v}{A numeric vector of indices in df. The represents the set of tuples for which predecessors/successors are searched.}
 
 \item{intersect}{Logical value. If \code{FALSE} (by default) the union of all predecessors/successors of \code{v} are returned.
        For \code{intersect = TRUE} the intersection of those is returned.}
@@ -42,21 +42,22 @@ Before any of the successor/predecessor functions can be used the initialization
 
 There \code{p} is a preference object and \code{df} a dataframe. This statement calculates the Better-Than-Relation on \code{df} w.r.t. \code{p}.
 Afterwards the subsequent predecessor and sucessor functions can be called.
-The return values and the values of \code{v} are numeric vectors within \code{1:nrow(df)}
-and characerise a subset of tuples in \code{df}.
-The numbers in the result are always ordered ascending, independent of the order of the indices in \code{v}.
+The value of \code{v} is a numeric vectors within \code{1:nrow(df)}
+and characerizes a subset of tuples in \code{df}.
+The return value of these functions is again a numeric vector refering to the row numbers in \code{df}
+and it is always ordered ascending, independent of the order of the indices in \code{v}.
 
 
 \describe{
   \item{\code{all_pred(p, v)}}{Returns all predecessors of \code{v}, i.e. indices of better tuples than \code{v}.}
   \item{\code{all_succ(p, v)}}{Returns all predecessors of \code{v}, i.e. indices of worse tuples than \code{v}.}
   \item{\code{hasse_pred(p, v)}}{Returns the direct predecessors of \code{v},
-        i.e. indices of better tuples than \code{v} where the Better-Than-Relation lies in the transitive reduction.}
+        i.e. indices of better tuples than \code{v} where the Better-Than-Relation is contained in the transitive reduction.}
   \item{\code{hasse_succ(p, v)}}{Returns the direct successors of \code{v},
-        i.e. indices of worse tuples than \code{v} where the Better-Than-Relation lies in the transitive reduction.}
+        i.e. indices of worse tuples than \code{v} where the Better-Than-Relation is contained in the transitive reduction.}
 }
 
-If \code{v} has length 1 than the value of \code{intersect} does not matter, as there is nothing to intersect or join.
+If \code{v} has length 1, then the value of \code{intersect} does not matter, as there is nothing to intersect or join.
 For scalar values \code{x} and \code{y} the following identities hold, where \code{f} is one of the predecessor/successor functions:
 
 \code{f(p, c(x, y), intersect = FALSE) == union(f(p, x), f(p, y))}

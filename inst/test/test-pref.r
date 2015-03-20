@@ -21,5 +21,5 @@ test_that("Test length calculation", {
   expect_that(length(empty()), equals(0))
   expect_that(length(layered(a, 1, 2)), equals(2))
   expect_that(length(low(a) * -high(b) * empty()), equals(2))  
-  
+  expect_that(length(true(a) & true(b)), equals(2))
 })
