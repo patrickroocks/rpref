@@ -1,7 +1,7 @@
 
-#' Complex preferences
+#' Complex Preferences
 #' 
-#' Complex preferences are used to compose different preferences orders. For example the Pareto composition (via operator \code{*}) is the usual operator
+#' Complex preferences are used to compose different preference orders. For example the Pareto composition (via operator \code{*}) is the usual operator
 #' to compose the preference for a Skyline query. The Skyline is also known as Pareto frontier.
 #' All complex preferences are mathematically strict partial orders (irreflexive and transitive).
 #' 
@@ -13,7 +13,8 @@
 #' The most important preference composition operator is the Pareto operator (\code{p1 * p2}) to formulate a Skyline query. 
 #' A tuple t1 is better than t2 w.r.t. \code{p1 * p2} if it is strictly better w.r.t. one of the preferences p1, p2 and is better or equal w.r.t. the other preference.
 #' 
-#' The syntactical translation from other query languages supporting Skylines/Preferences to rPref is as follows:
+#' The syntactical correspondence to other query languages supporting Skylines/preferences to rPref
+#' is given as follows:
 #' 
 #' \itemize{
 #' \item A query in the syntax from Borzsonyi et. al (2001) like
@@ -44,9 +45,9 @@
 #' 
 #' }
 #' 
-#' Note that these query conversions can be done by \code{\link{show.query}}. 
+#' Note that preferences in rPref can be translated to some of this query dialects by \code{\link{show.query}}. 
 #' 
-#' @section Definition of additional preference operators:
+#' @section Definition of Additional Preference Operators:
 #' 
 #' Additionally, rPref supports the following preference composition operators:
 #' 
@@ -60,14 +61,14 @@
 #'  of the preferences are not disjoint.}
 #'  \item{\code{reverse(p1)} or \code{-p1}}{Reverse preference (converse relation): 
 #'  A tuple t1 is better than t2 w.r.t. \code{-p1} if t2 is better than t1 w.r.t. \code{p1}. 
-#'  The unary minus operator, i.e. \code{-p1}, is a short notation for \code{reverse(p1)}.}
-#'  \item{\code{empty()}}{Empty preference, i.e. a neutral element for all complex preference compositions. 
-#'  It holds that \code{op(empty(), p)} is equal to \code{p} for all preference operators \code{op} and all preferences \code{p}.}
+#'  The unary minus operator, i.e. \code{-p1}, is a short hand notation for \code{reverse(p1)}.}
+#'  \item{\code{empty()}}{Empty preference, i.e., a neutral element for the complex preference compositions \code{{*, &, +}}. 
+#'  It holds that \code{empty() * p} and \code{empty() & p} is equal to \code{p} for all preferences \code{p}.}
 #' }
 #' 
-#' @section Preference term length:
+#' @section Preference Term Length:
 #' 
-#' The function \code{length(p)} gives the term length of the preference term \code{p} which is defined as the number of base preferences
+#' The function \code{length(p)} returns the term length of the preference term \code{p} which is defined as the number of base preferences
 #' in a complex preference term.
 #'
 #' @seealso See \code{\link{base_pref}} for the construction of base preferences. See \code{\link{psel}} for the evaluation of preferences. 
@@ -84,11 +85,11 @@
 #' 16th Conference on Database Systems for Business, Technology, and Web.
 #' 
 #' @examples
-#' # Define preference for cars with low consumption (high mpg-value) 
+#' # define preference for cars with low consumption (high mpg-value) 
 #' # and simultanously high horsepower
 #' p1 <- high(mpg) * high(hp)  
 #' 
-#' # Perform the preference search
+#' # perform the preference search
 #' psel(mtcars, p1)
 NULL
 
@@ -141,7 +142,7 @@ NULL
 #' @export
 reverse <- function(p) {
   check_pref(p)
-  if (is.empty.pref(p)) return(p)
+  if (is.emptypref(p)) return(p)
   return(reversepref(p))
 }
 
@@ -156,7 +157,7 @@ reverse <- function(p) {
 # Neutral element
 #' @rdname complex_pref
 #' @export
-empty <- function() empty.pref()
+empty <- function() emptypref()
 
 # Length of a preference term (number of base preferences)
 #' @export
@@ -169,16 +170,16 @@ length.preference <- function(x) x$get_length()
   
 # Helper to check if all given arguments are preferences
 check_pref <- function(p1, p2) {
-  if (!is.preference(p1) || (nargs() == 2 && !is.preference(p2)))
+  if (!is.actual.preference(p1) || (nargs() == 2 && !is.actual.preference(p2)))
     stop("This operator requires preference objects as input.")
 }
 
 # Check if one (or perhaps both) preference is empty
-check_empty <- function(p1, p2) (is.empty.pref(p1) || is.empty.pref(p2))
+check_empty <- function(p1, p2) (is.emptypref(p1) || is.emptypref(p2))
 
 # Get the result of a complex operation with an empty pref
 get_empty <- function(p1, p2) {
-  if (is.empty.pref(p1))
+  if (is.emptypref(p1))
     return(p2) # perhaps empty
   else
     return(p1)

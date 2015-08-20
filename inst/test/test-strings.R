@@ -42,6 +42,9 @@ test_that("Test string output of preferences on a given data set", {
   expect_that(pref.str((low(wt) * low(hp)) & reverse(high(y + f(cyl))), df = mtcars), 
               prints_text('(low(wt) * low(hp)) & -high(1 + f(cyl))', fixed = TRUE))
   
+  expect_that(pref.str((low(wt) * low(hp)) & reverse(high(y + f(cyl))), df = mtcars), 
+              matches('(low(wt) * low(hp)) & -high(1 + f(cyl))', fixed = TRUE))
+  
   expect_that(as.character(eval.pref(-high(f(y) + f(cyl)), df = mtcars)), 
               prints_text('-high(2 + f(cyl))', fixed = TRUE))
   

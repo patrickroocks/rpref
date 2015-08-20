@@ -63,12 +63,14 @@ test_that("Test predecessors and successors", {
   
   expect_that(all_succ(p, 1), throws_error()) # Need to call init_pred_succ first!
   
-  # One does not need to re-init p after evaluation!
-  init_pred_succ(df, p)
+  # Evaluate pref (to substitute a,b,c in true(id %in% c(a,b,c)))
   p <- eval.pref(p, df)
   
   expect_that(as.character(p), 
               matches('((true(id == 1) * true(id == 2)) & true(id == 3)) * (true(id == 2) & -true(id %in% c(1, 2, 3)) & -true(id == 5))', fixed = TRUE))
+  
+  # We have to init p after evaluation!
+  init_pred_succ(df, p)
   
   expect_that(all_succ(p, 1), equals(3))
   expect_that(all_pred(p, 5), equals(c(2,4)))
@@ -86,6 +88,8 @@ library(igraph)
 test_that("Test igraph output for mtcars[1:5,] with low(mpg)", {
   
   g <- get_btg(mtcars[1:5,], low(mpg))$graph
+  
+  plot_btg(mtcars[1:5,], low(mpg))
   
   expect_that(as.numeric(g['1']), equals(c(0,0,0,1,0)))
   expect_that(as.numeric(g['2']), equals(c(0,0,0,1,0)))

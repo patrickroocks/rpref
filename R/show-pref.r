@@ -1,9 +1,9 @@
-#' Show preference in usual Query Languages
+#' Show Preferences in Database Query Languages
 #' 
 #' For a given preference this shows the \code{PREFERRING} clause of a database query in different SQL dialects which support preferences.
 #' 
 #' @param p A preference.
-#' @param dialect The preference query dialect, which determines the Syntax of the returned query. This has to be one of the following:
+#' @param dialect The preference query dialect, which determines the syntax of the returned query. This has to be one of the following:
 #' \describe{
 #'    \item{\code{'EXASOL'}:}{Syntax of the "Skyline" feature of the commercial database EXASOL EXASolution 5.}
 #'    \item{\code{'Preference SQL'} or \code{'PSQL'}:}{Syntax of the Preference SQL system. 
@@ -48,20 +48,21 @@ show.query <- function(p, dialect = 'EXASOL', df = NULL) {
   if (!(dialect %in% c(EXA, PSQL))) stop(paste0('The dialect "', dialect, '" is unknown.'))
   
   # Check for empty -> return empty string
-  if (is.empty.pref(p)) return("")
+  if (is.emptypref(p)) return("")
   
   # Return PREFERRING-clause
   return(paste0('PREFERRING ', show_pref_sql(p, dialect, 'PREF', get_static_terms(df)))) # parent node "PREF" means root node
 }
 
 
-#' Partial evaluation and string output of preferences
+#' Partial Evaluation and String Output of Preferences
 #' 
-#' Functions to substitute variables and functions in preferences which can be calculated before the preference is evaluated on a dataframe.
-#' This is especially used for string output of preferences.
+#' Functions to substitute variables and functions in preferences 
+#' which can be calculated before the preference is evaluated on a data frame.
+#' This is especially used for the string output of preferences.
 #' 
 #' @param p,x The preference to be shown or partially evaluated.
-#' @param df (Optional) A dataframe on which the preference operates.
+#' @param df (optional) A dataframe on which the preference operates.
 #' @param ... Optional arguments passed to \code{as.character}.
 #' 
 #' @details The function \code{pref.str} (or \code{as.character(p)} for a preference \code{p}) returns the preference string 
@@ -70,14 +71,15 @@ show.query <- function(p, dialect = 'EXASOL', df = NULL) {
 #' 
 #' The function \code{eval.pref} (with given dataframe \code{df}) partially evaluates the internal preference expression and 
 #' returns again a preference object. All expressions in \code{p} are evaluated in the environment
-#' where \code{p} was defined, except the the column names in \code{df} (which are potential attributes in \code{p}).
+#' where \code{p} was defined, except the the column names in \code{df} (which are potential attributes in \code{p}) 
+#' and except the special variable \code{df__}, which accesses the entire data set (see \code{\link{psel}}).
 #' The content of the dataframe \code{df} does not matter; only \code{names(df)} is used to get the "free variables" in \code{p}.
 #' 
 #' 
-#' @section Partial evaluation before string output:
+#' @section Partial Evaluation Before String Output:
 #' 
-#' The functions \code{show.pref} and \code{pref.str} have the optinal paramter \code{df}.
-#' If this paramter is given, these functions call \code{eval.pref} before they output/return the preference string.
+#' The functions \code{show.pref} and \code{pref.str} have the optional paramter \code{df}.
+#' If this paramter is given, these functions call \code{eval.pref} before they output or return the preference string.
 #' The following equalities hold:
 #' 
 #' \itemize{
@@ -100,22 +102,29 @@ show.query <- function(p, dialect = 'EXASOL', df = NULL) {
 #' @export
 show.pref <- function(p, df = NULL) {
   # Output string representation on the console
-  return(cat(paste0('[Preference] ', pref.str(p, df))))
+  return(cat('[Preference] ', pref.str(p, df), '\n', sep = ''))
+}
+
+# Internal call of evaluation, no validity check of paramters
+eval.pref.internal <- function(p, df = NULL) {
+  if (is.null(df)) return(p)
+  else return(p$evaluate(get_static_terms(df)))
 }
 
 #' @export
 #' @rdname show.pref
 pref.str <- function(p, df = NULL) {
-  if (is.null(df)) return(p$get_str())
-  else return(eval.pref(p, df)$get_str())
+  if (!is.actual.preference(p)) stop("This function needs a preference as first argument.")
+  return(eval.pref.internal(p, df)$get_str())
 }
 
 #' @export
 #' @rdname show.pref
 eval.pref <- function(p, df = NULL) {
-  p <- p$copy()
-  p$substitute_expr(static_terms = get_static_terms(df))
-  return(p)
+  if (!is.actual.preference(p)) stop("This function needs a preference as first argument.")
+  # Careful: eval(as.expression(p)) would not respect the local environment of the base preferences!
+  # We cannot respect the environment of the caller of eval.pref (merging environments did not work here)
+  return(eval.pref.internal(p, df))
 }
 
 #' @export
@@ -202,9 +211,11 @@ show_base_pref <- function(p, dialect, static_terms = NULL) {
 # Get (evaluated, if static_terms is given) expression of base preference
 # Add braces for non-single term 
 get_expr_sql <- function(p, static_terms = NULL) {
-  p <- p$copy()
-  p$substitute_expr(static_terms = static_terms)
-  expr_str <- as.character(p$expr)
-  if (length(p$expr[[1]]) != 1) return(paste0('(', expr_str, ')'))  # embrace complex expressions
+  # Get expression (eval, if static_terms is given!)
+  if (is.null(static_terms)) expr <- p$expr
+  else                       expr <- as.expression(p$get_expr_evaled(p$expr, static_terms = static_terms)$expr)
+  # Make string of it
+  expr_str <- as.character(expr)
+  if (length(expr[[1]]) != 1) return(paste0('(', expr_str, ')'))  # embrace complex expressions
   else return(expr_str) 
 }

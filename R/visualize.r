@@ -2,50 +2,72 @@
 
 #' Better-Than-Graph
 #' 
-#' Returns a Hasse-Diagramm of a preference order (also called the Better-Than-Graph) on a given dataset to be plotted with the igraph package.
+#' Returns a Hasse-Diagramm of a preference order (also called the Better-Than-Graph) on a given data set
+#' to be plotted with the igraph package or plots the graph directly.
 #' 
-#' @param df A dataframe.
+#' @param df A data frame.
 #' @param pref A preference on the columns of \code{df}, see \code{\link{psel}} for details.
+#' @param flip.edges (optional) Flips the orientation of edges,
+#'        if \code{TRUE} than arrows point from worse nodes to better nodes.
+#' @param labels (optional) Labels for the vertices when \code{plot_btg} is used.
 #' 
-#' @details This function returns a list \code{l} with the following list entries:
+#' @details The function \code{get_btg} returns a list \code{l} with the following list entries:
 #' 
 #' \describe{
 #'   \item{\code{l$graph}}{An igraph object, created with the \code{\link{igraph}} package.}
 #'   \item{\code{l$layout}}{A typical Hasse-diagram layout for plotting the graph, also created with igraph.}
 #' }
 #' 
-#' To plot the resulting graph use the \code{plot} function as follows: \code{plot(l$graph, layout = l$layout)}. 
-#' For more details see \code{\link{igraph.plotting}} and the examples below.
+#' To plot the resulting graph returned from \code{get_btg}, use the \code{plot} function as follows: 
 #' 
-#' The Hasse diagram of a preference visualizes all the better-than-relationsships on a given dataset.
+#' \code{plot(l$graph, layout = l$layout)}. 
+#' 
+#' For more details, see \code{\link{igraph.plotting}} and the examples below.
+#' The function \code{plot_btg} directly plots the Better-Than-Graph 
+#' some defaults values for e.g., vertex size.
+#' 
+#' The Hasse diagram of a preference visualizes all the better-than-relationsships on a given data set.
 #' All edges which can be retrieved by transitivity of the order are omitted.
 #' 
-#' The names of the vertices are characters ranging from \code{"1"} to \code{as.character(nrow(df))} and they correspond to the row numbers of \code{df}.
+#' By default, the arrows in the diagram point from better to worse nodes w.r.t. the preference. 
+#' This means an arrow can be read as "is better than". If \code{flip.edges = TRUE} is set, 
+#' then the arrows point from worse nodes to better nodes ("is worse than"). 
+#' In any case, the better nodes are plotted at the top and the worse nodes at the bottom of the diagram.
+#' 
+#' The names of the vertices are characters ranging from \code{"1"} to \code{as.character(nrow(df))} 
+#' and they correspond to the row numbers of \code{df}. 
+#' By default, these are also the labels of the vertices. 
+#' Alternatively, they can be defined manually in the \code{plot} function or 
+#' using the \code{labels} parameter of \code{plot_btg}.
+#' 
 #' 
 #' @seealso \code{\link{igraph.plotting}}
 #' 
 #' @examples
 #' 
-#' # Pick a small data set and create preference and BTG 
+#' # pick a small data set and create preference and BTG 
 #' df <- mtcars[1:10,]
 #' pref <- high(mpg) * low(wt)
-#' btg <- get_btg(df, pref)
 #' 
-#' # Create labels for the nodes with relevant values
+#' # directly plot the BTG with row numbers as labels
+#' plot_btg(df, pref) 
+#' 
+#' # create the BTG and labels for the nodes with relevant values
+#' btg <- get_btg(df, pref)
 #' labels <- paste0(df$mpg, "\n", df$wt)
 #' 
-#' # Plot the graph using igraph
+#' # plot the graph using igraph
 #' library(igraph)
 #' plot(btg$graph, layout = btg$layout, vertex.label = labels,
 #'      vertex.size = 25)
 #' 
-#' # Add colors for the maxima nodes and plot again
+#' # add colors for the maxima nodes and plot again
 #' colors <- rep(rgb(1, 1, 1), nrow(df))
 #' colors[psel.indices(df, pref)] <- rgb(0,1,0)
 #' plot(btg$graph, layout = btg$layout, vertex.label = labels,
 #'      vertex.size = 25, vertex.color = colors)
 #' 
-#' # Show lattice structure of 3-dimensional Pareto preference
+#' # show lattice structure of 3-dimensional Pareto preference
 #' df <- merge(merge(data.frame(x = 1:3), data.frame(y = 1:3)), data.frame(z = 1:2))
 #' labels <- paste0(df$x, ",", df$y, ",", df$z)
 #' btg <- get_btg(df, low(x) * low(y) * low(z))
@@ -54,7 +76,10 @@
 #'
 #' 
 #' @export
-get_btg <- function(df, pref) {
+get_btg <- function(df, pref, flip.edges = FALSE) {
+  
+  # Arrows from worse to better?
+  if (flip.edges) pref <- -pref
 
   # calculate Hasse diagram
   links <- get_hasse_diag(df, pref)
@@ -68,21 +93,32 @@ get_btg <- function(df, pref) {
 
   # Calculate root (maxima)
   root <- as.character(psel.indices(df, pref))
-    
+     
   # Create layout
-  layout <- layout.reingold.tilford(g, root = root)
-
+  layout <- layout_as_tree(g, root = root, flip.y = !flip.edges)
+  
   # Return everything
   return(list(graph = g, layout = layout))
 }
 
+#' @rdname get_btg
+#' @export
+plot_btg <- function(df, pref, labels = 1:nrow(df), flip.edges = FALSE) {
+  # Get BTG
+  btg <- get_btg(df, pref, flip.edges)
+  
+  # Plot BTG using some reasonable defaults
+  plot(btg$graph, layout = btg$layout, vertex.label = as.character(labels), 
+       vertex.color = 'white', vertex.size = 20, vertex.label.cex = 1.5,
+       edge.color = 'black', vertex.label.color = 'black')
+}
 
-#' Adjacency list of Hasse diagramm
+#' Adjacency List of Hasse Diagramm
 #' 
-#' Returns the adjacency list as a (n x 2) matrix. 
+#' Returns the adjacency list of the Hasse diagram of a preference as an (n x 2) matrix. 
 #' This is the transitive reduction of the preference relation.
 #' 
-#' @param df A dataframe.
+#' @param df A data frame.
 #' @param pref A preference on the columns of \code{df}, see \code{\link{psel}} for details.
 #' 
 #' @details
@@ -112,7 +148,7 @@ get_hasse_diag <- function(df, pref) {
 #' 
 #' Connects the points of a Pareto front (also known as Pareto frontier) and hence visualizes the dominance region of a Skyline.
 #' 
-#' @param df The dataframe for which the Pareto front is plotted. This may be already a maxima set w.r.t. the preference \code{pref}, 
+#' @param df The data frame for which the Pareto front is plotted. This may be already a maxima set w.r.t. the preference \code{pref}, 
 #'           but anyway the maxima set is recalculated via \code{psel(df, pref)}.
 #' @param pref The preference representing the Skyline goals. This must be a pareto composition (\code{p1 * p2}) or
 #'                intersection composition (\code{p1 | p2}) of 
@@ -126,7 +162,7 @@ get_hasse_diag <- function(df, pref) {
 #' 
 #' @examples
 #' 
-#' # Plots Pareto fronts for the hp/mpg values of mtcars
+#' # plots Pareto fronts for the hp/mpg values of mtcars
 #' show_front <- function(pref) {
 #'   plot(mtcars$hp, mtcars$mpg)
 #'   sky <- psel(mtcars, pref)
@@ -134,14 +170,16 @@ get_hasse_diag <- function(df, pref) {
 #'   points(sky$hp, sky$mpg, lwd = 3)
 #' }
 #'
-#' # Do this for all four combinations of pareto compositions
+#' # do this for all four combinations of Pareto compositions
 #' show_front(low(hp)  * low(mpg))
 #' show_front(low(hp)  * high(mpg))
 #' show_front(high(hp) * low(mpg))
 #' show_front(high(hp) * high(mpg))
 #' 
-#' # Compare this to the front of a intersection preference
+#' # compare this to the front of a intersection preference
 #' show_front(high(hp) | high(mpg))
+#' 
+#' @importFrom graphics par segments
 #' 
 #' @export
 plot_front <- function(df, pref, ...) {

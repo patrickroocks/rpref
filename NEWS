@@ -1,12 +1,18 @@
-rPref 0.5
+rPref 0.6
 =========
 
-* New functions for string output (pref.str) and partial evaluation (eval.pref)
+* Fixed bug for iterated application of partial evaluation (eval.pref) 
 
-* Predecessor/successor (hasse_pred, etc.) result vectors are ordered ascending
+* Added partial evaluation functionality (additional parameter df) 
+  to base preferences (base_pref)
 
-* New functionality of predecessor/successor functions (empty vectors, new parameter "intersect")
+* New default values for parameters of preference algorithms 
+  (Scalagon alpha = 1, parallel computation is inactive by default)
 
-* New base preferences for defining preferences on expressions/symbols (low_, high_, true_)
+* New plotting function plot_btg for drawing preference graphs
+  
+* Additional parameter flip.edges for plotting preference graphs
 
-* Fixed bug in multithreaded calculation of preferences
+* Additional special variable "df__" in base preference to access the data set
+
+* Added as.expression() function for preference objects

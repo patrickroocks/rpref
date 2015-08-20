@@ -22,7 +22,7 @@ public:
 	~scalagon();
 
 	// run Scalagon prefiltering together with BNL
-	std::list<int> run_scalagon(std::vector<int>& v, pref* p, double alpha = 10);
+	std::list<int> run_scalagon(std::vector<int>& v, pref* p, double alpha = 1);
 	
 	// with and without top-k
 	flex_list run_scalagon_topk(std::vector<int>& v, pref* p, topk_setting& ts, double alpha, bool show_levels);

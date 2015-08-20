@@ -14,12 +14,12 @@ preference <- setRefClass("preference",
     
     # Default show function
     show = function() {
-      return(cat(paste0('[Preference] ', .self$get_str())))
+      return(cat('[Preference] ', .self$get_str(), '\n', sep = ""))
     },
     
     # Get string representation
     get_str = function(parent_op = "", static_terms = NULL) {
-      return("(empty)") 
+      return("[abstract preference superclass]") 
     },
     
     
@@ -99,12 +99,17 @@ preference <- setRefClass("preference",
 is.preference <- function(x) inherits(x, "preference")
 
 # Special empty preference class. All scores are 0
-empty.pref <- setRefClass("empty.pref",
+emptypref <- setRefClass("emptypref",
   contains = "preference",
   methods = list(
     
     get_scorevals = function(next_id, df) {
       return(list(next_id = next_id + 1, scores = as.data.frame(rep(0, nrow(df)))))
+    },
+    
+    # Get string representation
+    get_str = function(parent_op = "", static_terms = NULL) {
+      return("(empty)") 
     },
     
     # Term length (Number of base preferences)
@@ -122,11 +127,17 @@ empty.pref <- setRefClass("empty.pref",
     
     serialize = function() {
       return(list(kind = 's'));
+    },
+    
+    evaluate = function(static_terms) {
+      return(empty())
     }
   )    
 )
 
-is.empty.pref <- function(x) inherits(x, "empty.pref")
+as.expression.emptypref <- function(x, ...) expression(empty())
+
+is.emptypref <- function(x) inherits(x, "emptypref")
 
 # cmp/eq functions are not needed for C++ BNL algorithms, but for igraph, etc.
 
@@ -144,8 +155,11 @@ basepref <- setRefClass("basepref",
     # Calculate scorevals as dataframe, increment score id
     get_scorevals = function(next_id, df) {
       .self$score_id <- next_id
+      # Add data.frame to the environment
+      frm <- new.env(parent = .self$eval_frame)
+      assign("df__", df, pos = frm)
       # Calc score of base preference
-      scores <- .self$calc_scores(df, .self$eval_frame)
+      scores <- .self$calc_scores(df, frm)
       # Check if length ok
       if (length(scores) != nrow(df)) {
         if (length(scores) == 1) scores <- rep(scores, nrow(df))
@@ -168,44 +182,92 @@ basepref <- setRefClass("basepref",
       return(score_df[i, .self$score_id] == score_df[j, .self$score_id])
     },
     
-    # Get expression string, with partial evaluation if static_terms is not NULL (they are not evaluated)
-    substitute_expr = function(static_terms = NULL) {
-      if (!is.null(static_terms)) {
-        get_expr_evaled <- function(lexpr) {
-          lexpr <- lexpr[[1]]
-          if (is.symbol(lexpr)) { 
-            if (as.character(lexpr) == '...') # ... cannot be eval'd directly!
-              return(list(expr = lexpr, final = FALSE)) # ... is never final, will be evaluated above if possible
-            else if (any(vapply(static_terms, function(x) identical(lexpr, x), TRUE)))
-              return(list(expr = lexpr, final = TRUE)) # static_term => final
-            else
-              return(list(expr = as.expression(list(eval(lexpr, .self$eval_frame))), final = FALSE))
+    # Expression of preference with partial evaluation
+    get_expr_evaled = function(lexpr, static_terms = NULL) {
           
-          } else if (length(lexpr) == 1) { # Not a symbol => not final
-            return(list(expr = lexpr, final = FALSE))
-            
-          } else { # n-ary function/operator
-            
-            # Go into recursion
-            expr_evals <- list()
-            for (i in 2:length(lexpr)) {
-              expr_evals[[i-1]] <- get_expr_evaled(lexpr[i])
-              lexpr[i] <- as.expression(expr_evals[[i-1]]$expr)
-            }
-            
-            # Check if not final
-            if (all(vapply(expr_evals, function(x) x$final, TRUE) == FALSE)) { 
-              # ** re-eval
-              # Especially eval ... at that level where ... is an operand
-              return(list(expr = as.expression(list(eval(lexpr, .self$eval_frame))), final = FALSE)) # still not final
+      # Helper for transforming evaluation into expression
+      get_expr <- function(val) {
+        if (is.preference(val)) {
+          return(as.expression(val, static_terms = static_terms))
+        } else if (length(val) <= 1) {
+          return(as.expression(val))
+        } else {
+          if (is.list(val)) op <- quote(list)
+          else if (is.vector(val)) op <- quote(c)
+          else stop(paste0("Cannot evaluate the object ", as.character(val)))
+          return(as.expression(as.call(c(list(op), as.list(val)))))
+        }
+      }
+      
+      lexpr <- lexpr[[1]]
+      if (is.symbol(lexpr)) { 
+        lexpr_chr <- as.character(lexpr)
+        if (lexpr_chr == '...') # ... cannot be eval'd directly!
+          return(list(expr = lexpr, final = FALSE)) # ... is never final, will be evaluated above if possible
+        else if (any(vapply(static_terms, function(x) identical(lexpr, x), TRUE)))
+          return(list(expr = lexpr, final = TRUE)) # static_term => final
+        else if (lexpr_chr == 'df__')
+          return(list(expr = lexpr, final = TRUE)) # special variable df__ => final
+        else # eval a symbol (e.g. a number)
+          return(list(expr = get_expr(eval(lexpr, .self$eval_frame)), final = FALSE))
+      
+      } else if (length(lexpr) == 1) { # Not a symbol => not final
+        return(list(expr = lexpr, final = FALSE))
+        
+      } else if (length(lexpr[1]) == 1 && as.character(lexpr[1]) == '$') { # object$attribute operator
+        
+        # first evaluate the object
+        expr_eval_first <- .self$get_expr_evaled(lexpr[2], static_terms) 
+        
+        if (expr_eval_first$final == FALSE) # not final => re-eval object$attribute
+          return(list(expr = get_expr(eval(lexpr, .self$eval_frame)), final = FALSE))
+        else # final => return the object_new$attribute
+          return(list(expr = call('$', expr_eval_first$expr, lexpr[3][[1]]), final = TRUE))
+          
+        
+      } else { # n-ary function/operator
+        
+        # Go into recursion and generate new term
+        lexpr_lst <- as.list(lexpr) # New expression as list
+        lexpr_names <- if (is.null(names(lexpr_lst))) rep("", length(lexpr)) else names(lexpr_lst) # Preserve names
+        
+        # Collect operands and names
+        lexpr_lst <- lexpr_lst[1]
+        names(lexpr_lst) <- ""
+        expr_evals <- list()
+        for (i in 2:length(lexpr)) {
+          
+          # catch empty symbol as occuring in, e.g., df[,1]. 
+          if (is.symbol(lexpr[i][[1]]) && as.character(lexpr[i][[1]]) == '') {
+            # Must not be stored in a variable, hence calling get_expr_evaled CANNOT work!
+            # -> save to evaled, not final
+            lexpr_lst <- c(lexpr_lst, lexpr[i][[1]])
+            expr_evals[[i-1]] <- list(final = FALSE) # add final = FALSE manually to emulate usual structure
+          } else { # All other (non-empty!) sub-expression
+            # ** Recursion call!
+            expr_evals[[i-1]] <- .self$get_expr_evaled(lexpr[i], static_terms) 
+            # Catch abstract function argument "..."
+            if (identical(expr_evals[[i-1]]$expr, quote(...))) {
+              lexpr_lst <- c(lexpr_lst, eval(expression(list(...)), .self$eval_frame)) # Re-Evaulation!
             } else {
-              return(list(expr = lexpr, final = TRUE)) # already final!
+              # Usual recursive call result
+              lexpr_lst <- c(lexpr_lst, as.expression(expr_evals[[i-1]]$expr)[[1]]) # Put terms together
+              names(lexpr_lst)[length(lexpr_lst)] <- lexpr_names[i]
             }
           }
         }
-        .self$expr <- as.expression(get_expr_evaled(.self$expr)$expr)
+        lexpr_new <- as.call(lexpr_lst)
+        
+        # Check if not final
+        if (all(vapply(expr_evals, function(x) x$final, TRUE) == FALSE)) { 
+          # ** re-eval
+          # Especially eval ... at that level where ... is an operand
+          # Evaluate the entire term if possible (no final symbol occurs!)
+          return(list(expr = get_expr(eval(lexpr, .self$eval_frame)), final = FALSE)) # not final
+        } else {
+          return(list(expr = lexpr_new, final = TRUE)) # already final!
+        }
       }
-      return(NULL) # nothing to return
     },
     
     # Get string representation
@@ -214,11 +276,27 @@ basepref <- setRefClass("basepref",
     },
     
     serialize = function() {
-      return(list(kind = 's'));
+      return(list(kind = 's'))
+    },
+    
+    evaluate = function(static_terms) {
+      # We use only the original environment from the preference not that from the caller of evaulate!
+      p <- eval(as.expression(.self, static_terms = static_terms), .self$eval_frame)
+      p$eval_frame <- .self$eval_frame
+      return(p)
     }
   )
 )
-is.basepref <- function(x) inherits(x, "basepref")
+is.basepref <- function(x) inherits(x, "basepref")  
+
+as.expression.basepref <- function(x, ...) { 
+  # x is a base preference object, where the constructor name is given by x$op()
+  args <- list(...)
+  # returns a Call
+  if (!is.null(args[['static_terms']])) expr <- x$get_expr_evaled(x$expr, static_terms = args[['static_terms']])$expr
+  else expr <- x$expr[[1]]  
+  return(as.expression(call(x$op(), expr)))
+}
 
 lowpref <- setRefClass("lowpref", 
   contains = "basepref",
@@ -313,14 +391,17 @@ reversepref <- setRefClass("reversepref",
       return(.self$p$get_length())
     },
     
-    substitute_expr = function(static_terms = NULL) {
-      .self$p$substitute_expr(static_terms)
-      return(NULL)
+    evaluate = function(static_terms) {
+      return(reverse(.self$p$evaluate(static_terms)))
     }
   )
 )
 is.reversepref <- function(x) inherits(x, "reversepref")
 
+as.expression.reversepref <- function(x, ...) {
+    # x is a base preference OR complex preference
+  return(as.expression(call('reverse', as.expression(x$p, ...)[[1]])))
+}
 
 # Binary complex preferences
 # cmpcom and eqcomp functions are set via constructor and are just compositions (refering to $cmp and $eq)
@@ -360,20 +441,21 @@ complexpref <- setRefClass("complexpref",
       return(.self$p1$get_length() + .self$p2$get_length())
     },
     
-    # Substitute all evaluatable parts of expression by their evaluations
-    substitute_expr = function(static_terms = NULL) {
-      .self$p1$substitute_expr(static_terms)
-      .self$p2$substitute_expr(static_terms)
-      return(NULL)
-    },
-    
     # Equivalence composition for all complex preferences
-    eq  = function(...) (.self$p1$eq(...) & .self$p2$eq(...))
+    eq  = function(...) (.self$p1$eq(...) & .self$p2$eq(...)),
     
+    evaluate = function(static_terms) {
+      return(do.call(.self$op, list(.self$p1$evaluate(static_terms),
+                                    .self$p2$evaluate(static_terms))))
+    }
   )
 )
 is.complexpref <- function(x) inherits(x, "complexpref")
 
+as.expression.complexpref <- function(x, ...) {
+    # x is a base preference OR complex preference
+  return(as.expression(call(x$op, as.expression(x$p1, ...)[[1]], as.expression(x$p2, ...)[[1]])))
+}
 
 paretopref <- setRefClass("paretopref",
   contains = "complexpref",
@@ -554,6 +636,9 @@ priorpref <- setRefClass("priorpref",
 )
   
 is.priorpref <- function(x) inherits(x, "priorpref")
+
+# Non-abstract preference?
+is.actual.preference <- function(x) (is.basepref(x) || is.complexpref(x) || is.emptypref(x) || is.reversepref(x))
   
 # Some helper functions
 # ---------------------
