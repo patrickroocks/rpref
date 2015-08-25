@@ -102,6 +102,7 @@ get_btg <- function(df, pref, flip.edges = FALSE) {
 }
 
 #' @rdname get_btg
+#' @importFrom graphics plot
 #' @export
 plot_btg <- function(df, pref, labels = 1:nrow(df), flip.edges = FALSE) {
   # Get BTG

@@ -22,6 +22,8 @@
 
 reverse(p)
 
+\method{-}{preference}(p1, p2)
+
 empty()
 
 \method{length}{preference}(x)

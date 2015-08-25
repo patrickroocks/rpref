@@ -26,19 +26,22 @@ or variables/functions of the environment where \code{pref} was defined.}
      \code{at_least}. In contrast to top-k, this is deterministic.}
     \item{\code{top_level}}{A \code{top_level} value of k returns all tuples from the k-best levels. See below for the definition of a level.}
     \item{\code{and_connected}}{Logical value, which is only relevant if more than one of the above \{\code{top}, \code{at_least}, \code{top_level}\}
-    values is given. Then \code{and_connected = TRUE} (which is the default) means that all top-conditions must hold for the returned tuples:
+    values is given, otherwise it will be ignored.
+    Then \code{and_connected = TRUE} (which is the default) means that all top-conditions
+    must hold for the returned tuples:
     Let \code{cond1} and \code{cond2} be top-conditions like \code{top=2} or \code{top_level=3}, then
     \code{psel([...], cond1, cond2)} is equivalent to the intersection of \code{psel([...], cond1)} and \code{psel([...], cond2)}. If we have
     \code{and_connected = FALSE}, these conditions are or-connected.
     This corresponds to the union of \code{psel([...], cond1)} and \code{psel([...], cond2)}.}
     \item{\code{show_level}}{Logical value. If \code{TRUE}, a column \code{.level}
     is added to the returned data frame, containing all level values (see below for details).
-    This is only relevant if at least one of the \{\code{top}, \code{at_least}, \code{top_level}\} values is given.
-    For \code{psel} this is \code{TRUE} by default, for \code{psel.indices} this is \code{FALSE} by default.}
+    If at least one of the \{\code{top}, \code{at_least}, \code{top_level}\} values are given,
+    then it is set to \code{TRUE} by default for the \code{psel} function.
+    Otherwise, and for \code{psel.indices} in all cases, this option is set to \code{FALSE} by default.}
 }}
 }
 \description{
-Evaluates a preference on a given dataset, i.e.,
+Evaluates a preference on a given data set, i.e.,
 returns the maximal elements of a data set for a given preference order.
 }
 \details{
@@ -64,6 +67,8 @@ For a given \code{top} value of k the k best elements and their level values are
 
 By default, \code{psel.indices} does not return the level values. By setting \code{show_level = TRUE} this function
 returns a data frame with the columns '.indices' and '.level'.
+Note that, if none of the top-k values \{\code{top}, \code{at_least}, \code{top_level}\} is set,
+then all level values are equal to 1.
 
 By definition, a top-k preference selection is non-deterministic. A top-1 query of two equivalent tuples (equivalence according to \code{pref})
 can return on both of these tuples. E.g., for tuples {(a=1, b=1), (a=1, b=2)} a \code{top=1} preference selection w.r.t. \code{low(a)} preference can return

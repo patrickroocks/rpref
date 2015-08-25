@@ -55,11 +55,11 @@ show.query <- function(p, dialect = 'EXASOL', df = NULL) {
 }
 
 
-#' Partial Evaluation and String Output of Preferences
+#' Partial Evaluation and String/Expression Output of Preferences
 #' 
 #' Functions to substitute variables and functions in preferences 
 #' which can be calculated before the preference is evaluated on a data frame.
-#' This is especially used for the string output of preferences.
+#' This is especially used for the string/expression output of preferences.
 #' 
 #' @param p,x The preference to be shown or partially evaluated.
 #' @param df (optional) A dataframe on which the preference operates.
@@ -67,7 +67,8 @@ show.query <- function(p, dialect = 'EXASOL', df = NULL) {
 #' 
 #' @details The function \code{pref.str} (or \code{as.character(p)} for a preference \code{p}) returns the preference string 
 #' while \code{show.pref} outputs it directly to the console, preceded by \code{'[Preference]'}.
-#' If \code{df} is specified, then a partial evaluation of the preference is done before converting it to a string.
+#' If \code{df} is specified, then a partial evaluation of the preference is done before converting it to a string. 
+#' With \code{as.expression(p)} the R code for constructing a given preference is given.
 #' 
 #' The function \code{eval.pref} (with given dataframe \code{df}) partially evaluates the internal preference expression and 
 #' returns again a preference object. All expressions in \code{p} are evaluated in the environment
@@ -125,6 +126,12 @@ eval.pref <- function(p, df = NULL) {
   # Careful: eval(as.expression(p)) would not respect the local environment of the base preferences!
   # We cannot respect the environment of the caller of eval.pref (merging environments did not work here)
   return(eval.pref.internal(p, df))
+}
+
+#' @export
+#' @rdname show.pref
+as.expression.preference <- function(x, ...) {
+  callNextMethod()
 }
 
 #' @export

@@ -2,16 +2,19 @@
 % Please edit documentation in R/show-pref.r
 \name{show.pref}
 \alias{as.character.preference}
+\alias{as.expression.preference}
 \alias{eval.pref}
 \alias{pref.str}
 \alias{show.pref}
-\title{Partial Evaluation and String Output of Preferences}
+\title{Partial Evaluation and String/Expression Output of Preferences}
 \usage{
 show.pref(p, df = NULL)
 
 pref.str(p, df = NULL)
 
 eval.pref(p, df = NULL)
+
+\method{as.expression}{preference}(x, ...)
 
 \method{as.character}{preference}(x, ...)
 }
@@ -25,12 +28,13 @@ eval.pref(p, df = NULL)
 \description{
 Functions to substitute variables and functions in preferences
 which can be calculated before the preference is evaluated on a data frame.
-This is especially used for the string output of preferences.
+This is especially used for the string/expression output of preferences.
 }
 \details{
 The function \code{pref.str} (or \code{as.character(p)} for a preference \code{p}) returns the preference string
 while \code{show.pref} outputs it directly to the console, preceded by \code{'[Preference]'}.
 If \code{df} is specified, then a partial evaluation of the preference is done before converting it to a string.
+With \code{as.expression(p)} the R code for constructing a given preference is given.
 
 The function \code{eval.pref} (with given dataframe \code{df}) partially evaluates the internal preference expression and
 returns again a preference object. All expressions in \code{p} are evaluated in the environment

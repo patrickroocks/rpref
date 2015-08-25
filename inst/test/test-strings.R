@@ -15,6 +15,13 @@ test_that("Test string output of preference", {
   
 })
 
+test_that("Test expression output of preference", {
+  
+  expect_that(as.character(as.expression(low(2*a) * -low(b))), 
+              matches("low(2 * a) * reverse(low(b))", fixed = TRUE))
+  
+})
+
 test_that("Test SQL output", {
   
   expect_that(show.query(empty()), matches(""))

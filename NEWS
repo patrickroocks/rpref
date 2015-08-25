@@ -1,18 +1,6 @@
-rPref 0.6
-=========
+rPref 0.61
+==========
 
-* Fixed bug for iterated application of partial evaluation (eval.pref) 
+* Fixed visibility of as.expression() function for preference objects
 
-* Added partial evaluation functionality (additional parameter df) 
-  to base preferences (base_pref)
-
-* New default values for parameters of preference algorithms 
-  (Scalagon alpha = 1, parallel computation is inactive by default)
-
-* New plotting function plot_btg for drawing preference graphs
-  
-* Additional parameter flip.edges for plotting preference graphs
-
-* Additional special variable "df__" in base preference to access the data set
-
-* Added as.expression() function for preference objects
+* Changed behavior of show_level parameter of the psel function

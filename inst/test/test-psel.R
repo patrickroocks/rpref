@@ -78,6 +78,7 @@ for (parallelity in c(FALSE, TRUE)) {
   test_that("Test TOP-k Preference selection", {
     df <- data.frame(a = c(3,2,1,1,4), b = c(1,1,1,2,2)) # Simple data set
     
+    # Check correct indices and level values
     expect_that(sort(psel.indices(df, low(a), top=5)), equals(1:5))
     expect_that(psel(df, low(a), at_least = 2), equals(data.frame(c(1,1), c(1, 2), c(1,1)), check.attributes = FALSE))
     expect_that(psel.indices(df, low(a), at_least = 3, top = 2), equals(c(3,4)))
@@ -88,6 +89,16 @@ for (parallelity in c(FALSE, TRUE)) {
     expect_that(psel(df, around(a,2), at_least = 10)$a, equals(c(2,3,1,1,4)))
     expect_that(psel(df, around(a,2), top_level = 1)$.level, equals(1))
     expect_that(psel(df, low(a+b), at_least = 5)$.level, equals(c(1,2,2,3,4)))
+    
+    # Check if show_level works correctly
+    expect_that(psel(df, low(a), show_level = TRUE)$.level, equals(c(1,1)))
+    expect_that(ncol(psel(df, low(a))), equals(2))
+    expect_that(ncol(psel(df, low(a), show_level = TRUE)), equals(3))
+    expect_that(length(psel.indices(df, low(a))), equals(2)) # ncol is NULL
+    expect_that(length(psel.indices(df, low(a), top_level = 1)), equals(2))
+    expect_that(ncol(psel.indices(df, low(a), show_level = TRUE)), equals(2))
+    expect_that(ncol(psel(df, low(a), top = 1)), equals(3))
+    
   })
   
   # Simple tests of grouped top-K, at_least and toplevel
