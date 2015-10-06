@@ -17,7 +17,8 @@ generalizations (database preferences).
 \itemize{
 \item Preferences are composed from base preferences (see \code{\link{base_pref}}) and complex preferences (see \code{\link{complex_pref}}),
 where especially the Pareto operator for Skylines is such a complex preference.
-Additionally some base preference macros are provider, see \code{\link{base_pref_macros}}.
+Additionally some base preference macros are provided, see \code{\link{base_pref_macros}}.
+Some utility functions are collected in \code{\link{general_pref}}.
 \item The (top(-level)-k) preference selection \code{\link{psel}} allows to retrieve
       the maxima of a preference (or Pareto frontier, Skyline), constructed with the functions above, on a given dataset.
 }

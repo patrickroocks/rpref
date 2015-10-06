@@ -135,6 +135,7 @@ emptypref <- setRefClass("emptypref",
   )    
 )
 
+#' @export
 as.expression.emptypref <- function(x, ...) expression(empty())
 
 is.emptypref <- function(x) inherits(x, "emptypref")
@@ -289,6 +290,7 @@ basepref <- setRefClass("basepref",
 )
 is.basepref <- function(x) inherits(x, "basepref")  
 
+#' @export
 as.expression.basepref <- function(x, ...) { 
   # x is a base preference object, where the constructor name is given by x$op()
   args <- list(...)
@@ -398,6 +400,7 @@ reversepref <- setRefClass("reversepref",
 )
 is.reversepref <- function(x) inherits(x, "reversepref")
 
+#' @export
 as.expression.reversepref <- function(x, ...) {
     # x is a base preference OR complex preference
   return(as.expression(call('reverse', as.expression(x$p, ...)[[1]])))
@@ -452,6 +455,7 @@ complexpref <- setRefClass("complexpref",
 )
 is.complexpref <- function(x) inherits(x, "complexpref")
 
+#' @export
 as.expression.complexpref <- function(x, ...) {
     # x is a base preference OR complex preference
   return(as.expression(call(x$op, as.expression(x$p1, ...)[[1]], as.expression(x$p2, ...)[[1]])))

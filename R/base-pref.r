@@ -10,7 +10,8 @@
 #'       logical \code{TRUE} values (for \code{true}).
 #' @param df (optional) A data frame, having the same structure (i.e., columns)
 #'        like that data frame, where this preference is evaluated later on. 
-#'        Causes a partial evaulation of the preference. Only the column names of \code{df} are relevant.
+#'        Causes a partial evaluation of the preference. Only the column names of \code{df} are relevant.
+#' @param x An object to be tested if it is a base preference.
 #' 
 #' @details
 #' 
@@ -87,7 +88,7 @@
 #' 
 #' 
 #' @seealso See \code{\link{complex_pref}} how to compose complex preferences to retrieve e.g., the Skyline.
-#' 
+#' See \code{\link{general_pref}} for functions applying to all kind of preferences.
 #' See \code{\link{base_pref_macros}} for more base preferences.
 #' 
 #' @examples
@@ -140,4 +141,10 @@ true <- function(expr, df = NULL) {
 #' @export
 true_ <- function(expr, df = NULL) {
   return(eval.pref.internal(truepref(as.expression(expr), parent.frame()), df))
+}
+
+#' @rdname base_pref
+#' @export
+is.base_pref <- function(x) {
+  return(inherits(x, "basepref"))
 }

@@ -1,6 +1,27 @@
 
 # Some tests about special preference functionality not tested in test-hasse or test-psel
 
+
+test_that("Test expression output of preference", {
+  
+  expect_that(as.character(as.expression(low(2*a) * -low(b))), 
+              matches("low(2 * a) * reverse(low(b))", fixed = TRUE))
+  
+})
+
+
+test_that("Test inherit functions", {
+  
+  expect_that(is.preference(empty()), equals(TRUE))
+  expect_that(is.empty_pref(empty()), equals(TRUE))
+  expect_that(is.base_pref(empty()), equals(FALSE))
+  
+  expect_that(is.base_pref(low(a) & empty()), equals(TRUE))
+  
+  expect_that(is.complex_pref(low(a) & low(b)), equals(TRUE))
+})
+
+
 test_that("Test expression preferences", {
   
   res <- c(30.4, 33.9)

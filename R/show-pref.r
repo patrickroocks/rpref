@@ -3,7 +3,8 @@
 #' For a given preference this shows the \code{PREFERRING} clause of a database query in different SQL dialects which support preferences.
 #' 
 #' @param p A preference.
-#' @param dialect The preference query dialect, which determines the syntax of the returned query. This has to be one of the following:
+#' @param dialect The preference query dialect, which determines the syntax of the returned query. 
+#'        This has to be one of the following (not case sensitive):
 #' \describe{
 #'    \item{\code{'EXASOL'}:}{Syntax of the "Skyline" feature of the commercial database EXASOL EXASolution 5.}
 #'    \item{\code{'Preference SQL'} or \code{'PSQL'}:}{Syntax of the Preference SQL system. 
@@ -42,7 +43,10 @@
 #' @export
 show.query <- function(p, dialect = 'EXASOL', df = NULL) {
  
-  if (dialect == "PSQL" || dialect == "PreferenceSQL") dialect = PSQL
+  # Make parameter "dialect" not case sensitive
+  dialect <- tolower(dialect)
+  
+  if (dialect == "psql" || dialect == "preferencesql") dialect <- PSQL
   
   # Check dialect
   if (!(dialect %in% c(EXA, PSQL))) stop(paste0('The dialect "', dialect, '" is unknown.'))
@@ -61,9 +65,8 @@ show.query <- function(p, dialect = 'EXASOL', df = NULL) {
 #' which can be calculated before the preference is evaluated on a data frame.
 #' This is especially used for the string/expression output of preferences.
 #' 
-#' @param p,x The preference to be shown or partially evaluated.
+#' @param p The preference to be shown or partially evaluated.
 #' @param df (optional) A dataframe on which the preference operates.
-#' @param ... Optional arguments passed to \code{as.character}.
 #' 
 #' @details The function \code{pref.str} (or \code{as.character(p)} for a preference \code{p}) returns the preference string 
 #' while \code{show.pref} outputs it directly to the console, preceded by \code{'[Preference]'}.
@@ -87,6 +90,8 @@ show.query <- function(p, dialect = 'EXASOL', df = NULL) {
 #'   \item \code{as.character(eval.pref(p, df)) == pref.str(p, df)}
 #'   \item \code{show(eval.pref(p, df))} produces the same console output as \code{show.pref(p, df)}
 #' }
+#' 
+#' @seealso See \code{\link{general_pref}} for more utility functions for preferences.
 #' 
 #' @examples
 #' 
@@ -128,16 +133,6 @@ eval.pref <- function(p, df = NULL) {
   return(eval.pref.internal(p, df))
 }
 
-#' @export
-#' @rdname show.pref
-as.expression.preference <- function(x, ...) {
-  callNextMethod()
-}
-
-#' @export
-#' @rdname show.pref
-as.character.preference <- function(x, ...) x$get_str()
-
 # Get attributes of a data set as symbols
 get_static_terms <- function(df) {
   # Get static terms (all attributes of dataset, if given)
@@ -145,9 +140,9 @@ get_static_terms <- function(df) {
   else return(NULL)  
 }
 
-# Available Dialects
-EXA <- 'EXASOL'
-PSQL <- 'Preference SQL'
+# Available Dialects (in lower case)
+EXA <- 'exasol'
+PSQL <- 'preference sql'
 
 # Translation maps for operators
 PSQL_PREF_MAP = list('*'        = 'AND', 
@@ -163,7 +158,7 @@ EXASOL_PREF_MAP = list('*'        = 'PLUS',
                        'reverse'  = 'INVERSE')
 
 
-
+# Internal function for converting a preference to its sql representation
 show_pref_sql <- function(p, dialect, parent_op = '', static_terms = NULL) {
   
   if (dialect == EXA) use_map <- EXASOL_PREF_MAP

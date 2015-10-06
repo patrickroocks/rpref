@@ -1,6 +1,19 @@
-rPref 0.61
+rPref 0.62
 ==========
+
+* New documentation part "geneneral_pref" for general preferences
+
+* Moved length, as.expression, as.character from show_pref to
+  to general_pref
+  
+* Moved empty() from complex_pref to general_pref
+  
+* New functions is.preference, is.complex_pref, is.base_pref, 
+  is.empty_pref in general_pref
 
 * Fixed visibility of as.expression() function for preference objects
 
 * Changed behavior of show_level parameter of the psel function
+
+* parameter dialect in show.query is not case sensitive anymore
+

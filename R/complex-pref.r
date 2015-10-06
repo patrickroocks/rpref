@@ -6,7 +6,9 @@
 #' All complex preferences are mathematically strict partial orders (irreflexive and transitive).
 #' 
 #' @name complex_pref
-#' @param p,p1,p2,x Preferences (they can be either base preferences, see \code{\link{base_pref}}, or complex preferences)
+#' @param p,p1,p2,x Preferences (they can be either base preferences, see \code{\link{base_pref}}, or complex preferences),
+#'                  or, for \code{is.complex_pref}, an object to be tested if it is a complex preference.
+#'                
 #' 
 #' @section Skylines:
 #' 
@@ -62,16 +64,12 @@
 #'  \item{\code{reverse(p1)} or \code{-p1}}{Reverse preference (converse relation): 
 #'  A tuple t1 is better than t2 w.r.t. \code{-p1} if t2 is better than t1 w.r.t. \code{p1}. 
 #'  The unary minus operator, i.e. \code{-p1}, is a short hand notation for \code{reverse(p1)}.}
-#'  \item{\code{empty()}}{Empty preference, i.e., a neutral element for the complex preference compositions \code{{*, &, +}}. 
-#'  It holds that \code{empty() * p} and \code{empty() & p} is equal to \code{p} for all preferences \code{p}.}
 #' }
 #' 
-#' @section Preference Term Length:
-#' 
-#' The function \code{length(p)} returns the term length of the preference term \code{p} which is defined as the number of base preferences
-#' in a complex preference term.
 #'
-#' @seealso See \code{\link{base_pref}} for the construction of base preferences. See \code{\link{psel}} for the evaluation of preferences. 
+#' @seealso See \code{\link{base_pref}} for the construction of base preferences. 
+#' See \code{\link{general_pref}} for functions applying to all kind of preferences.
+#' See \code{\link{psel}} for the evaluation of preferences. 
 #' 
 #' @keywords skyline
 #' 
@@ -146,24 +144,20 @@ reverse <- function(p) {
   return(reversepref(p))
 }
 
-# This entry will be deleted in the final man-files as "-" is just used unary!
-#' @rdname complex_pref
+# This entry has no @rdname as "-" is just used unary!
+# (it is exported, but invisible in the documentation
 #' @export
 "-.preference" <- function(p1, p2) {
   if (nargs() == 1) return(reverse(p1))
   else stop("Operation not defined.")
 }
 
-# Neutral element
+
 #' @rdname complex_pref
 #' @export
-empty <- function() emptypref()
-
-# Length of a preference term (number of base preferences)
-#' @export
-#' @rdname complex_pref
-length.preference <- function(x) x$get_length()
-
+is.complex_pref <- function(x) {
+  return(inherits(x, "complexpref"))
+}
  
 # Helper functions
 # ----------------

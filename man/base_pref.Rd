@@ -4,6 +4,7 @@
 \alias{base_pref}
 \alias{high}
 \alias{high_}
+\alias{is.base_pref}
 \alias{low}
 \alias{low_}
 \alias{true}
@@ -21,6 +22,8 @@ high_(expr, df = NULL)
 true(expr, df = NULL)
 
 true_(expr, df = NULL)
+
+is.base_pref(x)
 }
 \arguments{
 \item{expr}{A numerical/logical expression which is the term to evaluate for the current preference.
@@ -28,8 +31,10 @@ The objective is to search for minimal/maximal values of this expression (for \c
 logical \code{TRUE} values (for \code{true}).}
 
 \item{df}{(optional) A data frame, having the same structure (i.e., columns)
-       like that data frame, where this preference is evaluated later on.
-       Causes a partial evaulation of the preference. Only the column names of \code{df} are relevant.}
+like that data frame, where this preference is evaluated later on.
+Causes a partial evaluation of the preference. Only the column names of \code{df} are relevant.}
+
+\item{x}{An object to be tested if it is a base preference.}
 }
 \description{
 Base preferences are used to describe the different goals (e.g., dimensions in case of a Skyline query)
@@ -121,7 +126,7 @@ psel(mtcars, p2)
 }
 \seealso{
 See \code{\link{complex_pref}} how to compose complex preferences to retrieve e.g., the Skyline.
-
+See \code{\link{general_pref}} for functions applying to all kind of preferences.
 See \code{\link{base_pref_macros}} for more base preferences.
 }
 
