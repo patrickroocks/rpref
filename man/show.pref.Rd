@@ -15,7 +15,7 @@ eval.pref(p, df = NULL)
 \arguments{
 \item{p}{The preference to be shown or partially evaluated.}
 
-\item{df}{(optional) A dataframe on which the preference operates.}
+\item{df}{(optional) A data frame on which the preference operates.}
 }
 \description{
 Functions to substitute variables and functions in preferences
@@ -28,17 +28,17 @@ while \code{show.pref} outputs it directly to the console, preceded by \code{'[P
 If \code{df} is specified, then a partial evaluation of the preference is done before converting it to a string.
 With \code{as.expression(p)} the R code for constructing a given preference is given.
 
-The function \code{eval.pref} (with given dataframe \code{df}) partially evaluates the internal preference expression and
+The function \code{eval.pref} (with given data frame \code{df}) partially evaluates the internal preference expression and
 returns again a preference object. All expressions in \code{p} are evaluated in the environment
 where \code{p} was defined, except the the column names in \code{df} (which are potential attributes in \code{p})
 and except the special variable \code{df__}, which accesses the entire data set (see \code{\link{psel}}).
-The content of the dataframe \code{df} does not matter; only \code{names(df)} is used to get the "free variables" in \code{p}.
+The content of the data frame \code{df} does not matter; only \code{names(df)} is used to get the "free variables" in \code{p}.
 }
 \section{Partial Evaluation Before String Output}{
 
 
-The functions \code{show.pref} and \code{pref.str} have the optional paramter \code{df}.
-If this paramter is given, these functions call \code{eval.pref} before they output or return the preference string.
+The functions \code{show.pref} and \code{pref.str} have the optional parameter \code{df}.
+If this parameter is given, these functions call \code{eval.pref} before they output or return the preference string.
 The following equalities hold:
 
 \itemize{
@@ -50,10 +50,10 @@ The following equalities hold:
 f <- function(x) 2*x
 p <- true(cyl == f(1))
 
-# prints 'cyl == f(x)'
+# prints 'true(cyl == f(1))'
 p
 
-# prints 'cyl == 2'
+# prints 'true(cyl == 2)'
 show.pref(p, mtcars)
 eval.pref(p, mtcars)
 }

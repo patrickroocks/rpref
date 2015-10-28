@@ -20,7 +20,7 @@ if \code{TRUE} than arrows point from worse nodes to better nodes.}
 \item{labels}{(optional) Labels for the vertices when \code{plot_btg} is used.}
 }
 \description{
-Returns a Hasse-Diagramm of a preference order (also called the Better-Than-Graph) on a given data set
+Returns a Hasse diagram of a preference order (also called the Better-Than-Graph) on a given data set
 to be plotted with the igraph package or plots the graph directly.
 }
 \details{
@@ -28,7 +28,7 @@ The function \code{get_btg} returns a list \code{l} with the following list entr
 
 \describe{
   \item{\code{l$graph}}{An igraph object, created with the \code{\link{igraph}} package.}
-  \item{\code{l$layout}}{A typical Hasse-diagram layout for plotting the graph, also created with igraph.}
+  \item{\code{l$layout}}{A typical Hasse diagram layout for plotting the graph, also created with igraph.}
 }
 
 To plot the resulting graph returned from \code{get_btg}, use the \code{plot} function as follows:
@@ -39,7 +39,7 @@ For more details, see \code{\link{igraph.plotting}} and the examples below.
 The function \code{plot_btg} directly plots the Better-Than-Graph
 some defaults values for e.g., vertex size.
 
-The Hasse diagram of a preference visualizes all the better-than-relationsships on a given data set.
+The Hasse diagram of a preference visualizes all the better-than-relationships on a given data set.
 All edges which can be retrieved by transitivity of the order are omitted.
 
 By default, the arrows in the diagram point from better to worse nodes w.r.t. the preference.

@@ -52,6 +52,6 @@ test_that("Test string output of preferences on a given data set", {
   expect_that(show.query((low(wt) * low(hp)) & high(cyl + f(wt + y)), df = mtcars),
               matches("PREFERRING (LOW wt PLUS LOW hp) PRIOR TO HIGH (cyl + f(wt + 1))", fixed = TRUE))
   
-  expect_that(show.query((low(wt) * low(hp)) | high(cyl + f(wt + y)), df = mtcars, dialect = "PSQL"),
+  expect_that(show.query((low(wt) * low(hp)) | high(cyl + f(wt + y)), df = mtcars, dialect = "Psql"),
               matches("PREFERRING (wt LOWEST AND hp LOWEST) INTERSECT WITH (cyl + f(wt + 1)) HIGHEST", fixed = TRUE))
 })

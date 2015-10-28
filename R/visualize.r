@@ -2,7 +2,7 @@
 
 #' Better-Than-Graph
 #' 
-#' Returns a Hasse-Diagramm of a preference order (also called the Better-Than-Graph) on a given data set
+#' Returns a Hasse diagram of a preference order (also called the Better-Than-Graph) on a given data set
 #' to be plotted with the igraph package or plots the graph directly.
 #' 
 #' @param df A data frame.
@@ -15,7 +15,7 @@
 #' 
 #' \describe{
 #'   \item{\code{l$graph}}{An igraph object, created with the \code{\link{igraph}} package.}
-#'   \item{\code{l$layout}}{A typical Hasse-diagram layout for plotting the graph, also created with igraph.}
+#'   \item{\code{l$layout}}{A typical Hasse diagram layout for plotting the graph, also created with igraph.}
 #' }
 #' 
 #' To plot the resulting graph returned from \code{get_btg}, use the \code{plot} function as follows: 
@@ -26,7 +26,7 @@
 #' The function \code{plot_btg} directly plots the Better-Than-Graph 
 #' some defaults values for e.g., vertex size.
 #' 
-#' The Hasse diagram of a preference visualizes all the better-than-relationsships on a given data set.
+#' The Hasse diagram of a preference visualizes all the better-than-relationships on a given data set.
 #' All edges which can be retrieved by transitivity of the order are omitted.
 #' 
 #' By default, the arrows in the diagram point from better to worse nodes w.r.t. the preference. 
@@ -114,7 +114,7 @@ plot_btg <- function(df, pref, labels = 1:nrow(df), flip.edges = FALSE) {
        edge.color = 'black', vertex.label.color = 'black')
 }
 
-#' Adjacency List of Hasse Diagramm
+#' Adjacency List of Hasse diagramm
 #' 
 #' Returns the adjacency list of the Hasse diagram of a preference as an (n x 2) matrix. 
 #' This is the transitive reduction of the preference relation.
@@ -129,7 +129,7 @@ plot_btg <- function(df, pref, labels = 1:nrow(df), flip.edges = FALSE) {
 #' i.e., if (1,2) and (2,3) occur in the result, then (1,3) will not be contained.
 #' The number of rows in the result depends on the number of non-transitive Better-Than-Relationships in \code{df} w.r.t. \code{p}.
 #' 
-#' @seealso \code{\link{get_btg}} to plot the Hasse Diagram.
+#' @seealso \code{\link{get_btg}} to plot the Hasse diagram.
 #' 
 #' @examples
 #' 
@@ -137,7 +137,7 @@ plot_btg <- function(df, pref, labels = 1:nrow(df), flip.edges = FALSE) {
 #' 
 #' @export 
 get_hasse_diag <- function(df, pref) {
-  # Calculate Hasse-Diagramm for pref on df
+  # Calculate Hasse diagramm for pref on df
   scores <- pref$get_scorevals(1, df)$scores
   pref_serial <- pref$serialize()
   links <- t(get_hasse_impl(scores, pref_serial)) + 1
@@ -149,9 +149,9 @@ get_hasse_diag <- function(df, pref) {
 #' 
 #' Connects the points of a Pareto front (also known as Pareto frontier) and hence visualizes the dominance region of a Skyline.
 #' 
-#' @param df The data frame for which the Pareto front is plotted. This may be already a maxima set w.r.t. the preference \code{pref}, 
-#'           but anyway the maxima set is recalculated via \code{psel(df, pref)}.
-#' @param pref The preference representing the Skyline goals. This must be a pareto composition (\code{p1 * p2}) or
+#' @param df The data frame for which the Pareto front is plotted. This may be already a maximal set w.r.t. the preference \code{pref}, 
+#'           but anyway the maximal set is recalculated via \code{psel(df, pref)}.
+#' @param pref The preference representing the Skyline goals. This must be a Pareto composition (\code{p1 * p2}) or
 #'                intersection composition (\code{p1 | p2}) of 
 #'             two \code{\link{low}} or \code{\link{high}} preferences.
 #' @param ... Additional graphic parameters which are passed to the \code{\link{segments}} function (internally used to plot the front).
@@ -185,8 +185,8 @@ get_hasse_diag <- function(df, pref) {
 #' @export
 plot_front <- function(df, pref, ...) {
   
-  # Check if appropiate preference
-  if (!(   is.complexpref(pref) && (pref$op == '*' || pref$op == '|')
+  # Check if appropriate preference
+  if (!(   is.binarycomplexpref(pref) && (pref$op == '*' || pref$op == '|')
         && (is.lowpref(pref$p1) || is.highpref(pref$p1))
         && (is.lowpref(pref$p2) || is.highpref(pref$p2))  ))
     stop("The plot_front function can only be applied to a 2-dimensional pareto preference of low/high preferences!")

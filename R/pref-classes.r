@@ -22,6 +22,11 @@ preference <- setRefClass("preference",
       return("[abstract preference superclass]") 
     },
     
+    # Default term length (to be overwritten!)
+    get_length = function() {
+      return(0)
+    },
+    
     
     # Predecessor/Successor functions
     # -------------------------------
@@ -37,10 +42,11 @@ preference <- setRefClass("preference",
     
     check_cache = function() {
       if (!isTRUE(.self$cache_available)) 
-        stop("In calculation of predecessors/successors : No data set avaible. Run `init_succ_pref(df)` first.", call. = FALSE)
+        stop(paste0("In calculation of predecessors/successors : No data set avaible. ",
+                    "Run `init_succ_pref(df)` first."), call. = FALSE)
     },
     
-    # Hasse diagramm successors/predecessors
+    # Hasse diagram successors/predecessors
     h_predsucc = function(inds, do_intersect, succ) {
       .self$check_cache()
       
@@ -138,7 +144,6 @@ emptypref <- setRefClass("emptypref",
 #' @export
 as.expression.emptypref <- function(x, ...) expression(empty())
 
-is.emptypref <- function(x) inherits(x, "emptypref")
 
 # cmp/eq functions are not needed for C++ BNL algorithms, but for igraph, etc.
 
@@ -153,7 +158,7 @@ basepref <- setRefClass("basepref",
       return(.self)
     },
     
-    # Calculate scorevals as dataframe, increment score id
+    # Calculate scorevals as data frame, increment score id
     get_scorevals = function(next_id, df) {
       .self$score_id <- next_id
       # Add data.frame to the environment
@@ -164,7 +169,8 @@ basepref <- setRefClass("basepref",
       # Check if length ok
       if (length(scores) != nrow(df)) {
         if (length(scores) == 1) scores <- rep(scores, nrow(df))
-        else stop(paste0("Evaluation of base preference ", .self$get_str(), " does not have the same length as the dataset!"))
+        else stop(paste0("Evaluation of base preference ", .self$get_str(), 
+                         " does not have the same length as the data frame!"))
       }
       # Increase next_id after base preference
       return(list(next_id = next_id + 1, scores = as.data.frame(scores)))
@@ -288,7 +294,6 @@ basepref <- setRefClass("basepref",
     }
   )
 )
-is.basepref <- function(x) inherits(x, "basepref")  
 
 #' @export
 as.expression.basepref <- function(x, ...) { 
@@ -340,7 +345,8 @@ truepref <- setRefClass("truepref",
         if (length(as.character(.self$expr) > 0) && grepl(" \\|\\||\\&\\& ", as.character(.self$expr)))
           warning(paste0("In true(...) :\n", 
                    "Detected logical operator '&&' or '||' in logical expreesion -- possibly unexpected behavior. ",
-                   "Probably you intended '&' or '|'? Set \n'options(rPref.checkLogicalAndOr = FALSE)' \nto disable this warning."),
+                   "Probably you intended '&' or '|'? ",
+                   "Set \n'options(rPref.checkLogicalAndOr = FALSE)' \nto disable this warning."),
                    call. = FALSE)
       }
       return(.self)
@@ -453,7 +459,7 @@ complexpref <- setRefClass("complexpref",
     }
   )
 )
-is.complexpref <- function(x) inherits(x, "complexpref")
+is.binarycomplexpref <- function(x) inherits(x, "complexpref")
 
 #' @export
 as.expression.complexpref <- function(x, ...) {
@@ -542,11 +548,11 @@ priorpref <- setRefClass("priorpref",
       return(len)
     },
     
-    # Calculcate prior-chain score
+    # Calculate prior-chain score
     get_prior_scores = function(next_id, prior_length, df) {
       score_vals <- 0
       for (p in list(.self$p1, .self$p2)) {
-        if (is.complexpref(p)) {
+        if (is.priorpref(p)) {
           res <- p$get_prior_scores(next_id, prior_length, df) 
           score_vals <- score_vals + res$score_vals
           next_id <- res$next_id
@@ -595,7 +601,8 @@ priorpref <- setRefClass("priorpref",
             # Give a warning for all unbalanced trees
             if (is.priorpref(.self$p1) && .self$p1$chain_size > MAX_CHAIN_LENGTH && is.truepref(.self$p2) ||
                 is.priorpref(.self$p2) && .self$p2$chain_size > MAX_CHAIN_LENGTH && is.truepref(.self$p1))
-              warning(paste0("Prioritization chain exceeded maximal size (", MAX_CHAIN_LENGTH, ") and the operator tree is unbalanced. ",
+              warning(paste0("Prioritization chain exceeded maximal size (", MAX_CHAIN_LENGTH, ") ",
+                             "and the operator tree is unbalanced. ",
                               "This is a performance issue. It is recommended to build chains like ",
                               "(P1 & ... & P", MAX_CHAIN_LENGTH, ") & ... & (P1 & ... & P", MAX_CHAIN_LENGTH, ") ",
                               "for better performance of the preference evaluation."))
@@ -642,7 +649,7 @@ priorpref <- setRefClass("priorpref",
 is.priorpref <- function(x) inherits(x, "priorpref")
 
 # Non-abstract preference?
-is.actual.preference <- function(x) (is.basepref(x) || is.complexpref(x) || is.emptypref(x) || is.reversepref(x))
+is.actual.preference <- function(x) (is.base_pref(x) || is.complex_pref(x) || is.empty_pref(x))
   
 # Some helper functions
 # ---------------------

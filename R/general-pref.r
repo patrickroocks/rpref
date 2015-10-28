@@ -1,7 +1,7 @@
 
 #' General Preferences
 #' 
-#' Collection of some useful functions applying to base preferences as well as complex preferences.
+#' Collection of some useful functions applicable to base preferences as well as complex preferences.
 #' 
 #' @name general_pref
 #' 
@@ -19,7 +19,10 @@
 #' and all base preferences have length 1.
 #' 
 #' With \code{as.expression(p)} for a preference \code{p} the call to the preference is constructed. 
-#' It holds that \code{eval(as.expression(p))} returns the preference \code{p}, evaluated in the current environment.
+#' This means, \code{eval(as.expression(p))} returns the preference \code{p}, evaluated in the current environment.
+#' 
+#' The function \code{is.empty_pref} returns \code{TRUE} if \code{x} is the empty preference object 
+#' \code{empty()} and \code{FALSE} otherwise.
 #' 
 #' @seealso See \code{\link{base_pref}} for the construction of base preferences,
 #' and \code{\link{complex_pref}} for the construction of complex preferences. 

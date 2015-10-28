@@ -32,12 +32,13 @@ logical \code{TRUE} values (for \code{true}).}
 
 \item{df}{(optional) A data frame, having the same structure (i.e., columns)
 like that data frame, where this preference is evaluated later on.
-Causes a partial evaluation of the preference. Only the column names of \code{df} are relevant.}
+Causes a partial evaluation of the preference. Only the column names of \code{df} are relevant.
+See below for details.}
 
 \item{x}{An object to be tested if it is a base preference.}
 }
 \description{
-Base preferences are used to describe the different goals (e.g., dimensions in case of a Skyline query)
+Base preferences are used to describe the different goals (dimensions, in case of a Skyline query)
 of a preference query.
 }
 \details{
@@ -60,27 +61,29 @@ The term \code{expr} may be just a single attribute or may contain an arbitrary 
 depending on more than one attribute, e.g., \code{low(a+2*b+f(c))}.
 There \code{a}, \code{b} and \code{c} are columns of the addressed data set and \code{f} has to be a previously defined function.
 
-Functions contained in \code{expr} are evaluated over the entire dataset, i.e.,
+Functions contained in \code{expr} are evaluated over the entire data set, i.e.,
 it is possible to use aggregate functions (\code{min}, \code{mean}, etc.).
 Note that all functions (and also variables which are not columns of the data set, where \code{expr} will be evaluated on)
 must be defined in the same environment (e.g., environment of a function or global environment) as the base preference is defined.
+
+The function \code{is.base_pref} returns \code{TRUE} if \code{x} is a preference object and \code{FALSE} otherwise.
 }
 \section{Partial Evaluation of Preferences}{
 
 
 If the optional parameter \code{df} is given,
 then the expression is evaluated at the time of definition as far as possible.
-All variables occuring as columns in \code{df} remain untouched. For example, consider
+All variables occurring as columns in \code{df} remain untouched. For example, consider
 
 \code{f <- function(x) 2*x} \cr
 \code{p <- true(cyl == f(1), mtcars)}
 
-This results in the preference \code{true(cyl = 2)} as the variable \code{cyl} is a column in \code{mtcars}.
+Then \code{p} is equivalent to the preference \code{true(cyl == 2)} as the variable \code{cyl} is a column in \code{mtcars}.
 The rows of \code{df} are not relevant, e.g., using \code{mtcars[0,]} instead of \code{mtcars} makes no difference.
 
-The preference selection, i.e., \code{psel(mtcars, p)} can be also done without the partial evaluation.
+The preference selection, i.e., \code{psel(mtcars, p)} can be invoked without the partial evaluation.
 But this results in an error, if the function \code{f} has meanwhile removed from the current environment.
-Hence it is safer to do an eary partial evaluation of all preferences using user defined functions.
+Hence it is safer to do an early partial evaluation of all preferences, as far as they contain user defined functions.
 
 The partial evaluation can be done manually by \code{\link{eval.pref}}.
 }
@@ -103,7 +106,7 @@ By defining
 \code{false <- function(x, ...) -true_(substitute(x), ...)}
 
 one gets a preference which behaves like a "built-in" preference.
-Additional optional paramters (like \code{df}) are bypassed.
+Additional optional parameters (like \code{df}) are bypassed.
 The object \code{false(a == 1)} will output
 \code{[Preference] -true(a == 1)} on the console and
 \code{psel(data.frame(a = c(1,2)), false(a==1))} returns correctly the second tuple with \code{a==2}.

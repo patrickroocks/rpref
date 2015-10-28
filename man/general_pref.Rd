@@ -28,7 +28,7 @@ is.preference(x)
 \item{...}{Optional arguments passed to \code{as.character} and \code{as.expression}.}
 }
 \description{
-Collection of some useful functions applying to base preferences as well as complex preferences.
+Collection of some useful functions applicable to base preferences as well as complex preferences.
 }
 \details{
 The empty preference \code{empty()} is a neutral element for the complex preference compositions \code{{*, &, +}}.
@@ -40,7 +40,10 @@ in a complex preference term. The empty preference \code{empty()} has length 0,
 and all base preferences have length 1.
 
 With \code{as.expression(p)} for a preference \code{p} the call to the preference is constructed.
-It holds that \code{eval(as.expression(p))} returns the preference \code{p}, evaluated in the current environment.
+This means, \code{eval(as.expression(p))} returns the preference \code{p}, evaluated in the current environment.
+
+The function \code{is.empty_pref} returns \code{TRUE} if \code{x} is the empty preference object
+\code{empty()} and \code{FALSE} otherwise.
 }
 \examples{
 # Same as low(a) * low(b)

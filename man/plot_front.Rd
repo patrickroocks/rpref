@@ -7,10 +7,10 @@
 plot_front(df, pref, ...)
 }
 \arguments{
-\item{df}{The data frame for which the Pareto front is plotted. This may be already a maxima set w.r.t. the preference \code{pref},
-but anyway the maxima set is recalculated via \code{psel(df, pref)}.}
+\item{df}{The data frame for which the Pareto front is plotted. This may be already a maximal set w.r.t. the preference \code{pref},
+but anyway the maximal set is recalculated via \code{psel(df, pref)}.}
 
-\item{pref}{The preference representing the Skyline goals. This must be a pareto composition (\code{p1 * p2}) or
+\item{pref}{The preference representing the Skyline goals. This must be a Pareto composition (\code{p1 * p2}) or
    intersection composition (\code{p1 | p2}) of
 two \code{\link{low}} or \code{\link{high}} preferences.}
 

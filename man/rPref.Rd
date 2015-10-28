@@ -15,12 +15,14 @@ generalizations (database preferences).
 
 
 \itemize{
-\item Preferences are composed from base preferences (see \code{\link{base_pref}}) and complex preferences (see \code{\link{complex_pref}}),
-where especially the Pareto operator for Skylines is such a complex preference.
-Additionally some base preference macros are provided, see \code{\link{base_pref_macros}}.
-Some utility functions are collected in \code{\link{general_pref}}.
+\item Preferences are primarily composed from base preferences (see \code{\link{base_pref}})
+  and complex preferences (see \code{\link{complex_pref}}),
+  where especially the Pareto operator for Skylines is such a complex preference.
+\item Some utility functions for preferences are collected in \code{\link{general_pref}}.
+\item Additionally some base preference macros are provided in \code{\link{base_pref_macros}}.
 \item The (top(-level)-k) preference selection \code{\link{psel}} allows to retrieve
-      the maxima of a preference (or Pareto frontier, Skyline), constructed with the functions above, on a given dataset.
+      the maxima of a preference (or Pareto frontier, Skyline),
+      constructed with the functions above, on a given data set.
 }
 }
 
@@ -28,9 +30,9 @@ Some utility functions are collected in \code{\link{general_pref}}.
 
 
 \itemize{
-\item The visualization of the preference order in a Better-Than-Graph is possible via the \code{\link{plot_btg}}
-and \code{\link{get_btg}} functions in connection with the \code{\link{igraph}} package.
-\item The adjacency list of the Better-Than-Graph (Hasse diagramm) can be accessed via \code{\link{get_hasse_diag}}.
+\item The visualization of the preference order in a Better-Than-Graph (Hasse diagram) is possible via the \code{\link{plot_btg}}
+      and \code{\link{get_btg}} functions in connection with the \code{\link{igraph}} package.
+\item The adjacency list of the Hasse diagram can be accessed via \code{\link{get_hasse_diag}}.
 \item Predecessors/successors in the Hasse diagram are calculated with the \code{\link{pred_succ}} functions.
 \item The Pareto frontier can be plotted using the \code{\link{plot_front}} function.
 }

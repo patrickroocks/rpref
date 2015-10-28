@@ -11,7 +11,7 @@
 #'      This is a research prototype developed at the Chair of Databases and Information Systems of the University of Augsburg. 
 #'      See references for details.}
 #' }
-#' @param df Optional parameter to specifiy a dataframe on which the preference operates causing a partial evaluation. See \code{\link{show.pref}} for details.
+#' @param df Optional parameter to specify a data frame on which the preference operates causing a partial evaluation. See \code{\link{show.pref}} for details.
 #'     
 #' @details 
 #' 
@@ -52,7 +52,7 @@ show.query <- function(p, dialect = 'EXASOL', df = NULL) {
   if (!(dialect %in% c(EXA, PSQL))) stop(paste0('The dialect "', dialect, '" is unknown.'))
   
   # Check for empty -> return empty string
-  if (is.emptypref(p)) return("")
+  if (is.empty_pref(p)) return("")
   
   # Return PREFERRING-clause
   return(paste0('PREFERRING ', show_pref_sql(p, dialect, 'PREF', get_static_terms(df)))) # parent node "PREF" means root node
@@ -66,24 +66,24 @@ show.query <- function(p, dialect = 'EXASOL', df = NULL) {
 #' This is especially used for the string/expression output of preferences.
 #' 
 #' @param p The preference to be shown or partially evaluated.
-#' @param df (optional) A dataframe on which the preference operates.
+#' @param df (optional) A data frame on which the preference operates.
 #' 
 #' @details The function \code{pref.str} (or \code{as.character(p)} for a preference \code{p}) returns the preference string 
 #' while \code{show.pref} outputs it directly to the console, preceded by \code{'[Preference]'}.
 #' If \code{df} is specified, then a partial evaluation of the preference is done before converting it to a string. 
 #' With \code{as.expression(p)} the R code for constructing a given preference is given.
 #' 
-#' The function \code{eval.pref} (with given dataframe \code{df}) partially evaluates the internal preference expression and 
+#' The function \code{eval.pref} (with given data frame \code{df}) partially evaluates the internal preference expression and 
 #' returns again a preference object. All expressions in \code{p} are evaluated in the environment
 #' where \code{p} was defined, except the the column names in \code{df} (which are potential attributes in \code{p}) 
 #' and except the special variable \code{df__}, which accesses the entire data set (see \code{\link{psel}}).
-#' The content of the dataframe \code{df} does not matter; only \code{names(df)} is used to get the "free variables" in \code{p}.
+#' The content of the data frame \code{df} does not matter; only \code{names(df)} is used to get the "free variables" in \code{p}.
 #' 
 #' 
 #' @section Partial Evaluation Before String Output:
 #' 
-#' The functions \code{show.pref} and \code{pref.str} have the optional paramter \code{df}.
-#' If this paramter is given, these functions call \code{eval.pref} before they output or return the preference string.
+#' The functions \code{show.pref} and \code{pref.str} have the optional parameter \code{df}.
+#' If this parameter is given, these functions call \code{eval.pref} before they output or return the preference string.
 #' The following equalities hold:
 #' 
 #' \itemize{
@@ -98,10 +98,10 @@ show.query <- function(p, dialect = 'EXASOL', df = NULL) {
 #' f <- function(x) 2*x
 #' p <- true(cyl == f(1))
 #' 
-#' # prints 'cyl == f(x)'
+#' # prints 'true(cyl == f(1))'
 #' p
 #' 
-#' # prints 'cyl == 2'
+#' # prints 'true(cyl == 2)'
 #' show.pref(p, mtcars)
 #' eval.pref(p, mtcars)
 #' 
@@ -135,7 +135,7 @@ eval.pref <- function(p, df = NULL) {
 
 # Get attributes of a data set as symbols
 get_static_terms <- function(df) {
-  # Get static terms (all attributes of dataset, if given)
+  # Get static terms (all attributes of data set, if given)
   if (!is.null(df)) return(lapply(names(df), as.symbol))
   else return(NULL)  
 }
@@ -164,7 +164,7 @@ show_pref_sql <- function(p, dialect, parent_op = '', static_terms = NULL) {
   if (dialect == EXA) use_map <- EXASOL_PREF_MAP
   else                use_map <- PSQL_PREF_MAP
   
-  if (is.basepref(p)) {
+  if (is.base_pref(p)) {
     return(show_base_pref(p, dialect, static_terms))
   } else if (is.reversepref(p)) { 
     if (dialect == EXA) # INVERSE is notated as prefix in EXASOL
@@ -172,7 +172,7 @@ show_pref_sql <- function(p, dialect, parent_op = '', static_terms = NULL) {
     else  # "DUAL" is notated as suffix in Preference SQL!
       return(paste0('(', show_pref_sql(p$p, dialect, static_terms = static_terms), ') ', use_map[['reverse']]))
       
-  } else if (is.complexpref(p)) {
+  } else if (is.binarycomplexpref(p)) {
     # usual complex preference (not inverse!)
     opchr <- use_map[[p$op]]
     # Check if operator is available in the given dialect

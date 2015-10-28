@@ -13,7 +13,7 @@ psel.indices(df, pref, ...)
 \item{df}{A data frame or, for a grouped preference selection, a grouped data frame. See below for details.}
 
 \item{pref}{The preference order constructed via \code{\link{complex_pref}} and \code{\link{base_pref}}.
-All variables occuring in the definition of \code{pref} must be either columns of the data frame \code{df}
+All variables occurring in the definition of \code{pref} must be either columns of the data frame \code{df}
 or variables/functions of the environment where \code{pref} was defined.}
 
 \item{...}{Additional (optional) parameters for top(-level)-k selections:
@@ -34,10 +34,10 @@ or variables/functions of the environment where \code{pref} was defined.}
     \code{and_connected = FALSE}, these conditions are or-connected.
     This corresponds to the union of \code{psel([...], cond1)} and \code{psel([...], cond2)}.}
     \item{\code{show_level}}{Logical value. If \code{TRUE}, a column \code{.level}
-    is added to the returned data frame, containing all level values (see below for details).
+    is added to the returned data frame, containing all level values.
     If at least one of the \{\code{top}, \code{at_least}, \code{top_level}\} values are given,
-    then it is set to \code{TRUE} by default for the \code{psel} function.
-    Otherwise, and for \code{psel.indices} in all cases, this option is set to \code{FALSE} by default.}
+    then \code{show_level} is \code{TRUE} by default for the \code{psel} function.
+    Otherwise, and for \code{psel.indices} in all cases, this option is \code{FALSE} by default.}
 }}
 }
 \description{
@@ -61,7 +61,7 @@ For a given \code{top} value of k the k best elements and their level values are
 
 \itemize{
 \item{All the maxima of a data set w.r.t. a preference have level 1.}
-\item{The maxima of the remainder, i.e., the dataset without the level 1 maxima, have level 2.}
+\item{The maxima of the remainder, i.e., the data set without the level 1 maxima, have level 2.}
 \item{The n-th iteration of "Take the maxima from the remainder" leads to tuples of level n.}
 }
 
@@ -70,9 +70,11 @@ returns a data frame with the columns '.indices' and '.level'.
 Note that, if none of the top-k values \{\code{top}, \code{at_least}, \code{top_level}\} is set,
 then all level values are equal to 1.
 
-By definition, a top-k preference selection is non-deterministic. A top-1 query of two equivalent tuples (equivalence according to \code{pref})
-can return on both of these tuples. E.g., for tuples {(a=1, b=1), (a=1, b=2)} a \code{top=1} preference selection w.r.t. \code{low(a)} preference can return
-either the 'b=1' or the 'b=2' tuple.
+By definition, a top-k preference selection is non-deterministic.
+A top-1 query of two equivalent tuples (equivalence according to \code{pref})
+can return on both of these tuples.
+For example, a \code{top=1} preference selection on the tuples {(a=1, b=1), (a=1, b=2)}
+w.r.t. \code{low(a)} preference can return either the 'b=1' or the 'b=2' tuple.
 
 On the contrary, a preference selection using \code{at_least} is deterministic by adding all tuples having the same level as the worst level
 of the corresponding top-k query. This means, the result is filled with all tuples being not worse than the top-k result.
@@ -86,16 +88,16 @@ then all elements of \code{df} will be returned without further warning.
 \section{Grouped Preference Selection}{
 
 
-With \code{psel} it is also possible to perform a preference selection where the maxima are calculated for every group seperately.
+Using \code{psel} it is also possible to perform a preference selection where the maxima are calculated for every group separately.
 The groups have to be created with \code{\link{group_by}} from the dplyr package. The preference selection preserves the grouping, i.e.,
 the groups are restored after the preference selection.
 
 For example, if the \code{summarize} function from dplyr is applied to
 \code{psel(group_by(...), pref)}, the summarizing is done for the set of maxima of each group.
-This can be used to e.g., calculate the number of maxima in each group, see examples below.
+This can be used to e.g., calculate the number of maxima in each group, see the examples below.
 
 A \{\code{top}, \code{at_least}, \code{top_level}\} preference selection
-is applied to each group seperately.
+is applied to each group separately.
 A \code{top=k} selection returns the k best tuples for each group.
 Hence if there are 3 groups in \code{df}, each containing at least 2 elements,
 and we have \code{top = 2}, then 6 tuples will be returned.
@@ -104,9 +106,9 @@ and we have \code{top = 2}, then 6 tuples will be returned.
 \section{Parallel Computation}{
 
 
-On multicore machines the preference selection can be run in parellel using a divide-and-conquer approach.
-Note that, depending on the data set, this is not faster thean a single-threaded computation in all cases.
-To active parallel compuation within rPref:
+On multi-core machines the preference selection can be run in parallel using a divide-and-conquer approach.
+Depending on the data set, this may be faster than a single-threaded computation.
+To activate parallel computation within rPref the following option has to be set:
 
 \code{options(rPref.parallel = TRUE)}
 
@@ -132,6 +134,6 @@ summarise(psel(group_by(mtcars, cyl), low(mpg)), n())
 }
 \seealso{
 See \code{\link{complex_pref}} on how to construct a Skyline preference.
-See \code{\link{plot_front}} on how to plot the pareto front of a Skyline.
+See \code{\link{plot_front}} on how to plot the Pareto front of a Skyline.
 }
 

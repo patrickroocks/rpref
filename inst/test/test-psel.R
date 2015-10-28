@@ -104,7 +104,7 @@ for (parallelity in c(FALSE, TRUE)) {
   # Simple tests of grouped top-K, at_least and toplevel
   test_that("Test TOP-k grouped Preference selection", {
     dfg <- group_by(data.frame(a = c(3,2,1,1,4), b = c(1,1,1,2,2)), b) # Simple grouped dataset
-    expect_that(psel(dfg, low(a), top = 2), equals(data.frame(c(1,2,1,4), c(1,1,2,2), c(1,2,1,2)), check.attributes = FALSE))
+    expect_that(as.data.frame(psel(dfg, low(a), top = 2)), equals(data.frame(c(1,2,1,4), c(1,1,2,2), c(1,2,1,2)), check.attributes = FALSE))
     expect_that(psel(dfg, low(a), at_least = 2, top = 1)$a, equals(c(1,1)))
     expect_that(psel(dfg, high(a), top_level = 2)$.level, equals(c(1,2,1,2)))
     expect_that(psel.indices(dfg, around(a,2), at_least = 1, top_level = 2), equals(c(2,4)))

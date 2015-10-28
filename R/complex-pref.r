@@ -1,7 +1,8 @@
 
 #' Complex Preferences
 #' 
-#' Complex preferences are used to compose different preference orders. For example the Pareto composition (via operator \code{*}) is the usual operator
+#' Complex preferences are used to compose different preference orders. 
+#' For example the Pareto composition (via operator \code{*}) is the usual operator
 #' to compose the preference for a Skyline query. The Skyline is also known as Pareto frontier.
 #' All complex preferences are mathematically strict partial orders (irreflexive and transitive).
 #' 
@@ -66,12 +67,14 @@
 #'  The unary minus operator, i.e. \code{-p1}, is a short hand notation for \code{reverse(p1)}.}
 #' }
 #' 
+#' The function \code{is.complex_pref} returns \code{TRUE} if \code{x} is a complex preference object 
+#' (i.e., was constructed by one of these binary operators or the unary operator \code{reverse}) 
+#' and \code{FALSE} otherwise.
+#' 
 #'
 #' @seealso See \code{\link{base_pref}} for the construction of base preferences. 
-#' See \code{\link{general_pref}} for functions applying to all kind of preferences.
+#' See \code{\link{general_pref}} for functions applicable to all kind of preferences.
 #' See \code{\link{psel}} for the evaluation of preferences. 
-#' 
-#' @keywords skyline
 #' 
 #' @references 
 #' 
@@ -84,7 +87,7 @@
 #' 
 #' @examples
 #' # define preference for cars with low consumption (high mpg-value) 
-#' # and simultanously high horsepower
+#' # and simultaneously high horsepower
 #' p1 <- high(mpg) * high(hp)  
 #' 
 #' # perform the preference search
@@ -140,7 +143,7 @@ NULL
 #' @export
 reverse <- function(p) {
   check_pref(p)
-  if (is.emptypref(p)) return(p)
+  if (is.empty_pref(p)) return(p)
   return(reversepref(p))
 }
 
@@ -156,7 +159,7 @@ reverse <- function(p) {
 #' @rdname complex_pref
 #' @export
 is.complex_pref <- function(x) {
-  return(inherits(x, "complexpref"))
+  return(inherits(x, "complexpref") || inherits(x, "reversepref"))
 }
  
 # Helper functions
@@ -169,11 +172,11 @@ check_pref <- function(p1, p2) {
 }
 
 # Check if one (or perhaps both) preference is empty
-check_empty <- function(p1, p2) (is.emptypref(p1) || is.emptypref(p2))
+check_empty <- function(p1, p2) (is.empty_pref(p1) || is.empty_pref(p2))
 
 # Get the result of a complex operation with an empty pref
 get_empty <- function(p1, p2) {
-  if (is.emptypref(p1))
+  if (is.empty_pref(p1))
     return(p2) # perhaps empty
   else
     return(p1)

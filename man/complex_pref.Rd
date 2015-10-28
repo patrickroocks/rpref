@@ -27,7 +27,8 @@ is.complex_pref(x)
                  or, for \code{is.complex_pref}, an object to be tested if it is a complex preference.}
 }
 \description{
-Complex preferences are used to compose different preference orders. For example the Pareto composition (via operator \code{*}) is the usual operator
+Complex preferences are used to compose different preference orders.
+For example the Pareto composition (via operator \code{*}) is the usual operator
 to compose the preference for a Skyline query. The Skyline is also known as Pareto frontier.
 All complex preferences are mathematically strict partial orders (irreflexive and transitive).
 }
@@ -89,10 +90,14 @@ Additionally, rPref supports the following preference composition operators:
  A tuple t1 is better than t2 w.r.t. \code{-p1} if t2 is better than t1 w.r.t. \code{p1}.
  The unary minus operator, i.e. \code{-p1}, is a short hand notation for \code{reverse(p1)}.}
 }
+
+The function \code{is.complex_pref} returns \code{TRUE} if \code{x} is a complex preference object
+(i.e., was constructed by one of these binary operators or the unary operator \code{reverse})
+and \code{FALSE} otherwise.
 }
 \examples{
 # define preference for cars with low consumption (high mpg-value)
-# and simultanously high horsepower
+# and simultaneously high horsepower
 p1 <- high(mpg) * high(hp)
 
 # perform the preference search
@@ -108,8 +113,7 @@ S. Mandl, O. Kozachuk, M. Endres, W. Kiessling (2015): Preference Analytics in E
 }
 \seealso{
 See \code{\link{base_pref}} for the construction of base preferences.
-See \code{\link{general_pref}} for functions applying to all kind of preferences.
+See \code{\link{general_pref}} for functions applicable to all kind of preferences.
 See \code{\link{psel}} for the evaluation of preferences.
 }
-\keyword{skyline}
 
