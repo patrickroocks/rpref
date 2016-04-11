@@ -31,6 +31,7 @@
 #' The Hasse diagram of a preference visualizes all the better-than-relationships on a given data set.
 #' All edges which can be retrieved by transitivity of the order are omitted.
 #' 
+<<<<<<< HEAD
 #' @section DOT (Graphviz) Output:
 #' 
 #' The function \code{get_btg_dot} produces the graph specification of the Better-Than-Graph in the DOT language
@@ -42,6 +43,10 @@
 #' the number of overlaps is low.
 #' 
 #' @section Additional Parameters:
+=======
+#' The function \code{get_btg_dot} produces the graph specification of the Better-Than-Graph in the DOT language
+#' of the Graphviz software. To produce the graph from that, you need the DOT interpreter. 
+>>>>>>> origin/master
 #' 
 #' By default, the arrows in the diagram point from better to worse nodes w.r.t. the preference. 
 #' This means an arrow can be read as "is better than". If \code{flip.edges = TRUE} is set, 
@@ -93,6 +98,11 @@
 #' plot(btg$graph, layout = btg$layout, vertex.label = labels, 
 #'      vertex.size = 20)
 #'
+#' # Create a graph with Graphviz (requires installed Graphviz)
+#' # creates tmpgraph.dot and tmpgraph.png in the current working directoy
+#' \dontrun{
+#' get_btg_dot(df, pref, labels, file = "tmpgraph.dot")
+#' shell('"C:/Program Files (x86)/Graphviz2.38/bin/dot.exe" -Tpng tmpgraph.dot -o tmpgraph.png')}
 #' 
 #' @export
 get_btg <- function(df, pref, flip.edges = FALSE) {
@@ -135,10 +145,16 @@ plot_btg <- function(df, pref, labels = 1:nrow(df), flip.edges = FALSE) {
 
 
 
+<<<<<<< HEAD
 # Get dot string for preference graph 
 # If file is not NULL, write output to file
 #' @rdname get_btg
 #' @export
+=======
+# Get dot string for preference graph (could be part of rPref)?
+# If file is not NULL, write output to file
+#' @rdname get_btg
+>>>>>>> origin/master
 get_btg_dot <- function(df, pref, labels = 1:nrow(df), flip.edges = FALSE, file = NULL) {
   
   # Maxima are one layer independent of flip.edges!
@@ -177,7 +193,10 @@ get_btg_dot <- function(df, pref, labels = 1:nrow(df), flip.edges = FALSE, file 
   # Finalize graph
   output <- paste0(output, '}')
   
+<<<<<<< HEAD
   # Return string or write to file
+=======
+>>>>>>> origin/master
   if (is.null(file)) 
     return(output)
   else

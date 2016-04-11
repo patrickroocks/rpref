@@ -1,6 +1,11 @@
 Package: rPref
+<<<<<<< HEAD
 Version: 1.0.0
 Date: 2016-04-11
+=======
+Version: 0.7.1
+Date: 2015-12-25
+>>>>>>> origin/master
 Title: Database Preferences and Skyline Computation
 Author: Patrick Roocks <mail@p-roocks.de>
 Maintainer: Patrick Roocks <mail@p-roocks.de>
