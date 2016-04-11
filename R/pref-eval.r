@@ -13,7 +13,7 @@
 #'  \describe{
 #'    \item{\code{top}}{A \code{top} value of k means that the k-best tuples of the data set are returned. 
 #'     This may be non-deterministic, see below for details.}
-#'     \item{\code{at_least}}{A \code{at_least} value of k returns the top-k tuples and additionally all tuples which are 
+#'     \item{\code{at_least}}{An \code{at_least} value of k returns the top-k tuples and additionally all tuples which are 
 #'     not dominated by the worst tuple (i.e. the minima) of the Top-k set. 
 #'     The number of tuples returned is greater or equal than
 #'      \code{at_least}. In contrast to top-k, this is deterministic.}
@@ -104,7 +104,7 @@
 #' 
 #' 
 #' @name psel
-#' @importFrom dplyr is.grouped_df is.grouped_dt group_by_
+#' @importFrom dplyr is.grouped_df group_by_
 #' @export
 #' 
 #' @examples
@@ -170,19 +170,13 @@ psel <- function(df, pref, ...) {
 
 #' @export
 #' @rdname psel
-#' @importFrom dplyr is.grouped_df is.grouped_dt group_by_
+#' @importFrom dplyr is.grouped_df group_by_
 #' @importFrom RcppParallel defaultNumThreads
 psel.indices <- function(df, pref, ...) {
   
   # Note that also data.table fulfills is.data.frame(.) = TRUE
   if (!is.data.frame(df))          stop("Preference selection needs a data.frame as first argument.")
   if (!is.actual.preference(pref)) stop("Preference selection needs a preference as second argument.")
-  
-  # Check if grouped data.table (currently not implemented, only grouped data frames work fine)
-  if (dplyr::is.grouped_dt(df)) {
-    df <- group_by_(as.data.frame(df), .dots = attr(df, 'vars'))
-    warning("Grouped preference selection is only possible for grouped data frames. The input was converted to a grouped data frame.")
-  }
     
   # ** Get all special arguments for top-k selections
   
@@ -219,6 +213,16 @@ psel.indices <- function(df, pref, ...) {
   if ((length(vars) > 0 && is.null(names(vars))) || ('' %in% names(vars)))
     warning("Unnamed arguments were passed to '...' in psel. They will be ignored.")
   
+  # ** get grouping 
+  
+  # (grouped data.tables have been removed from dplyr 0.4.3.9)
+  is_grouped <- dplyr::is.grouped_df(df)
+  if (is_grouped) {
+    group_indices <- attr(df, 'indices')
+    if (is.null(group_indices)) 
+      stop("Could not find grouping indices in grouped data.frame!")
+  }
+  
   # ** Calculate score/serial pref
  
   # Precalculate score values for given preference, get_corevals must be called before serialize!
@@ -241,10 +245,10 @@ psel.indices <- function(df, pref, ...) {
   
   if (!is_top) {
     # Do the preference selection - not-top-k
-    if (!dplyr::is.grouped_df(df)) { # Usual preference selection (not grouped)
+    if (!is_grouped) { # Usual preference selection (not grouped)
       res <- pref_select_impl(scores, pref_serial, Npar, alpha) # non parallel for Npar=1
     } else { # Grouped preference selection
-      res <- grouped_pref_sel_impl(df, scores, pref_serial, Npar, alpha) 
+      res <- grouped_pref_sel_impl(group_indices, scores, pref_serial, Npar, alpha) 
     }
     
     if (!show_level) # just return indices
@@ -257,11 +261,11 @@ psel.indices <- function(df, pref, ...) {
   } else {
     
     # Do the top-k preference selection
-    if (!is.grouped_df(df)) { # Usual preference selection (not grouped)
+    if (!is_grouped) { # Usual preference selection (not grouped)
       res <- pref_select_top_impl(scores, pref_serial, Npar, alpha, 
                                   top, at_least, top_level, and_connected, show_level) 
     } else { # Grouped preference selection
-      res <- grouped_pref_sel_top_impl(df, scores, pref_serial, Npar, alpha,
+      res <- grouped_pref_sel_top_impl(group_indices, scores, pref_serial, Npar, alpha,
                                        top, at_least, top_level, and_connected, show_level) 
     }
     

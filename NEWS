@@ -1,20 +1,8 @@
-rPref 0.7
-=========
+rPref 1.0.0
+===========
 
-* New page "general_pref" in the documentation collecting
-  some useful functions for preference objects
-
-* Moved length, as.expression, as.character from show_pref to
-  to general_pref
+* Added BTG graph visualization function in the DOT language, 
+  accessible via the function get_btg_dot.
   
-* Moved empty() from complex_pref to general_pref
-  
-* New functions is.preference, is.complex_pref, is.base_pref, 
-  is.empty_pref (in general_pref)
-
-* Fixed visibility of as.expression() function for preference objects
-
-* Changed behavior of show_level parameter of the psel function
-
-* Parameter "dialect" in show.query is not case sensitive anymore
-
+* Removed dependency to dplyr::is.grouped_dt, as this will be 
+  removed in dplyr > 0.4.3

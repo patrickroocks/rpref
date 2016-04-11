@@ -2,14 +2,16 @@
 
 #' Better-Than-Graph
 #' 
-#' Returns a Hasse diagram of a preference order (also called the Better-Than-Graph) on a given data set
-#' to be plotted with the igraph package or plots the graph directly.
+#' Returns a Hasse diagram of a preference order (also called the Better-Than-Graph, short BTG) on a given data set. 
+#' Either uses the igraph package or generates output for graphviz/DOT.
 #' 
 #' @param df A data frame.
 #' @param pref A preference on the columns of \code{df}, see \code{\link{psel}} for details.
 #' @param flip.edges (optional) Flips the orientation of edges,
 #'        if \code{TRUE} than arrows point from worse nodes to better nodes.
-#' @param labels (optional) Labels for the vertices when \code{plot_btg} is used.
+#' @param labels (optional) Labels for the vertices. Default values are the row indices.
+#' @param file (optional) If specified, then \code{get_btg_dot} writes the graph specification to 
+#'        given file path. If not specified, the graph specification is returned as a string.
 #' 
 #' @details The function \code{get_btg} returns a list \code{l} with the following list entries:
 #' 
@@ -24,10 +26,22 @@
 #' 
 #' For more details, see \code{\link{igraph.plotting}} and the examples below.
 #' The function \code{plot_btg} directly plots the Better-Than-Graph 
-#' some defaults values for e.g., vertex size.
+#' some defaults values for e.g., vertex size, using igraph.
 #' 
 #' The Hasse diagram of a preference visualizes all the better-than-relationships on a given data set.
 #' All edges which can be retrieved by transitivity of the order are omitted.
+#' 
+#' @section DOT (Graphviz) Output:
+#' 
+#' The function \code{get_btg_dot} produces the graph specification of the Better-Than-Graph in the DOT language
+#' of the Graphviz software. To produce the graph from that, you need the DOT interpreter. 
+#' Depending on the \code{file} parameter the output is either written to a file or returned as a string.
+#' 
+#' As the DOT layouter is suited for strict orders, the layouts of strict oder preference are generelly better
+#' than those generated with igraph. DOT ensures that all edges are oriented in the same direction and
+#' the number of overlaps is low.
+#' 
+#' @section Additional Parameters:
 #' 
 #' By default, the arrows in the diagram point from better to worse nodes w.r.t. the preference. 
 #' This means an arrow can be read as "is better than". If \code{flip.edges = TRUE} is set, 
@@ -37,8 +51,8 @@
 #' The names of the vertices are characters ranging from \code{"1"} to \code{as.character(nrow(df))} 
 #' and they correspond to the row numbers of \code{df}. 
 #' By default, these are also the labels of the vertices. 
-#' Alternatively, they can be defined manually in the \code{plot} function or 
-#' using the \code{labels} parameter of \code{plot_btg}.
+#' Alternatively, they can be defined manually 
+#' using the \code{labels} parameter of \code{plot_btg} or \code{get_btg_dot}. 
 #' 
 #' 
 #' @seealso \code{\link{igraph.plotting}}
@@ -60,14 +74,19 @@
 #' library(igraph)
 #' plot(btg$graph, layout = btg$layout, vertex.label = labels,
 #'      vertex.size = 25)
+#'      
+#' # Create a graph with Graphviz (requires installed Graphviz)
+#' \dontrun{
+#' # creates tmpgraph.dot in the current working directoy
+#' get_btg_dot(df, pref, labels, file = "tmpgraph.dot")
+#' # convert to diagram tmpgraph.png using Graphviz
+#' shell(paste0('"C:/Program Files (x86)/Graphviz2.38/bin/dot.exe"',
+#'              ' -Tpng tmpgraph.dot -o tmpgraph.png'))
+#' # open resulting image
+#' shell("tmpgraph.png")}
 #' 
-#' # add colors for the maxima nodes and plot again
-#' colors <- rep(rgb(1, 1, 1), nrow(df))
-#' colors[psel.indices(df, pref)] <- rgb(0,1,0)
-#' plot(btg$graph, layout = btg$layout, vertex.label = labels,
-#'      vertex.size = 25, vertex.color = colors)
 #' 
-#' # show lattice structure of 3-dimensional Pareto preference
+#' # show lattice structure of 3-dimensional Pareto preference in igraph
 #' df <- merge(merge(data.frame(x = 1:3), data.frame(y = 1:3)), data.frame(z = 1:2))
 #' labels <- paste0(df$x, ",", df$y, ",", df$z)
 #' btg <- get_btg(df, low(x) * low(y) * low(z))
@@ -113,6 +132,61 @@ plot_btg <- function(df, pref, labels = 1:nrow(df), flip.edges = FALSE) {
        vertex.color = 'white', vertex.size = 20, vertex.label.cex = 1.5,
        edge.color = 'black', vertex.label.color = 'black')
 }
+
+
+
+# Get dot string for preference graph 
+# If file is not NULL, write output to file
+#' @rdname get_btg
+#' @export
+get_btg_dot <- function(df, pref, labels = 1:nrow(df), flip.edges = FALSE, file = NULL) {
+  
+  # Maxima are one layer independent of flip.edges!
+  max_nodes <- as.character(psel.indices(df, pref))
+  
+  if (flip.edges) pref <- -pref
+  
+  links <- get_hasse_diag(df, pref)
+  nodes <- as.character(1:nrow(df))
+  
+  # Apply resulting in strings and collapsing it
+  joinstrapply <- function(lst, fun) {
+    paste(vapply(lst, fun, ''), collapse = "")
+  }
+  
+  # Init graph
+  output <- 'digraph G {\n'
+  
+  # flip.edges => Build graph from bottom to top
+  if (flip.edges) output <- paste0(output, 'rankdir = BT\n')
+  
+  # Maxima as first layer
+  output <- paste0(output, "{\nrank=same;\n",
+                   joinstrapply(max_nodes, function(x) paste0(x, ";\n")),
+                   "}\n")
+  
+  # Labels
+  output <- paste0(output, joinstrapply(1:nrow(df), function (i)
+    paste0('"', as.character(i), '" [label="', labels[i], '"]\n')))
+  
+  # Edges
+  output <- paste0(output, paste(apply(links, 1, function(x) 
+    paste0(as.character(x[1]), ' -> ', as.character(x[2]), ';\n')),
+    collapse = ""))
+  
+  # Finalize graph
+  output <- paste0(output, '}')
+  
+  # Return string or write to file
+  if (is.null(file)) 
+    return(output)
+  else
+    write(output, file)
+  
+}
+
+
+# ---------------------------------------------------------------------------------------------
 
 #' Adjacency List of Hasse diagramm
 #' 
@@ -180,6 +254,7 @@ get_hasse_diag <- function(df, pref) {
 #' # compare this to the front of a intersection preference
 #' show_front(high(hp) | high(mpg))
 #' 
+#' 
 #' @importFrom graphics par segments
 #' 
 #' @export
@@ -243,5 +318,7 @@ plot_front <- function(df, pref, ...) {
     
   }  
 }
+
+
   
   

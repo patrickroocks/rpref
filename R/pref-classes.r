@@ -77,6 +77,7 @@ preference <- setRefClass("preference",
     # All succesors/predecessors (sorting not necessary because of "which")
     all_predsucc = function(inds, do_intersect, succ) {
       .self$check_cache()
+      # does not need hasse diagram, but needs .self$scorevals
       
       # Select indices predecessors/successors
       if (succ) {
