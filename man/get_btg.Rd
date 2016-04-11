@@ -23,19 +23,11 @@ if \code{TRUE} than arrows point from worse nodes to better nodes.}
 
 \item{labels}{(optional) Labels for the vertices. Default values are the row indices.}
 
-<<<<<<< HEAD
 \item{file}{(optional) If specified, then \code{get_btg_dot} writes the graph specification to 
 given file path. If not specified, the graph specification is returned as a string.}
 }
 \description{
 Returns a Hasse diagram of a preference order (also called the Better-Than-Graph, short BTG) on a given data set. 
-=======
-\item{file}{(optional) If specified, then \code{get_btg_dot} writes the graph specification to
-       given file path. If not specified, the graph specification is returned as a string.}
-}
-\description{
-Returns a Hasse diagram of a preference order (also called the Better-Than-Graph, short BTG) on a given data set.
->>>>>>> origin/master
 Either uses the igraph package or generates output for graphviz/DOT.
 }
 \details{
@@ -69,21 +61,12 @@ than those generated with igraph. DOT ensures that all edges are oriented in the
 the number of overlaps is low.
 }
 
-<<<<<<< HEAD
 \section{Additional Parameters}{
 
 
 By default, the arrows in the diagram point from better to worse nodes w.r.t. the preference. 
 This means an arrow can be read as "is better than". If \code{flip.edges = TRUE} is set, 
 then the arrows point from worse nodes to better nodes ("is worse than"). 
-=======
-The function \code{get_btg_dot} produces the graph specification of the Better-Than-Graph in the DOT language
-of the Graphviz Software. To produce the graph from that, you need the DOT interpreter.
-
-By default, the arrows in the diagram point from better to worse nodes w.r.t. the preference.
-This means an arrow can be read as "is better than". If \code{flip.edges = TRUE} is set,
-then the arrows point from worse nodes to better nodes ("is worse than").
->>>>>>> origin/master
 In any case, the better nodes are plotted at the top and the worse nodes at the bottom of the diagram.
 
 The names of the vertices are characters ranging from \code{"1"} to \code{as.character(nrow(df))} 
@@ -125,14 +108,7 @@ btg <- get_btg(df, low(x) * low(y) * low(z))
 plot(btg$graph, layout = btg$layout, vertex.label = labels, 
      vertex.size = 20)
 
-<<<<<<< HEAD
 
-=======
-# Create a graph with Graphviz (requires installed Graphviz)
-\dontrun{
-get_btg_dot(df, pref, labels, file = "tmpgraph.dot")
-shell('"C:/Program Files (x86)/Graphviz2.38/bin/dot.exe" -Tpng tmpgraph.dot -o tmpgraph.png')}
->>>>>>> origin/master
 }
 \seealso{
 \code{\link{igraph.plotting}}

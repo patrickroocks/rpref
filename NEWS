@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 rPref 1.0.0
 ===========
 
@@ -7,9 +6,3 @@ rPref 1.0.0
   
 * Removed dependency to dplyr::is.grouped_dt, as this will be 
   removed in dplyr > 0.4.3
-=======
-rPref 0.7.1
-===========
-
-* Added get_btg_dot to visualization functions
->>>>>>> origin/master
