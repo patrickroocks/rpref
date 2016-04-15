@@ -209,13 +209,12 @@ DataFrame pref_select_top_impl(DataFrame scores, List serial_pref, int N, double
 // ===========================================
 
 // Grouped preference evaluation, based on Groups from dplyr
-// We assume that the attribute "indices" of a grouped data frame stores the grouping information!
+// Groups are given via indices list, calculated in dplyr
 
 // [[Rcpp::export]]
-DataFrame grouped_pref_sel_top_impl(DataFrame data, DataFrame scores, List serial_pref, int N, double alpha, 
+DataFrame grouped_pref_sel_top_impl(List indices, DataFrame scores, List serial_pref, int N, double alpha, 
                                         int top, int at_least, int toplevel, bool and_connected, bool show_levels) {
   
-  List indices = data.attr("indices"); // Group indices
   int nind = indices.length(); // Number of groups
   
   if (nind == 0) return(DataFrame::create(Named(".indices") = NumericVector(),

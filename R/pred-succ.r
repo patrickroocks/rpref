@@ -1,9 +1,9 @@
+
 #' Predecessor and Successor Functions
 #' 
 #' Function for traversing the BTG (Better-Than-Graph or Hasse diagram) of a preference. 
 #' 
 #' @name pred_succ
-#' 
 #' @param df A data frame characterizing the set wherein predecessors/successors are searched.
 #' @param v A numeric vector of indices in \code{df}. This represents the set of tuples for which predecessors/successors are searched.
 #' @param p A preference. Worse tuples in the induced order are successors and better tuples are predecessors.
@@ -61,12 +61,9 @@
 #' show_vals(hasse_succ(p, 10)) # Next worse car
 #' show_vals(all_pred(p, 10))   # All better cars
 #' show_vals(all_succ(p, 10))   # All worse cars
-#' 
-#' 
 NULL
 
 
-#' 
 #' @rdname pred_succ
 #' @export
 init_pred_succ <- function(df, p) {

@@ -143,9 +143,8 @@ NumericVector pref_select_impl(DataFrame scores, List serial_pref, int N, double
 // We assume that the attribute "indices" of a grouped data frame stores the grouping information!
 
 // [[Rcpp::export]]
-NumericVector grouped_pref_sel_impl(DataFrame data, DataFrame scores, List serial_pref, int N, double alpha) {
+NumericVector grouped_pref_sel_impl(List indices, DataFrame scores, List serial_pref, int N, double alpha) {
   
-  List indices = data.attr("indices");
   int nind = indices.length();
   std::list<int> res;
   

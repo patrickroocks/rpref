@@ -50,9 +50,9 @@ for (parallelity in c(FALSE, TRUE)) {
       
       
       options(rPref.scalagon.alpha = 10)
-      expect_that(sort(psel.indices(df2, low(x1) %op% low(x2))), equals(set1))
-      expect_that(sort(psel.indices(df2g, low(x1) %op% low(x2))), equals(set2))
-      expect_that(sort(psel.indices(df3, low(x1) %op% low(x2) * low(x3))), equals(set3))
+      expect_equal(sort(psel.indices(df2, low(x1) %op% low(x2))), set1)
+      expect_equal(sort(psel.indices(df2g, low(x1) %op% low(x2))), set2)
+      expect_equal(sort(psel.indices(df3, low(x1) %op% low(x2) * low(x3))), set3)
       
       # * Compare top-k preference selection
       
@@ -62,9 +62,9 @@ for (parallelity in c(FALSE, TRUE)) {
       set3 <- sort(psel.indices(df3, low(x1) %op% low(x2) * low(x3), top_level = 2))
       
       options(rPref.scalagon.alpha = 10)
-      expect_that(sort(psel.indices(df2, low(x1) %op% low(x2), at_least = 500)), equals(set1))
-      expect_that(sort(psel.indices(df2g, low(x1) %op% low(x2), at_least = 20)), equals(set2))
-      expect_that(sort(psel.indices(df3, low(x1) %op% low(x2) %op% low(x3), top_level = 2)), equals(set3))
+      expect_equal(sort(psel.indices(df2, low(x1) %op% low(x2), at_least = 500)), set1)
+      expect_equal(sort(psel.indices(df2g, low(x1) %op% low(x2), at_least = 20)), set2)
+      expect_equal(sort(psel.indices(df3, low(x1) %op% low(x2) %op% low(x3), top_level = 2)), set3)
       
       
     })

@@ -9,15 +9,15 @@ pref_select_top_impl <- function(scores, serial_pref, N, alpha, top, at_least, t
     .Call('rPref_pref_select_top_impl', PACKAGE = 'rPref', scores, serial_pref, N, alpha, top, at_least, toplevel, and_connected, show_levels)
 }
 
-grouped_pref_sel_top_impl <- function(data, scores, serial_pref, N, alpha, top, at_least, toplevel, and_connected, show_levels) {
-    .Call('rPref_grouped_pref_sel_top_impl', PACKAGE = 'rPref', data, scores, serial_pref, N, alpha, top, at_least, toplevel, and_connected, show_levels)
+grouped_pref_sel_top_impl <- function(indices, scores, serial_pref, N, alpha, top, at_least, toplevel, and_connected, show_levels) {
+    .Call('rPref_grouped_pref_sel_top_impl', PACKAGE = 'rPref', indices, scores, serial_pref, N, alpha, top, at_least, toplevel, and_connected, show_levels)
 }
 
 pref_select_impl <- function(scores, serial_pref, N, alpha) {
     .Call('rPref_pref_select_impl', PACKAGE = 'rPref', scores, serial_pref, N, alpha)
 }
 
-grouped_pref_sel_impl <- function(data, scores, serial_pref, N, alpha) {
-    .Call('rPref_grouped_pref_sel_impl', PACKAGE = 'rPref', data, scores, serial_pref, N, alpha)
+grouped_pref_sel_impl <- function(indices, scores, serial_pref, N, alpha) {
+    .Call('rPref_grouped_pref_sel_impl', PACKAGE = 'rPref', indices, scores, serial_pref, N, alpha)
 }
 

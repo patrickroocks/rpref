@@ -40,7 +40,7 @@ std::list<int> get_transitive_reduction(pref* p, int& ntuples) {
   // The edgelist
 	std::list<int> edges;
 
-	// Naive approach for transitive reduction: Check all pairs and check if there exits some element between them
+	// Naive approach for transitive reduction: Check all pairs and check if there exists some element between them
 	for (int i = 0; i < ntuples; i++)
 		for (int j = 0; j < ntuples; j++) {
 			if (p->cmp(i, j)) {

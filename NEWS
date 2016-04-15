@@ -1,4 +1,10 @@
-rPref 0.7.1
+rPref 1.0.0
 ===========
 
-* Added get_btg_dot to visualization functions
+* Added BTG graph visualization function in the DOT language, 
+  accessible via the function get_btg_dot.
+  
+* Removed dependency to dplyr::is.grouped_dt, as this will be 
+  removed in dplyr > 0.4.3
+  
+* Updated unit tests to new testthat 1.0.0 expectation syntax
