@@ -23,7 +23,7 @@ public:
   std::vector< std::vector<int> > vs;
   
   // Preference
-  pref* p;
+  ppref p;
   
   // output lists to write to
   std::vector< std::list<int> > results;
@@ -39,7 +39,7 @@ public:
   
   // initialize from Rcpp input and output matrixes (the RMatrix class
   // can be automatically converted to from the Rcpp matrix type)
-  Psel_worker_top(std::vector< std::vector<int> >& vs, pref* p, int N, double alpha, 
+  Psel_worker_top(std::vector< std::vector<int> >& vs, ppref p, int N, double alpha, 
     topk_setting& ts, std::vector< std::vector<int> >& samples_ind) : 
     vs(vs), p(p), results(N), alpha(alpha), ts(ts), samples_ind(samples_ind) { }
    
@@ -49,7 +49,7 @@ public:
       scalagon scal_alg(true);
       scal_alg.sample_ind = samples_ind[k];
       // Levels make no sense in parallel runs! Take only the indices here (first member of flex_list)
-      results[k] = scal_alg.run_scalagon_topk(vs[k], p, ts, alpha, false).first; 
+      results[k] = scal_alg.run_topk(vs[k], p, ts, alpha, false).first; 
     }
   }
 };
@@ -65,7 +65,7 @@ public:
   std::vector< std::vector<int> > vs;
   
   // Preference
-  pref* p;
+  ppref p;
   
   // output lists to write to
   std::vector< pair_list > results;
@@ -81,7 +81,7 @@ public:
   
   // initialize from Rcpp input and output matrixes (the RMatrix class
   // can be automatically converted to from the Rcpp matrix type)
-  Psel_worker_top_level(std::vector< std::vector<int> >& vs, pref* p, int N, double alpha,
+  Psel_worker_top_level(std::vector< std::vector<int> >& vs, ppref p, int N, double alpha,
                         topk_setting& ts, std::vector< std::vector<int> >& samples_ind) : 
     vs(vs), p(p), results(N), alpha(alpha), ts(ts), samples_ind(samples_ind) { }
    
@@ -91,7 +91,7 @@ public:
       scalagon scal_alg(true);
       scal_alg.sample_ind = samples_ind[k];
       // Levels are true in this class!
-      results[k] = scal_alg.run_scalagon_topk(vs[k], p, ts, alpha, true).second; // second is pair_list
+      results[k] = scal_alg.run_topk(vs[k], p, ts, alpha, true).second; // second is pair_list
     }
   }
 };
@@ -118,7 +118,7 @@ DataFrame pref_select_top_impl(DataFrame scores, List serial_pref, int N, double
   topk_setting ts(top, at_least, toplevel, and_connected);
   
   // De-Serialize preference
-  pref* p = CreatePreference(serial_pref, scores);  
+  ppref p = CreatePreference(serial_pref, scores);  
   
   // Result list
   flex_list res;
@@ -133,7 +133,7 @@ DataFrame pref_select_top_impl(DataFrame scores, List serial_pref, int N, double
     std::vector<int> v(ntuples);
     for (int i = 0; i < ntuples; i++) v[i] = i;
     
-    res = scal_alg.run_scalagon_topk(v, p, ts, alpha, show_levels); // res is flex_list
+    res = scal_alg.run_topk(v, p, ts, alpha, show_levels); // res is flex_list
   
   } else { // N > 1, parallel case
   
@@ -173,11 +173,8 @@ DataFrame pref_select_top_impl(DataFrame scores, List serial_pref, int N, double
     
     // Merge and execute top k Scalagon/BNL again, potentially WITH LEVELS
     std::vector<int> vec_merged(list_merged.begin(), list_merged.end());
-    res = scal_alg.run_scalagon_topk(vec_merged, p, ts, alpha, show_levels); // res is flex_list
+    res = scal_alg.run_topk(vec_merged, p, ts, alpha, show_levels); // res is flex_list
   }
-  
-  // Delete preference
-  delete p;
   
   if (!show_levels) {
     // Return just indices (first member of flex_list)
@@ -197,7 +194,7 @@ DataFrame pref_select_top_impl(DataFrame scores, List serial_pref, int N, double
     return(DataFrame::create(Named(".indices") = ind,
                              Named(".level")   = levels));
   }
-  // Preference was deleted before if block
+  
 }
 
 
@@ -222,7 +219,7 @@ DataFrame grouped_pref_sel_top_impl(List indices, DataFrame scores, List serial_
   
   topk_setting ts(top, at_least, toplevel, and_connected);
   
-  pref* p = CreatePreference(serial_pref, scores);
+  ppref p = CreatePreference(serial_pref, scores);
   
   scalagon scal_alg;
   
@@ -262,7 +259,7 @@ DataFrame grouped_pref_sel_top_impl(List indices, DataFrame scores, List serial_
     
       for (int i=0; i<nind; i++) {
         std::vector<int> group_indices = as< std::vector<int> >(indices[i]);
-        std::list<int> tres = scal_alg.run_scalagon_topk(group_indices, p, ts, alpha, false).first; // no levels
+        std::list<int> tres = scal_alg.run_topk(group_indices, p, ts, alpha, false).first; // no levels
         res.splice(res.end(), tres);
       }
     }
@@ -291,7 +288,7 @@ DataFrame grouped_pref_sel_top_impl(List indices, DataFrame scores, List serial_
     
       for (int i=0; i<nind; i++) {
         std::vector<int> group_indices = as< std::vector<int> >(indices[i]);
-        pair_list tres = scal_alg.run_scalagon_topk(group_indices, p, ts, alpha, true).second; // no levels
+        pair_list tres = scal_alg.run_topk(group_indices, p, ts, alpha, true).second; // no levels
         res.splice(res.end(), tres);
       }
     }
@@ -311,8 +308,6 @@ DataFrame grouped_pref_sel_top_impl(List indices, DataFrame scores, List serial_
                                   Named(".level")   = levels);
   }
     
-  // Delete preference
-  delete p;
   
   // Return result
   return(result_df);

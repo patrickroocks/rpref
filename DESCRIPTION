@@ -1,5 +1,5 @@
 Package: rPref
-Version: 1.0.1
+Version: 1.0.2
 Date: 2016-04-19
 Title: Database Preferences and Skyline Computation
 Author: Patrick Roocks <mail@p-roocks.de>
@@ -17,7 +17,7 @@ Imports:
     RcppParallel (>= 4.3.6),
     dplyr (>= 0.4.3),
     igraph (>= 1.0.1)
-SystemRequirements: GNU make, Windows: cmd.exe and cscript.exe
+SystemRequirements: C++11, GNU make, Windows: cmd.exe and cscript.exe
 License: GPL (>= 2)
 LazyData: true
 LinkingTo: Rcpp, RcppParallel

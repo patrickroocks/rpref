@@ -24,7 +24,7 @@ public:
   std::vector< std::vector<int> > vs;
   
   // Preference
-  pref* p;
+  ppref p;
   
   // output lists to write to
   std::vector< std::list<int> > results;
@@ -36,7 +36,7 @@ public:
   
   // initialize from Rcpp input and output matrixes (the RMatrix class
   // can be automatically converted to from the Rcpp matrix type)
-  Psel_worker(std::vector< std::vector<int> >& vs, pref* p, int N, double alpha, std::vector< std::vector<int> >& samples_ind) : 
+  Psel_worker(std::vector< std::vector<int> >& vs, ppref p, int N, double alpha, std::vector< std::vector<int> >& samples_ind) : 
     vs(vs), p(p), results(N), alpha(alpha), samples_ind(samples_ind) { }
    
    // function call operator that work for the specified range (begin/end)
@@ -44,7 +44,7 @@ public:
     for (std::size_t k = begin; k < end; k++) {
       scalagon scal_alg(true);
       scal_alg.sample_ind = samples_ind[k];
-      results[k] = scal_alg.run_scalagon(vs[k], p, alpha);
+      results[k] = scal_alg.run(vs[k], p, alpha);
     }
   }
 };
@@ -68,7 +68,7 @@ NumericVector pref_select_impl(DataFrame scores, List serial_pref, int N, double
   if (ntuples == 0) return NumericVector();
   
   // De-Serialize preference
-  pref* p = CreatePreference(serial_pref, scores);
+  ppref p = CreatePreference(serial_pref, scores);
     
   // Result list
   std::list<int> res;
@@ -83,7 +83,7 @@ NumericVector pref_select_impl(DataFrame scores, List serial_pref, int N, double
     std::vector<int> v(ntuples);
     for (int i=0; i<ntuples; i++) v[i] = i;
     
-    res = scal_alg.run_scalagon(v, p, alpha);
+    res = scal_alg.run(v, p, alpha);
   
   } else { // N > 1, parallel case
   
@@ -121,12 +121,9 @@ NumericVector pref_select_impl(DataFrame scores, List serial_pref, int N, double
     
     // Merge and execute (top k) BNL again
     std::vector<int> vec_merged(res.begin(), res.end());
-    res = scal_alg.run_scalagon(vec_merged, p, alpha);
+    res = scal_alg.run(vec_merged, p, alpha);
   
   }
-  
-  // Delete preference
-  delete p;
   
   // Return result
   return(NumericVector(res.begin(), res.end()));
@@ -150,7 +147,7 @@ NumericVector grouped_pref_sel_impl(List indices, DataFrame scores, List serial_
   
   if (nind == 0) return NumericVector();
   
-  pref* p = CreatePreference(serial_pref, scores);
+  ppref p = CreatePreference(serial_pref, scores);
 
   if (N > 1) { // parallel case
   
@@ -178,13 +175,10 @@ NumericVector grouped_pref_sel_impl(List indices, DataFrame scores, List serial_
   
     for (int i=0; i<nind; i++) {
       std::vector<int> group_indices = as< std::vector<int> >(indices[i]);
-      std::list<int> tres = scal_alg.run_scalagon(group_indices, p, alpha);
+      std::list<int> tres = scal_alg.run(group_indices, p, alpha);
       res.splice(res.end(), tres);
     }
   }
-  
-  // Delete preference
-  delete p;
   
   return(NumericVector(res.begin(), res.end()));
 }

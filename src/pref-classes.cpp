@@ -1,112 +1,167 @@
 #include <Rcpp.h>
+
+using namespace std;
 using namespace Rcpp;
 
 #include "pref-classes.h"
+
+
+// Special score preference
+// ------------------------
+
+// Scorepref and maker
+// -------------------
+
+scorepref::scorepref(const NumericVector& data_) : data(data_) {}
+
+scorepref::~scorepref() {}
+
+ppref scorepref::make(const NumericVector& data_) {
+  return (ppref)(make_shared<scorepref>(data_));
+}
+
 
 // --------------------------------------------------------------------------------------------------------------------------------
 // BEGIN VS block
 // --------------------------------------------------------------------------------------------------------------------------------
 
-// Methods of preferences classes and de-serialization of preferences
 
-complexpref::~complexpref() {
-  if (p1 != 0) delete p1;
-	if (p2 != 0) delete p2;
+// Reversepref and maker
+// ---------------------
+
+reversepref::reversepref(ppref p_) : p(p_) {}
+
+reversepref::~reversepref() {}
+
+ppref reversepref::make(ppref p_) {
+  return (ppref)(make_shared<reversepref>(p_));
 }
 
-reversepref::~reversepref() {
-	if (p != 0) delete p;
+
+// Complexpref, subclasses, and makers
+// -----------------------------------
+
+// General constructor for 2-ary complex preferences
+complexpref::complexpref(ppref p1_, ppref p2_) : p1(p1_), p2(p2_) {}
+complexpref::~complexpref() {}
+
+// Sub-Constructors (instead of inheriting via "using")
+unionpref::unionpref(              ppref p1_, ppref p2_) : complexpref(p1_, p2_) {}
+prior::prior(                      ppref p1_, ppref p2_) : complexpref(p1_, p2_) {}
+productpref::productpref(          ppref p1_, ppref p2_) : complexpref(p1_, p2_) {}
+pareto::pareto(                    ppref p1_, ppref p2_) : productpref(p1_, p2_) {}
+intersectionpref::intersectionpref(ppref p1_, ppref p2_) : productpref(p1_, p2_) {}
+
+
+ppref pareto::make(ppref p1_, ppref p2_) {
+  return (ppref)(make_shared<pareto>(p1_, p2_));
 }
 
-bool scorepref::cmp(int i, int j) {
+ppref prior::make(ppref p1_, ppref p2_) {
+  return (ppref)(make_shared<prior>(p1_, p2_));
+}
+
+ppref intersectionpref::make(ppref p1_, ppref p2_) {
+  return (ppref)(make_shared<intersectionpref>(p1_, p2_));
+}
+
+ppref unionpref::make(ppref p1_, ppref p2_) {
+  return (ppref)(make_shared<unionpref>(p1_, p2_));
+}
+
+
+
+// Compare/Equality functions
+// --------------------------
+
+const bool scorepref::cmp(int i, int j) {
   return(data[i] < data[j]);
 }
 
-bool scorepref::eq(int i, int j) {
-	return(data[i] == data[j]);
+const bool scorepref::eq(int i, int j) {
+  return(data[i] == data[j]);
 }
 
-bool reversepref::cmp(int i, int j) {
-	return(p->cmp(j, i));
+const bool reversepref::cmp(int i, int j) {
+  return(p->cmp(j, i));
 }
 
-bool reversepref::eq(int i, int j) {
-	return(p->eq(i, j));
+const bool reversepref::eq(int i, int j) {
+  return(p->eq(i, j));
 }
 
-bool complexpref::eq(int i, int j) {
-	return(p1->eq(i, j) && p2->eq(i, j));
+const bool complexpref::eq(int i, int j) {
+  return(p1->eq(i, j) && p2->eq(i, j));
 }
 
-bool prior::cmp(int i, int j) {
-	return(p1->cmp(i, j) || (p1->eq(i, j) && p2->cmp(i, j)));
+const bool prior::cmp(int i, int j) {
+  return(p1->cmp(i, j) || (p1->eq(i, j) && p2->cmp(i, j)));
 }
 
-bool pareto::cmp(int i, int j) {
-	return((p1->cmp(i, j) && (p2->cmp(i, j) || p2->eq(i, j))) ||
-		(p2->cmp(i, j) && (p1->cmp(i, j) || p1->eq(i, j))));
+const bool pareto::cmp(int i, int j) {
+  return((p1->cmp(i, j) && (p2->cmp(i, j) || p2->eq(i, j))) ||
+         (p2->cmp(i, j) && (p1->cmp(i, j) || p1->eq(i, j))));
 }
 
-bool intersectionpref::cmp(int i, int j) {
-	return(p1->cmp(i, j) && p2->cmp(i, j));
+const bool intersectionpref::cmp(int i, int j) {
+  return(p1->cmp(i, j) && p2->cmp(i, j));
 }
 
-bool unionpref::cmp(int i, int j) {
-	return(p1->cmp(i, j) || p2->cmp(i, j));
+const bool unionpref::cmp(int i, int j) {
+  return(p1->cmp(i, j) || p2->cmp(i, j));
 }
+
 
 // --------------------------------------------------------------------------------------------------------------------------------
 // END VS block
 // --------------------------------------------------------------------------------------------------------------------------------
 
 
+
+
 // Only internal: Recursively create preference
-std::pair<pref*, int> DoCreatePreference(const List& pref_lst, const DataFrame& scores, int next_id) {
-    
+pprefnum DoCreatePreference(const List& pref_lst, const DataFrame& scores, int next_id) {
+  
   char pref_kind = as<char>(pref_lst["kind"]);
-  std::pair<pref*, int> pair_res;
+  pprefnum pair_res1, pair_res2;
   
   if (pref_kind == '*' || pref_kind == '&' || pref_kind == '|' || pref_kind == '+') {
     
+    pair_res1 = DoCreatePreference(as<List>(pref_lst["p1"]), scores, next_id);
+    pair_res2 = DoCreatePreference(as<List>(pref_lst["p2"]), scores, pair_res1.second);
+    
     // Binary complex preference
-    // Note that a unique_ptr does not allow upcasts, hence we use standard pointers!
-    complexpref* res = NULL;
+    ppref res = NULL;
     
     switch(pref_kind) {
-      case '*': res = new pareto();           break;
-      case '&': res = new prior();            break;
-      case '|': res = new intersectionpref(); break;
-      case '+': res = new unionpref();        break;
+      case '*': res = pareto::make(          pair_res1.first, pair_res2.first); break;
+      case '&': res = prior::make(           pair_res1.first, pair_res2.first); break;
+      case '|': res = intersectionpref::make(pair_res1.first, pair_res2.first); break;
+      case '+': res = unionpref::make(       pair_res1.first, pair_res2.first); break;
     }
-
-    pair_res = DoCreatePreference(as<List>(pref_lst["p1"]), scores, next_id);
-    res->p1 = pair_res.first;
-    pair_res = DoCreatePreference(as<List>(pref_lst["p2"]), scores, pair_res.second);
-    res->p2 = pair_res.first;
-    return(std::pair<pref*, int>(res, pair_res.second));
+    
+    return(pprefnum(res, pair_res2.second));
     
   } else if (pref_kind == '-') {
     
-    reversepref* res = new reversepref();
-    pair_res = DoCreatePreference(as<List>(pref_lst["p"]), scores, next_id);
-    res->p = pair_res.first;
-    return(std::pair<pref*, int>(res, pair_res.second));
+    pair_res1 = DoCreatePreference(as<List>(pref_lst["p"]), scores, next_id);
+    ppref res = reversepref::make(pair_res1.first);
+    return(pprefnum(res, pair_res1.second));
     
   } else if (pref_kind == 's') {
     
     // Score (base) preference, scorevector is const!
-    scorepref* res = new scorepref(as<NumericVector>(scores[next_id]));
+    ppref res = scorepref::make(as<NumericVector>(scores[next_id]));
     next_id++;
-    return(std::pair<pref*, int>(res, next_id));
+    return(pprefnum(res, next_id));
     
   } 
   
   stop("Error during de-serialization of preference: Unexpected preference!");
-  return (std::pair<pref*, int>(0,0));
+  return (pprefnum(0,0));
 }
 
-
 // Interface to be called in the ..._impl function (psel-par(-top))
-pref* CreatePreference(const List& pref_lst, const DataFrame& scores) {
-  return(DoCreatePreference(pref_lst, scores, 0).first);
+ppref CreatePreference(const List& pref_lst, const DataFrame& scores) {
+  return(move(DoCreatePreference(pref_lst, scores, 0).first));
 }

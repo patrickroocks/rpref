@@ -1,10 +1,11 @@
-rPref 1.0.0
+rPref 1.0.2
 ===========
 
-* Added BTG graph visualization function in the DOT language, 
-  accessible via the function get_btg_dot.
+* Fixed bug in top-k selection using and_connected = FALSE
   
-* Removed dependency to dplyr::is.grouped_dt, as this will be 
-  removed in dplyr > 0.4.3
-  
-* Updated unit tests to new testthat 1.0.0 expectation syntax
+* Addes C++11 to SystemRequirements
+
+* Substituted all usual pointers by C++11 shared pointers
+  (no more new/delete commands in the C++ code)
+
+* Slightly optimized Scalagon Top-k algorithm

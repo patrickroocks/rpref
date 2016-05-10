@@ -120,4 +120,12 @@ for (parallelity in c(FALSE, TRUE)) {
     expect_equal(psel(group_by(mtcars, cyl), low(mpg) * high(hp), at_least = 3)$.level, c(1,1,2,1,1,2,2,1,1,1))
   })
   
-}  
+  # Top-K Tests with two parameters using and_connected
+  test_that("Test TOP-k Preference selection on mtcars", {
+    expect_equal(psel(mtcars, low(mpg), top = 5, top_level = 2, and_connected = TRUE)$.level, c(1, 1, 2))
+    expect_equal(psel(mtcars, low(mpg), top = 4, top_level = 5, and_connected = TRUE)$.level, c(1, 1, 2, 3))
+    expect_equal(psel(mtcars, low(mpg), top = 5, top_level = 2, and_connected = FALSE)$.level, c(1, 1, 2, 3, 4))
+    expect_equal(psel(mtcars, low(mpg), top = 3, top_level = 5, and_connected = FALSE)$.level, c(1, 1, 2, 3, 4, 5))
+  })
+  
+}

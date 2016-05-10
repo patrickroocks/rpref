@@ -8,5 +8,5 @@
 // --------------------------------------------------------------------------------------------------------------------------------
 
   
-  std::list<int> get_transitive_reduction(pref* p, int& ntuples);
+list<int> get_transitive_reduction(ppref p, int& ntuples);
   
