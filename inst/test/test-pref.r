@@ -86,30 +86,30 @@ test_that("Test evaluations", {
   df1 <- data.frame(b=NA, c=NA)
   df2 <- data.frame(c=NA)
   
-  expect_equal(as.character(eval.pref(eval.pref(p, df1), df1)), 
+  expect_equal(as.character(partial.eval.pref(partial.eval.pref(p, df1), df1)), 
               "low(f(list(1, c(1, 2), c(1, b), list(1, c(2, c)))))")
   
-  expect_equal(as.character(eval.pref(eval.pref(p, df2), df2)), 
+  expect_equal(as.character(partial.eval.pref(partial.eval.pref(p, df2), df2)), 
               "low(f(list(1, c(1, 2), c(1, 1), list(1, c(2, c)))))")
   
   
   g <- function(a, ...) low(f(b, ...) + a + sum(...))
   
-  expect_equal(as.character(eval.pref(g(1, 2, 3), df1)), 
+  expect_equal(as.character(partial.eval.pref(g(1, 2, 3), df1)), 
               "low(f(b, 2, 3) + 1 + 5)")
   
   
                 
   f <- function(..., x) prod(...) * x
   g <- function(a, ...) low(f(..., x = b) + (a + sum(...)))
-  p <- eval.pref(g(1, 2, 3), df1)
+  p <- partial.eval.pref(g(1, 2, 3), df1)
   
   expect_equal(as.character(p), 
                "low(f(2, 3, x = b) + 6)")
   
   expect_equal(psel.indices(data.frame(b=c(1,2)), p), 1)
   
-  p <- eval.pref(eval.pref(p, df2), df2)
+  p <- partial.eval.pref(partial.eval.pref(p, df2), df2)
   
   expect_equal(as.character(p), "low(12)")
   

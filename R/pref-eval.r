@@ -35,13 +35,17 @@
 #' 
 #' @details
 #' 
-#' The difference between the two variants of the preference selection is:
+#' The difference between the three variants of the preference selection is:
 #' 
 #' \itemize{
 #' \item The \code{psel} function returns a subset of the data set which are the maxima according to the given preference. 
 #' \item The function \code{psel.indices} returns just the row indices of the maxima 
 #' (except top-k queries with \code{show_level = TRUE}, see top-k preference selection).
 #' Hence \code{psel(df, pref)} is equivalent to \code{df[psel.indices(df, pref),]} for non-grouped data frames. 
+#' \item Finally, \code{peval} does the same like \code{psel}, but assumes that \code{p} has an associated data frame
+#'        which is used for the preference selection.
+#'        Consider \code{\link{base_pref}} to see how base preferences are associated with data sets
+#'        or use \code{\link{set.df}} to explicitly associate a preference with a data frame.
 #' }
 #' 
 #' @section Top-k Preference Selection:
@@ -97,10 +101,14 @@
 #' 
 #' \code{options(rPref.parallel = TRUE)}
 #' 
-#' If this option is not set, rPref will use single-threaded computation by default.
+#' If this option is not set, rPref will use single-threaded computation by default. 
+#' With the option \code{rPref.parallel.threads} the maximum number of threads can be specified.
+#' The default is the number of cores on your machine. 
+#' To set the number of threads to the value of 4, use:
+#' 
+#' \code{options(rPref.parallel.threads = 4)}
 #' 
 #' @seealso See \code{\link{complex_pref}} on how to construct a Skyline preference. 
-#' See \code{\link{plot_front}} on how to plot the Pareto front of a Skyline.
 #' 
 #' 
 #' @name psel
@@ -113,6 +121,10 @@
 #' psel(mtcars, low(mpg) * low(hp))
 #' psel(mtcars, low(mpg) * low(hp), top = 5)
 #' psel(mtcars, low(mpg) * low(hp), at_least = 5)
+#' 
+#' # preference with associated data frame and evaluation
+#' p <- low(mpg, df = mtcars) * (high(cyl) & high(gear))
+#' peval(p)
 #' 
 #' # visualize the skyline in a plot
 #' sky1 <- psel(mtcars, high(mpg) * high(hp))
@@ -236,8 +248,9 @@ psel.indices <- function(df, pref, ...) {
   
   # Use parallel computation? Default is FALSE!
   if (isTRUE(getOption("rPref.parallel", default = FALSE)))
-    # Get number of threads vom RcppParallel for parallelization
-    Npar <- RcppParallel::defaultNumThreads()
+    # Get number of threads
+    # default is number of cores (from RcppParallel)
+    Npar <- getOption("rPref.parallel.threads", RcppParallel::defaultNumThreads())
   else
     Npar <- 1
   
@@ -277,6 +290,15 @@ psel.indices <- function(df, pref, ...) {
   }
 }
 
+#' @export
+#' @rdname psel
+peval <- function(pref, ...) {
+  if (is.null(pref$df_src))
+    stop("The given preference has no associated data frame. Call `set.df(pref, df)' first.")
+  else
+    return(psel(pref$df_src$df, pref, ...))
+}
+  
 
 # Helper
 check.singleint.null2minus <- function(val, name) {

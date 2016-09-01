@@ -1,11 +1,12 @@
 
-#' General Preferences
+#' Utility Functions for Preferences
 #' 
-#' Collection of some useful functions applicable to base preferences as well as complex preferences.
+#' Collection of some useful functions which are applicable to all preference objects.
 #' 
 #' @name general_pref
 #' 
 #' @param x A preference, or, for \code{is.preference}, an object to be tested if it is an (empty) preference.
+#' @param df A data frame to associate with a preference object.
 #' @param ... Optional arguments passed to \code{as.character} and \code{as.expression}.
 #' 
 #' @details 
@@ -23,6 +24,13 @@
 #' 
 #' The function \code{is.empty_pref} returns \code{TRUE} if \code{x} is the empty preference object 
 #' \code{empty()} and \code{FALSE} otherwise.
+#' 
+#' With \code{set.df} a preference is associated with a data frame.
+#' This means, a partial evaluation based on this data frame is done. 
+#' See \code{\link{show.pref}} for details on partial evaluation of preferences.
+#' Next, the preference is linked to that data frame, such that \code{\link{peval}(p)} can be used instead of \code{psel(df, p)}.
+#' The function \code{get.df} is the inverse to \code{set.df} and returns the associated data frame.
+#' It returns \code{NULL} if no data frame is associated.
 #' 
 #' @seealso See \code{\link{base_pref}} for the construction of base preferences,
 #' and \code{\link{complex_pref}} for the construction of complex preferences. 
@@ -46,13 +54,13 @@ NULL
 # Neutral element
 #' @rdname general_pref
 #' @export
-empty <- function() emptypref()
+empty <- function() emptypref$new()
 
 # Check for empty preference
 #' @rdname general_pref
 #' @export
 is.empty_pref <- function(x) {
-  return(inherits(x, "emptypref"))
+  inherits(x, "emptypref")
 }
 
 # Length of a preference term (number of base preferences)
@@ -65,18 +73,32 @@ length.preference <- function(x) {
 #' @rdname general_pref
 #' @export
 is.preference <- function(x) {
-  return(inherits(x, "preference"))
+  inherits(x, "preference")
 }
   
 #' @export
 #' @rdname general_pref
 as.expression.preference <- function(x, ...) {
-  callNextMethod()
+  methods::callNextMethod()
 }
 
 #' @export
 #' @rdname general_pref
 as.character.preference <- function(x, ...) {
   x$get_str()
+}
+
+
+
+#' @export
+#' @rdname general_pref
+set.df <- function(x, df) {
+  x$set_df_src(dataframe_src$new(df, substitute(df)))
+}
+
+#' @export
+#' @rdname general_pref
+get.df <- function(x) {
+  x$df_src$df
 }
 

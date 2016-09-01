@@ -19,7 +19,7 @@ test_that("Test predecessors and successors", {
   # ** Generate preference,  init succ/pred functions and do some test
   df <- data.frame(id = 1:5)
   pref <- ((true(id %in% c(1,2)) & true(id == 3)) * true(id == 4)) & true(id == 5)
-  init_pred_succ(df, pref)
+  init_pred_succ(pref, df)
   
   expect_equal(all_succ(pref, numeric(0)), numeric(0))
   expect_equal(all_succ(pref, 1), c(3,5))
@@ -39,8 +39,8 @@ test_that("Test predecessors and successors", {
   expect_equal(hasse_pred(pref, c(3,4)), c(1,2))
   
   # Another test case
-  p <- (((true(id == 1) * true(id == 2)) & true(id == 3)) * (true(id == 2) & true(id == 4))) & true(id == 5)
-  init_pred_succ(df, p)
+  p <- (((true(id == 1, df) * true(id == 2)) & true(id == 3)) * (true(id == 2) & true(id == 4))) & true(id == 5)
+  init_pred_succ(p)
   
   expect_equal(hasse_pred(p, c(3,4)), c(1,2))
   expect_equal(hasse_pred(p, c(3,4), intersect = TRUE), 2)
@@ -63,15 +63,14 @@ test_that("Test predecessors and successors", {
   
   expect_error(all_succ(p, 1)) # Need to call init_pred_succ first!
   
-  # Evaluate pref (to substitute a,b,c in true(id %in% c(a,b,c)))
-  p <- eval.pref(p, df)
+  # Evaluate pref (to substitute a,b,c in true(id %in% c(a,b,c))) and associate data.frame
+  set.df(p, df)
   
   expect_identical(as.character(p), 
                    '((true(id == 1) * true(id == 2)) & true(id == 3)) * (true(id == 2) & -true(id %in% c(1, 2, 3)) & -true(id == 5))')
   
-  # We have to init p after evaluation!
-  init_pred_succ(df, p)
-  
+  # We have to init p after evaluation! (but df is already associcated!)
+  init_pred_succ(p)
   expect_equal(all_succ(p, 1), 3)
   expect_equal(all_pred(p, 5), c(2,4))
   expect_equal(hasse_succ(p, 2), c(3,4))
@@ -83,18 +82,17 @@ test_that("Test predecessors and successors", {
 # ---------------------------------------------------------------------------
 
 
-library(igraph)
-
+# should work without attaching igraph package (no plotting)
 test_that("Test igraph output for mtcars[1:5,] with low(mpg)", {
   
   # Trivial tests
-  expect_error(get_btg(mtcars[NULL,], empty()))
+  expect_error(get_btg(mtcars[NULL,], empty(), use_dot = FALSE))
   
-  g <- get_btg(mtcars[1:5,], empty())$graph
+  g <- get_btg(mtcars[1:5,], empty(), use_dot = FALSE)$graph
   expect_equal(as.numeric(g['1']), c(0,0,0,0,0))
   
-  # Main tests
-  g <- get_btg(mtcars[1:5,], low(mpg))$graph
+  # Main test
+  g <- get_btg(mtcars[1:5,], low(mpg), use_dot = FALSE)$graph
   
   expect_equal(as.numeric(g['1']), c(0,0,0,1,0))
   expect_equal(as.numeric(g['2']), c(0,0,0,1,0))
@@ -112,23 +110,45 @@ test_that("Test igraph output for mtcars[1:5,] with low(mpg)", {
   expect_equal(g['4','5'], 0)
 })
 
+if ("Rgraphviz" %in% rownames(installed.packages())) {
+  
+  # should work without attaching Rgraphviz package (no plotting)
+  test_that("Test igraph output for mtcars[1:5,] with low(wt)", {
+  
+    # Trivial test
+    g <- get_btg(mtcars[1:5,], empty(), use_dot = TRUE)
+    expect_equal(g@edgeL, list('1' = NULL, '2' = NULL, '3' = NULL, '4' = NULL, '5' = NULL))
+  
+    # Main test
+    g <- get_btg(mtcars[1:5,], low(mpg), use_dot = TRUE)
+    expect_equal(g@edgeL, list('1' = list(edges = 4), '2' = list(edges = 4), '3' = NULL, 
+                               '4' = list(edges = 3), '5' = list(edges = c(1, 2))))
+    
+  })
+  
+}
+
 
 # ---------------------------------------------------------------------------
 
-test_that("Test dot output for mtcars[1:5,] with simple preferences", {
+test_that("Test dot string output for mtcars[1:5,] with simple preferences", {
   
   expect_error(get_btg_dot(mtcars[NULL,], empty()))
+  
+  # Warning because of identical labels
+  expect_warning(get_btg_dot(mtcars[1:5,], empty(), label = mtcars[1:5,]$hp))
 
   # Tirvial test, empty preference
-  expect_equal(get_btg_dot(mtcars[1:5,], empty(), label = mtcars[1:5,]$hp),
+  expect_equal(get_btg_dot(mtcars[1:5,], empty(), label = rownames(mtcars[1:5,])),
                paste0("digraph G {\n{\nrank=same;\n1;\n2;\n3;\n4;\n5;\n}\n",
-                      "\"1\" [label=\"110\"]\n\"2\" [label=\"110\"]\n\"3\" [label=\"93\"]\n",
-                      "\"4\" [label=\"110\"]\n\"5\" [label=\"175\"]\n}"))
+                      "\"1\" [label=\"Mazda RX4\"]\n\"2\" [label=\"Mazda RX4 Wag\"]\n\"3\" [label=\"Datsun 710\"]\n",
+                      "\"4\" [label=\"Hornet 4 Drive\"]\n\"5\" [label=\"Hornet Sportabout\"]\n}"))
   
   # high(hp) preference
-  expect_equal(get_btg_dot(mtcars[1:5,], high(hp), label = mtcars[1:5,]$hp),
-               paste0("digraph G {\n{\nrank=same;\n5;\n}\n\"1\" [label=\"110\"]\n\"2\" [label=\"110\"]\n",
-                      "\"3\" [label=\"93\"]\n\"4\" [label=\"110\"]\n\"5\" [label=\"175\"]\n",
+  expect_equal(get_btg_dot(mtcars[1:5,], high(hp), label = rownames(mtcars[1:5,])),
+               paste0("digraph G {\n{\nrank=same;\n5;\n}\n{\nrank=same;\n1;\n2;\n4;\n}\n{\nrank=same;\n3;\n}\n",
+                      "\"1\" [label=\"Mazda RX4\"]\n\"2\" [label=\"Mazda RX4 Wag\"]\n",
+                      "\"3\" [label=\"Datsun 710\"]\n\"4\" [label=\"Hornet 4 Drive\"]\n\"5\" [label=\"Hornet Sportabout\"]\n",
                       "1 -> 3;\n2 -> 3;\n4 -> 3;\n5 -> 1;\n5 -> 2;\n5 -> 4;\n}"))
   
 })

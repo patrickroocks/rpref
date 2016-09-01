@@ -113,6 +113,7 @@ public:
 class scorepref : public pref {
 public:
   
+  // this must not be a reference!
   const NumericVector data;
   
   scorepref(const NumericVector& data);

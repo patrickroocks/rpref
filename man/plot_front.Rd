@@ -22,6 +22,10 @@ Connects the points of a Pareto front (also known as Pareto frontier) and hence 
 \details{
 \code{plot_front} assumes that there is an existing plot, where the value of the first preference was plotted as x-coordinate
 and the value of the second preference as y-coordinate.
+
+Note that \code{plot_front} is only recommended if you want to use the plotting functionality from base R. 
+If you prefer to use ggplot2, we recommend using \code{geom_step} for plotting the Pareto front.
+See \code{vignette("visualization", package = "rPref")} for examples.
 }
 \examples{
 

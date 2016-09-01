@@ -1,6 +1,6 @@
 #' Useful Base Preference Macros
 #' 
-#' In addition to the fundamental base preferences, 
+#' In addition to the base preferences, 
 #' rPref offers some macros to define preferences where a given interval or point is preferred. 
 #'
 #' @name base_pref_macros
@@ -15,7 +15,8 @@
 #'         It has to be of the same type (numeric, logical, character, ...) as \code{expr}.
 #' @param ... Layers (sets) for a \code{layered} preference. Each parameter corresponds to a layer 
 #'            and the first one characterizes the most preferred values.
-#' @param df (optional) Data frame for partial evaluation. See \code{\link{base_pref}} for details.
+#' @param df (optional) Data frame for partial evaluation and association of preference and data set.
+#'           See \code{\link{base_pref}} for details.
 #' 
 #' @section Definition of the Preference Macros:
 #' 
@@ -53,8 +54,8 @@ NULL
 #' @rdname base_pref_macros
 #' @export
 around <- function(expr, center, df = NULL) {
-  expr <- as.expression(call('abs', call('-', substitute(expr), center)))
-  return(eval.pref.internal(lowpref(expr, parent.frame()), df))
+  expr <- call('abs', call('-', substitute(expr), center))
+  return(lowpref$new(as.lazy(expr, parent.frame()), df, substitute(df)))
 }
 
 
@@ -62,15 +63,15 @@ around <- function(expr, center, df = NULL) {
 #' @export
 between <- function(expr, left, right, df = NULL) {
   expr <- substitute(expr)
-  between_expr <- as.expression(call('pmax', call('-', left, expr), 0, call('-', expr, right)))
-  return(eval.pref.internal(lowpref(between_expr, parent.frame()), df))
+  between_expr <- call('pmax', call('-', left, expr), 0, call('-', expr, right))
+  return(lowpref$new(as.lazy(between_expr, parent.frame()), df, substitute(df)))
 }
 
 #' @rdname base_pref_macros
 #' @export
 pos <- function(expr, pos_value, df = NULL) {
-  expr <- as.expression(call('%in%', substitute(expr), pos_value))
-  return(eval.pref.internal(truepref(expr, parent.frame()), df))
+  expr <- call('%in%', substitute(expr), pos_value)
+  return(truepref$new(as.lazy(expr, parent.frame()), df, substitute(df)))
 }
 
 #' @rdname base_pref_macros
@@ -80,8 +81,8 @@ layered <- function(expr, ..., df = NULL) {
   if (length(sl) < 2) stop("Empty layered preference is not allowed!")
   expr <- substitute(expr)
   layers <- lapply(sl, function(x) { 
-    tmp_expr <- as.expression(call('%in%', expr, x))
-    return(eval.pref.internal(truepref(tmp_expr, parent.frame()), df))
+    tmp_call <- call('%in%', expr, x)
+    return(truepref$new(as.lazy(tmp_call, parent.frame()), df, substitute(df)))
   })
   return(Reduce('&', layers))
 }

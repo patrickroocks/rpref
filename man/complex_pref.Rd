@@ -23,8 +23,9 @@ reverse(p)
 is.complex_pref(x)
 }
 \arguments{
-\item{p, p1, p2, x}{Preferences (they can be either base preferences, see \code{\link{base_pref}}, or complex preferences),
-or, for \code{is.complex_pref}, an object to be tested if it is a complex preference.}
+\item{p, p1, p2}{Preference objects (they can be either base preferences, see \code{\link{base_pref}}, or complex preferences)}
+
+\item{x}{An object to be tested if it is a complex preference.}
 }
 \description{
 Complex preferences are used to compose different preference orders. 
@@ -95,6 +96,32 @@ The function \code{is.complex_pref} returns \code{TRUE} if \code{x} is a complex
 (i.e., was constructed by one of these binary operators or the unary operator \code{reverse}) 
 and \code{FALSE} otherwise.
 }
+
+\section{Associated Data Sets}{
+
+
+If one of the preferences for a binary operator are associated with a data set (see \code{\link{base_pref}}),
+then this association is propagated. For example, the preference
+
+\code{p <- high(mpg, df = mtcars) * high(hp)}
+
+as well as
+
+\code{p <- high(mpg) * high(hp, df = mtcars)}
+
+both result in the same complex preference which is associated with \code{mtcars}. 
+A partial evaluation is also invoked for all preferenced which are added. 
+For example, using this \code{p}, 
+
+\code{p <- p * true(cyl == max(mtcars$cyl))}
+
+generates the following console output:
+
+\code{[Preference] high(mpg) * high(hp) * true(cyl == 8)} \cr
+\code{  * associated data source: data.frame "mtcars" [32 x 11]}
+
+We see that the association with the data set is propagated and \code{max(mtcars$cyl)} is partially evaluated.
+}
 \examples{
 # define preference for cars with low consumption (high mpg-value) 
 # and simultaneously high horsepower
@@ -102,6 +129,10 @@ p1 <- high(mpg) * high(hp)
 
 # perform the preference search
 psel(mtcars, p1)
+
+# alternative way: create preference with associated data set
+p2 <- high(mpg, df = mtcars) * high(hp)  
+peval(p2)
 }
 \references{
 S. Borzsonyi, D. Kossmann, K. Stocker (2001): The Skyline Operator. In Data Engineering (ICDE '01), pages 421-430.

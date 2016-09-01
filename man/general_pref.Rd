@@ -5,10 +5,12 @@
 \alias{as.expression.preference}
 \alias{empty}
 \alias{general_pref}
+\alias{get.df}
 \alias{is.empty_pref}
 \alias{is.preference}
 \alias{length.preference}
-\title{General Preferences}
+\alias{set.df}
+\title{Utility Functions for Preferences}
 \usage{
 empty()
 
@@ -21,14 +23,20 @@ is.preference(x)
 \method{as.expression}{preference}(x, ...)
 
 \method{as.character}{preference}(x, ...)
+
+set.df(x, df)
+
+get.df(x)
 }
 \arguments{
 \item{x}{A preference, or, for \code{is.preference}, an object to be tested if it is an (empty) preference.}
 
 \item{...}{Optional arguments passed to \code{as.character} and \code{as.expression}.}
+
+\item{df}{A data frame to associate with a preference object.}
 }
 \description{
-Collection of some useful functions applicable to base preferences as well as complex preferences.
+Collection of some useful functions which are applicable to all preference objects.
 }
 \details{
 The empty preference \code{empty()} is a neutral element for the complex preference compositions \code{{*, &, +}}. 
@@ -44,6 +52,13 @@ This means, \code{eval(as.expression(p))} returns the preference \code{p}, evalu
 
 The function \code{is.empty_pref} returns \code{TRUE} if \code{x} is the empty preference object 
 \code{empty()} and \code{FALSE} otherwise.
+
+With \code{set.df} a preference is associated with a data frame.
+This means, a partial evaluation based on this data frame is done. 
+See \code{\link{show.pref}} for details on partial evaluation of preferences.
+Next, the preference is linked to that data frame, such that \code{\link{peval}(p)} can be used instead of \code{psel(df, p)}.
+The function \code{get.df} is the inverse to \code{set.df} and returns the associated data frame.
+It returns \code{NULL} if no data frame is associated.
 }
 \examples{
 

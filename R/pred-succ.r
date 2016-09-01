@@ -4,10 +4,13 @@
 #' Function for traversing the BTG (Better-Than-Graph or Hasse diagram) of a preference. 
 #' 
 #' @name pred_succ
-#' @param df A data frame characterizing the set wherein predecessors/successors are searched.
+#' @param df (optional) A data frame characterizing the set wherein predecessors/successors are searched. 
+#'        If \code{df} is \code{NULL} then the data frame associated with the preference is used.
+#'        Causes an error if \code{df == NULL} and no data frame is associated.
 #' @param v A numeric vector of indices in \code{df}. This represents the set of tuples for which predecessors/successors are searched.
 #' @param p A preference. Worse tuples in the induced order are successors and better tuples are predecessors.
-#' @param intersect Logical value. If it is \code{FALSE} (by default) the union of all predecessors/successors of \code{v} is returned.
+#' @param intersect (optional) Logical value. 
+#'        If it is \code{FALSE} (by default) the union of all predecessors/successors of \code{v} is returned.
 #'        For \code{intersect = TRUE} the intersection of those values is returned.
 #' 
 #' @details
@@ -19,8 +22,17 @@
 #' \code{init_pred_succ(p, df)}
 #' 
 #' There \code{p} is a preference object and \code{df} a data frame. 
-#' This statement calculates the Better-Than-Relation on \code{df} w.r.t. \code{p}. 
-#' Afterwards the subsequent predecessor and successor functions can be called. 
+#' When this done, the data frame \code{df} is associated with \code{p}, i.e.,
+#' implicitly \code{\link{set.df}} is called. 
+#' If the preference has already an associcated data frame, \code{df} can be omitted. For example
+#' 
+#' \code{p <- low(mpg, df = mtcars)} \cr
+#' \code{init_pred_succ(p)}
+#' 
+#' does the initialization of the preference \code{low(mpg)} on the data set \code{mtcars}.
+#' 
+#' The \code{init_pred_succ} function calculates the Better-Than-Relation on \code{df} w.r.t. \code{p}. 
+#' Afterwards the predecessor and successor functions, as subsequently described, can be called. 
 #' The value of \code{v} is a numeric vector within \code{1:nrow(df)} 
 #' and characterizes a subset of tuples in \code{df}. 
 #' The return value of these functions is again a numeric vector referring to the row numbers in \code{df} 
@@ -48,7 +60,7 @@
 #' 
 #' # preference on mtcars for high mpg and low weight
 #' p <- high(mpg) * low(wt)
-#' init_pred_succ(mtcars, p)
+#' init_pred_succ(p, mtcars)
 #' 
 #' # helper to show mpg/hp values
 #' show_vals <- function(x) mtcars[x,c('mpg','wt')]
@@ -66,8 +78,15 @@ NULL
 
 #' @rdname pred_succ
 #' @export
-init_pred_succ <- function(df, p) {
-  p$init_pred_succ(df)
+init_pred_succ <- function(p, df = NULL) {
+  # For compatibility with rPref <= 1.0 where we had init_pred_succ(df, p)
+  if (is.preference(df) && !is.preference(p)) {
+    warning('Wrong order of arguments in "init_pred_succ(p, df)". This has changed in rPref >= 1.1')
+    df$init_pred_succ(p, substitute(p))
+  } else {
+    # For the usual call of this function in rPref >= 1.1
+    p$init_pred_succ(df, substitute(df))
+  }
 }
 
 #' @rdname pred_succ

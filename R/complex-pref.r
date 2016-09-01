@@ -7,8 +7,8 @@
 #' All complex preferences are mathematically strict partial orders (irreflexive and transitive).
 #' 
 #' @name complex_pref
-#' @param p,p1,p2,x Preferences (they can be either base preferences, see \code{\link{base_pref}}, or complex preferences),
-#'                  or, for \code{is.complex_pref}, an object to be tested if it is a complex preference.
+#' @param p,p1,p2 Preference objects (they can be either base preferences, see \code{\link{base_pref}}, or complex preferences)
+#' @param x An object to be tested if it is a complex preference.
 #'                
 #' 
 #' @section Skylines:
@@ -71,6 +71,29 @@
 #' (i.e., was constructed by one of these binary operators or the unary operator \code{reverse}) 
 #' and \code{FALSE} otherwise.
 #' 
+#' @section Associated Data Sets:
+#' 
+#' If one of the preferences for a binary operator are associated with a data set (see \code{\link{base_pref}}),
+#' then this association is propagated. For example, the preference
+#' 
+#' \code{p <- high(mpg, df = mtcars) * high(hp)}
+#' 
+#' as well as
+#' 
+#' \code{p <- high(mpg) * high(hp, df = mtcars)}
+#' 
+#' both result in the same complex preference which is associated with \code{mtcars}. 
+#' A partial evaluation is also invoked for all preferenced which are added. 
+#' For example, using this \code{p}, 
+#' 
+#' \code{p <- p * true(cyl == max(mtcars$cyl))}
+#' 
+#' generates the following console output:
+#' 
+#' \code{[Preference] high(mpg) * high(hp) * true(cyl == 8)} \cr
+#' \code{  * associated data source: data.frame "mtcars" [32 x 11]}
+#'
+#' We see that the association with the data set is propagated and \code{max(mtcars$cyl)} is partially evaluated.
 #'
 #' @seealso See \code{\link{base_pref}} for the construction of base preferences. 
 #' See \code{\link{general_pref}} for functions applicable to all kind of preferences.
@@ -92,6 +115,10 @@
 #' 
 #' # perform the preference search
 #' psel(mtcars, p1)
+#' 
+#' # alternative way: create preference with associated data set
+#' p2 <- high(mpg, df = mtcars) * high(hp)  
+#' peval(p2)
 NULL
 
 
@@ -106,7 +133,7 @@ NULL
 "*.preference" <- function(p1, p2) {
   check_pref(p1, p2)
   if (check_empty(p1, p2)) return(get_empty(p1, p2))
-  return(paretopref(p1, p2))
+  return(paretopref$new(p1, p2, get_df_src(p1, p2)))
 }
 
 # Infix Prioritization-Constructor (special constructor as we have to consider prior-chains!)
@@ -115,7 +142,7 @@ NULL
 "&.preference" <- function(p1, p2) {
   check_pref(p1, p2)
   if (check_empty(p1, p2)) return(get_empty(p1, p2))
-  return(priorpref(p1, p2))
+  return(priorpref$new(p1, p2, get_df_src(p1, p2)))
 }
 
 
@@ -125,7 +152,7 @@ NULL
 "|.preference" <- function(p1, p2) {
   check_pref(p1, p2)
   if (check_empty(p1, p2)) return(get_empty(p1, p2))
-  return(intersectionpref(p1, p2))
+  return(intersectionpref$new(p1, p2, get_df_src(p1, p2)))
 }
 
 # Infix-Disjount-Union-Constructor
@@ -134,7 +161,7 @@ NULL
 "+.preference" <- function(p1, p2) {
   check_pref(p1, p2)
   if (check_empty(p1, p2)) return(get_empty(p1, p2))
-  return(unionpref(p1, p2))
+  return(unionpref$new(p1, p2, get_df_src(p1, p2)))
 }
 
 
@@ -144,14 +171,14 @@ NULL
 reverse <- function(p) {
   check_pref(p)
   if (is.empty_pref(p)) return(p)
-  return(reversepref(p))
+  return(reversepref$new(p, p$df_src))
 }
 
 # This entry has no @rdname as "-" is just used unary!
 # (it is exported, but invisible in the documentation
 #' @export
 "-.preference" <- function(p1, p2) {
-  if (nargs() == 1) return(reverse(p1))
+  if (nargs() == 1) return(reverse(p1)) # calls reverse from above
   else stop("Operation not defined.")
 }
 
@@ -181,3 +208,18 @@ get_empty <- function(p1, p2) {
   else
     return(p1)
 }    
+
+# Get non-NULL dataframe source
+get_df_src <- function(p1, p2) {
+  if (is.null(p1$df_src) && is.null(p2$df_src)) {
+    return(NULL)
+  } else if (!is.null(p1$df_src) && !is.null(p2$df_src)) {
+    # Same reference or (at least) same actual data set?
+    if (!(identical(p1$df_src, p2$df_src) || identical(p1$df_src$df, p2$df_src$df)))
+      stop("Cannot compose preferences with different associated data sets")
+  } else if (!is.null(p1$df_src)) {
+    return(p1$df_src)
+  } else {
+    return(p2$df_src) 
+  }
+}

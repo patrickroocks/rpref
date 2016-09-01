@@ -24,7 +24,8 @@ Regarding attributes, functions and variables, the same requirements as for \cod
 
 \item{center}{Preferred numerical value for \code{around}.}
 
-\item{df}{(optional) Data frame for partial evaluation. See \code{\link{base_pref}} for details.}
+\item{df}{(optional) Data frame for partial evaluation and association of preference and data set.
+See \code{\link{base_pref}} for details.}
 
 \item{left}{Lower limit (numerical) of the preferred interval for \code{between}.}
 
@@ -37,7 +38,7 @@ It has to be of the same type (numeric, logical, character, ...) as \code{expr}.
 and the first one characterizes the most preferred values.}
 }
 \description{
-In addition to the fundamental base preferences, 
+In addition to the base preferences, 
 rPref offers some macros to define preferences where a given interval or point is preferred.
 }
 \section{Definition of the Preference Macros}{

@@ -17,7 +17,6 @@ gen_data <- function(N, cor, dim = 2) {
   names(data) <- paste0('x', 1:dim)
   return(data)
 }
- 
 
 
  

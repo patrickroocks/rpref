@@ -1,19 +1,44 @@
 
 
-#' Better-Than-Graph
+#' Better-Than-Graphs
 #' 
-#' Returns a Hasse diagram of a preference order (also called the Better-Than-Graph, short BTG) on a given data set. 
-#' Either uses the igraph package or generates output for graphviz/DOT.
+#' Returns/plots a Hasse diagram of a preference order (also called the Better-Than-Graph, short BTG) on a given data set. 
+#' Ploting within R relies on the igraph package or the Rgraphviz package.
+#' Alternatively, a dot file for an external graphviz/dot interpreter can be generated.
 #' 
 #' @param df A data frame.
 #' @param pref A preference on the columns of \code{df}, see \code{\link{psel}} for details.
 #' @param flip.edges (optional) Flips the orientation of edges,
 #'        if \code{TRUE} than arrows point from worse nodes to better nodes.
 #' @param labels (optional) Labels for the vertices. Default values are the row indices.
+#' @param levelwise (optional) Only relevant is the dot layouter is used. 
+#'        If \code{TRUE}, all tuples from the same level are placed on one row.
+#'        If \code{FALSE}, the row arrangement is subject to the dot layouter.
+#' @param use_dot (optional) If \code{TRUE}, the dot layouter from Rgraphviz is used. 
+#'        If \code{FALSE}, igraph is used.
+#'        By default this is \code{TRUE} iff Rgraphviz is available.
 #' @param file (optional) If specified, then \code{get_btg_dot} writes the graph specification to 
 #'        given file path. If not specified, the graph specification is returned as a string.
+#'        
+#' @details
 #' 
-#' @details The function \code{get_btg} returns a list \code{l} with the following list entries:
+#' The Hasse diagram of a preference visualizes all the better-than-relationships on a given data set.
+#' All edges which can be retrieved by transitivity of the order are omitted in the graph.
+#' 
+#' The functions \code{get_btg} and \code{plot_btg} either use the \link{igraph}
+#' package (if \code{use_dot = FALSE}) or the dot layouter from the Rgraphviz package 
+#' (if \code{use_dot = TRUE}). 
+#' If Rgraphviz is available it is used by default, otherwise the igraph Package is used.
+#' Note that Rgraphviz is only available on BioConductor and not on CRAN.
+#' 
+#' The dot layouter from Rgraphviz is more appropriate for Better-Than-Graphs than the igraph layouter,
+#' as all edges will be directed in the same direction (rank based ordering). 
+#' Using \code{levelwise = TRUE} (the default), all tuples of the same level are placed on the same row.
+#' 
+#' @section BTGs with igraph:
+#' 
+#' If used with \code{use_dot = FALSE}, 
+#' the function \code{get_btg} returns a list \code{l} with the following list entries:
 #' 
 #' \describe{
 #'   \item{\code{l$graph}}{An igraph object, created with the \code{\link{igraph}} package.}
@@ -22,40 +47,43 @@
 #' 
 #' To plot the resulting graph returned from \code{get_btg}, use the \code{plot} function as follows: 
 #' 
-#' \code{plot(l$graph, layout = l$layout)}. 
+#' \code{plot(l$graph, layout = l$layout)} 
 #' 
-#' For more details, see \code{\link{igraph.plotting}} and the examples below.
-#' The function \code{plot_btg} directly plots the Better-Than-Graph 
-#' some defaults values for e.g., vertex size, using igraph.
+#' For more details, see \code{\link{igraph.plotting}}.
 #' 
-#' The Hasse diagram of a preference visualizes all the better-than-relationships on a given data set.
-#' All edges which can be retrieved by transitivity of the order are omitted.
 #' 
-#' @section DOT (Graphviz) Output:
+#' @section BTGs with Rgraphviz:
 #' 
-#' The function \code{get_btg_dot} produces the graph specification of the Better-Than-Graph in the DOT language
-#' of the Graphviz software. To produce the graph from that, you need the DOT interpreter. 
-#' Depending on the \code{file} parameter the output is either written to a file or returned as a string.
+#' If used with \code{use_dot = FALSE}, the function \code{get_btg} returns a \code{graphNEL} object from 
+#' the graph-package (Rgraphviz is build on top of that package). 
+#' This object can also be plotted using \code{plot(...)}.
 #' 
-#' As the DOT layouter is suited for strict orders, the layouts of strict oder preference are generelly better
-#' than those generated with igraph. DOT ensures that all edges are oriented in the same direction and
-#' the number of overlaps is low.
+#' @section Direct Plotting:
+#' 
+#' In both cases (wheter Rgraphviz is used or not), 
+#' the function \code{plot_btg} directly plots the Better-Than-Graph.
+#' There is an additional parameter \code{labels}, specifying the node labels. 
+#' The default are the row numbers (not the \code{rownames} of the data frame),
+#' ranging from \code{"1"} to \code{as.character(nrow(df))}.
+#' 
+#' @section Dot (Graphviz) String Output:
+#' 
+#' The function \code{get_btg_dot} produces the source code of the Better-Than-Graph in the dot language
+#' of the Graphviz software. This is useful for an external dot interpreter. 
+#' Depending on the \code{file} parameter the output is either written to a file
+#' (if a file path is given) or returned as a string (if \code{file = NULL}).
 #' 
 #' @section Additional Parameters:
 #' 
-#' By default, the arrows in the diagram point from better to worse nodes w.r.t. the preference. 
+#' By default, the directed edges in the diagram point from better to worse nodes w.r.t. the preference. 
 #' This means an arrow can be read as "is better than". If \code{flip.edges = TRUE} is set, 
 #' then the arrows point from worse nodes to better nodes ("is worse than"). 
 #' In any case, the better nodes are plotted at the top and the worse nodes at the bottom of the diagram.
 #' 
-#' The names of the vertices are characters ranging from \code{"1"} to \code{as.character(nrow(df))} 
-#' and they correspond to the row numbers of \code{df}. 
-#' By default, these are also the labels of the vertices. 
-#' Alternatively, they can be defined manually 
-#' using the \code{labels} parameter of \code{plot_btg} or \code{get_btg_dot}. 
+#' If Rgraphviz is used for \code{plot_btg} and for \code{get_btg_dot}, 
+#' the option \code{levelwise} controls if all nodes of the same level are placed in one row.
+#' If this parameter is \code{FALSE}, then the vertical arrangement is subject to the dot layouter.
 #' 
-#' 
-#' @seealso \code{\link{igraph.plotting}}
 #' 
 #' @examples
 #' 
@@ -64,18 +92,19 @@
 #' pref <- high(mpg) * low(wt)
 #' 
 #' # directly plot the BTG with row numbers as labels
+#' # uses Rgraphviz if available and igraph otherwise
 #' plot_btg(df, pref) 
 #' 
-#' # create the BTG and labels for the nodes with relevant values
-#' btg <- get_btg(df, pref)
-#' labels <- paste0(df$mpg, "\n", df$wt)
-#' 
-#' # plot the graph using igraph
-#' library(igraph)
-#' plot(btg$graph, layout = btg$layout, vertex.label = labels,
-#'      vertex.size = 25)
+#' # plot the graph with labels with relevant values
+#' labels <- paste0(df$mpg, "; ", df$wt)
+#' plot_btg(df, pref, labels)
 #'      
-#' # Create a graph with Graphviz (requires installed Graphviz)
+#' # show lattice structure of 3-dimensional Pareto preference
+#' df <- merge(merge(data.frame(x = 1:3), data.frame(y = 1:3)), data.frame(z = 1:2))
+#' labels <- paste0(df$x, ",", df$y, ",", df$z)
+#' plot_btg(df, low(x) * low(y) * low(z), labels)
+#'      
+#' # Create a graph with external Graphviz (requires installed Graphviz)
 #' \dontrun{
 #' # creates tmpgraph.dot in the current working directoy
 #' get_btg_dot(df, pref, labels, file = "tmpgraph.dot")
@@ -85,70 +114,120 @@
 #' # open resulting image
 #' shell("tmpgraph.png")}
 #' 
-#' 
-#' # show lattice structure of 3-dimensional Pareto preference in igraph
-#' df <- merge(merge(data.frame(x = 1:3), data.frame(y = 1:3)), data.frame(z = 1:2))
-#' labels <- paste0(df$x, ",", df$y, ",", df$z)
-#' btg <- get_btg(df, low(x) * low(y) * low(z))
-#' plot(btg$graph, layout = btg$layout, vertex.label = labels, 
-#'      vertex.size = 20)
-#'
-#' 
+#' @importFrom utils installed.packages
 #' @export
-get_btg <- function(df, pref, flip.edges = FALSE) {
+plot_btg <- function(df, pref, labels = 1:nrow(df), flip.edges = FALSE, 
+                     levelwise = TRUE,
+                     use_dot = "Rgraphviz" %in% rownames(installed.packages())) {
   
-  # Stop if empty df
-  if (nrow(df) == 0) stop("No nodes available (empty data set)")
+  # check (only labels!)
+  check.plot.labels(labels = labels)
+  
+  # Get BTG (including checks for df/pref)
+  btg <- get_btg(df, pref, flip.edges, use_dot)
+  
+  if (use_dot) {
+    
+    # ** Layers
+    
+    if (levelwise) {
+      # Each level is one layer independent of flip.edges!
+      
+      # Get levels
+      df_lev <- psel.indices(df, pref, top = nrow(df), show_level = TRUE)
+      
+      # Generate subgraphs
+      subgraphs <- lapply(1:max(df_lev$.level), function(l) {
+        nodes <- as.character(df_lev[df_lev$.level == l, '.indices'])
+        list(graph = graph::subGraph(nodes, btg))
+      })
+    } else {
+      
+      # Only maxima are one layer
+      max_nodes <- as.character(psel.indices(df, pref))
+      subgraphs <- list(list(graph = graph::subGraph(max_nodes, btg)))
+    }
+    
+    # ** Labels/Plotting
+    
+    # Lables of nodes
+    attr(labels, "names") <- as.character(1:nrow(df))
+    nAttrs <- list(label = labels)
+    
+    # Graph attributes
+    att <- list(node = list(shape = "ellipse", fixedsize = FALSE))
+    
+    # Flip edges? (Arrows point to max)
+    if (flip.edges) att$graph <- list(rankdir = "BT")
+    
+    Rgraphviz::plot(btg, attrs = att, nodeAttrs = nAttrs, subGList = subgraphs)
+    
+  } else { # use igraph
+    
+    # Plot igraph BTG using some reasonable defaults
+    igraph::plot.igraph(btg$graph, layout = btg$layout, vertex.label = as.character(labels), 
+                        vertex.color = 'white', vertex.size = 20, vertex.label.cex = 1.5,
+                        edge.color = 'black', vertex.label.color = 'black')
+  }
+}
+
+#' @rdname plot_btg
+#' @importFrom utils installed.packages
+#' @export
+get_btg <- function(df, pref, flip.edges = FALSE, 
+                    use_dot = "Rgraphviz" %in% rownames(installed.packages())) {
+  
+  check.plot.base(df, pref)
   
   # Arrows from worse to better?
   if (flip.edges) pref <- -pref
-
+  
   # calculate Hasse diagram
   links <- get_hasse_diag(df, pref)
+  nodes <- as.character(1:nrow(df))
   
-  # Create graph with all the vertices
-  g <- graph.empty()
-  g <- g + vertices(as.character(1:nrow(df)))
-
-  # Add egdes for Better-Than-Graph
-  g <- g + graph.edgelist(matrix(as.character(links), nrow(links), ncol(links)))
-
-  # Calculate root (maxima)
-  root <- as.character(psel.indices(df, pref))
-     
-  # Create layout
-  layout <- layout_as_tree(g, root = root, flip.y = !flip.edges)
-  
-  # Return everything
-  return(list(graph = g, layout = layout))
+  if (use_dot) {
+    
+    g <- graph::graphNEL(nodes = nodes, edgemode = "directed")
+    
+    if (nrow(links) > 0) {
+      for (i in 1:nrow(links)) {
+        g <- graph::addEdge(as.character(links[i,1]), as.character(links[i,2]), g, 1)
+      }
+    }
+    
+    return(g)
+    
+  } else { # use igraph
+    
+    # Create graph with all the vertices
+    g <- igraph::graph.empty()
+    g <- g + igraph::vertices(nodes)
+    
+    # Add edges for Better-Than-Graph
+    g <- g + igraph::graph.edgelist(matrix(as.character(links), nrow(links), ncol(links)))
+    
+    # Calculate root (maxima)
+    root <- as.character(psel.indices(df, pref))
+    
+    # Create layout
+    layout <- igraph::layout_as_tree(g, root = root, flip.y = !flip.edges)
+    
+    # Return igraph graph and its layout
+    return(list(graph = g, layout = layout))
+  }
 }
-
-#' @rdname get_btg
-#' @importFrom graphics plot
-#' @export
-plot_btg <- function(df, pref, labels = 1:nrow(df), flip.edges = FALSE) {
-  # Get BTG
-  btg <- get_btg(df, pref, flip.edges)
-  
-  # Plot BTG using some reasonable defaults
-  plot(btg$graph, layout = btg$layout, vertex.label = as.character(labels), 
-       vertex.color = 'white', vertex.size = 20, vertex.label.cex = 1.5,
-       edge.color = 'black', vertex.label.color = 'black')
-}
-
 
 
 # Get dot string for preference graph 
 # If file is not NULL, write output to file
-#' @rdname get_btg
+#' @rdname plot_btg
 #' @export
-get_btg_dot <- function(df, pref, labels = 1:nrow(df), flip.edges = FALSE, file = NULL) {
+get_btg_dot <- function(df, pref, labels = 1:nrow(df), flip.edges = FALSE, 
+                        levelwise = TRUE, file = NULL) {
   
-  # Stop if empty df
-  if (nrow(df) == 0) stop("No nodes available (empty data set)")
-  
-  # Maxima are one layer independent of flip.edges!
-  max_nodes <- as.character(psel.indices(df, pref))
+  check.plot.base(df, pref)
+  check.plot.labels(labels)
   
   if (flip.edges) pref <- -pref
   
@@ -166,10 +245,33 @@ get_btg_dot <- function(df, pref, labels = 1:nrow(df), flip.edges = FALSE, file 
   # flip.edges => Build graph from bottom to top
   if (flip.edges) output <- paste0(output, 'rankdir = BT\n')
   
-  # Maxima as first layer
-  output <- paste0(output, "{\nrank=same;\n",
-                   joinstrapply(max_nodes, function(x) paste0(x, ";\n")),
-                   "}\n")
+  if (levelwise) {
+    
+    # Each layer has its one row
+    
+    # Get levels
+    df_lev <- psel.indices(df, pref, top = nrow(df), show_level = TRUE)
+    
+    # Generate subgraphs
+    subgraphs <- lapply(1:max(df_lev$.level), function(l) {
+      nodes <- as.character(df_lev[df_lev$.level == l, '.indices'])
+      paste0("{\nrank=same;\n",
+             joinstrapply(nodes, function(x) paste0(x, ";\n")),
+             "}\n")
+    })
+    
+    output <- paste0(output, paste(subgraphs, collapse = ""))
+    
+  } else { 
+    
+    # Just Maxima are one layer
+    max_nodes <- as.character(psel.indices(df, pref))
+    
+    # Maxima as first layer
+    output <- paste0(output, "{\nrank=same;\n",
+                     joinstrapply(max_nodes, function(x) paste0(x, ";\n")),
+                     "}\n")
+  }
   
   # Labels
   output <- paste0(output, joinstrapply(1:nrow(df), function (i)
@@ -189,6 +291,26 @@ get_btg_dot <- function(df, pref, labels = 1:nrow(df), flip.edges = FALSE, file 
   else
     write(output, file)
   
+}
+
+
+# Internal check before plotting
+check.plot.base <- function(df, pref, labels = NULL) {
+  
+  # Stop if empty df
+  if (nrow(df) == 0) stop("No nodes available (empty data set)")
+  
+  # Stop if no preference is given
+  if (!is.preference(pref)) 
+    stop("Second argument of BTG function has to be a preference")
+}
+
+check.plot.labels <- function(labels) {
+  
+  # Duplicate labels can be plotted but are probably senseless
+  ind <- anyDuplicated(labels)
+  if (ind > 0)
+    warning(paste0("The labels are not unique! First duplicated label is '", labels[ind], "'"))
 }
 
 
@@ -240,6 +362,10 @@ get_hasse_diag <- function(df, pref) {
 #'             
 #' \code{plot_front} assumes that there is an existing plot, where the value of the first preference was plotted as x-coordinate
 #' and the value of the second preference as y-coordinate.
+#' 
+#' Note that \code{plot_front} is only recommended if you want to use the plotting functionality from base R. 
+#' If you prefer to use ggplot2, we recommend using \code{geom_step} for plotting the Pareto front.
+#' See \code{vignette("visualization", package = "rPref")} for examples.
 #' 
 #' @examples
 #' 

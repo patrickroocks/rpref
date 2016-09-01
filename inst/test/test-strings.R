@@ -37,7 +37,7 @@ test_that("Test string output of preferences on a given data set", {
   expect_output(show.pref(low(wt) * low(hp) * low(f(cyl + y)), df = mtcars), 
                 '[Preference] low(wt) * low(hp) * low(f(cyl + 1))', fixed = TRUE)
   
-  expect_output(show.pref(eval.pref(low(wt) * low(hp) * true(f(cyl + y) > y + y), df = mtcars)), 
+  expect_output(show.pref(partial.eval.pref(low(wt) * low(hp) * true(f(cyl + y) > y + y), df = mtcars)), 
                 '[Preference] low(wt) * low(hp) * true(f(cyl + 1) > 2)', fixed = TRUE)
   
   expect_identical(pref.str((low(wt) * low(hp)) & reverse(high(y + f(cyl))), df = mtcars), 
@@ -46,7 +46,7 @@ test_that("Test string output of preferences on a given data set", {
   expect_identical(pref.str((low(wt) * low(hp)) & reverse(high(y + f(cyl))), df = mtcars), 
                    '(low(wt) * low(hp)) & -high(1 + f(cyl))')
   
-  expect_identical(as.character(eval.pref(-high(f(y) + f(cyl)), df = mtcars)), 
+  expect_identical(as.character(partial.eval.pref(-high(f(y) + f(cyl)), df = mtcars)), 
                    '-high(2 + f(cyl))')
   
   expect_identical(show.query((low(wt) * low(hp)) & high(cyl + f(wt + y)), df = mtcars),

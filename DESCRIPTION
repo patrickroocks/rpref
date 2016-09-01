@@ -1,6 +1,6 @@
 Package: rPref
-Version: 1.0.2
-Date: 2016-04-19
+Version: 1.1
+Date: 2016-09-01
 Title: Database Preferences and Skyline Computation
 Author: Patrick Roocks <mail@p-roocks.de>
 Maintainer: Patrick Roocks <mail@p-roocks.de>
@@ -10,17 +10,26 @@ Description: Routines to select and visualize the maxima for a given strict
     generalizations (database preferences).
 URL: http://www.p-roocks.de/rpref
 Depends:
-    R (>= 3.0.0),
-    methods
+    R (>= 3.0.0)
 Imports:
+    R6 (>= 2.1.2),
     Rcpp (>= 0.11.5),
     RcppParallel (>= 4.3.6),
     dplyr (>= 0.4.3),
-    igraph (>= 1.0.1)
+    igraph (>= 1.0.1),
+    lazyeval (>= 0.2.0),
+    methods,
+    utils
 SystemRequirements: C++11, GNU make, Windows: cmd.exe and cscript.exe
 License: GPL (>= 2)
 LazyData: true
 LinkingTo: Rcpp, RcppParallel
 Suggests:
-    testthat
+    testthat,
+    graph,
+    Rgraphviz (>= 2.16.0),
+    knitr,
+    ggplot2,
+    rmarkdown
+VignetteBuilder: knitr
 RoxygenNote: 5.0.1

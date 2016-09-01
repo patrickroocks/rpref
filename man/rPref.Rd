@@ -30,8 +30,7 @@ generalizations (database preferences).
 
 
 \itemize{
-\item The visualization of the preference order in a Better-Than-Graph (Hasse diagram) is possible via the \code{\link{plot_btg}} 
-      and \code{\link{get_btg}} functions in connection with the \code{\link{igraph}} package.
+\item The visualization of the preference order in a Better-Than-Graph (Hasse diagram) is possible via \code{\link{plot_btg}}.
 \item The adjacency list of the Hasse diagram can be accessed via \code{\link{get_hasse_diag}}.
 \item Predecessors/successors in the Hasse diagram are calculated with the \code{\link{pred_succ}} functions.
 \item The Pareto frontier can be plotted using the \code{\link{plot_front}} function.
@@ -47,10 +46,27 @@ generalizations (database preferences).
 }
 }
 
+\section{Vignettes}{
+
+
+To learn the basics of rPref, start with the vignettes:
+
+\itemize{
+\item A general introduction and some examples are given in 
+
+\code{vignette("introduction", package = "rPref")}
+
+\item The visualization of preferences is explained in 
+
+\code{vignette("visualization", package = "rPref")}
+}
+}
+
 \section{Further Information}{
 
 
-The rPref homepage is \url{http://www.p-roocks.de/rpref}. To submit bugs, feature requests or other comments, feel free to write a mail to me.
+The rPref homepage is \url{http://www.p-roocks.de/rpref}. 
+To submit bugs, feature requests or other comments, feel free to write a mail to me.
 }
 \author{
 Patrick Roocks, \email{mail@p-roocks.de}

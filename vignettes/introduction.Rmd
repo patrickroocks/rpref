@@ -1,0 +1,101 @@
+---
+title: "Introduction to rPref"
+author: "Patrick Roocks"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to rPref}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, echo = FALSE, message = FALSE}
+library(rPref)
+library(dplyr)
+```
+
+
+rPref allows an efficient computation of Pareto frontiers (also known as *Skylines* in the context of databases) and slight generalizations (*database preferences*). This vignette will explain how to compose Skyline queries / preferences and evaluate them on a data set (i.e., the preference selection).
+
+## A first Skyline example
+
+A classical Skyline query optimizes two dimensions of a data set simultaneously. Usually these dimensions tend to anticorrelate. Consider the `mtcars` data set and the dimensions `mpg` (miles per gallon, i.e., inverse fuel consumption) and `hp` (horsepower). To get those cars with a low fuel consumption (i.e., high mpg value) and high power we create the preference and evaluate it on `mtcars`. Using `select` from the dplyr package we restrict our attention to the relevant columns:
+
+```{r, results='asis'}
+p <- high(mpg) * high(hp)
+res <- psel(mtcars, p)
+knitr::kable(select(res, mpg, hp))
+```
+
+The `*` operator is the Pareto composition. The result contains all cars from `mtcars` which are not Pareto-dominated according to this preference. This means, we are not interested in those cars, which are strictly worse in at least one dimension and worse/equal in the other dimension (i.e., they are *dominated*).
+
+We can add a third optimization goal like minimizing the 1/4 mile time of a car. Additionally to the preference selection via `psel`, preference objects can be associated with data sets and then processed via `peval` (preference evaluation). For example
+
+```{r, collapse = TRUE}
+p <- high(mpg, df = mtcars) * high(hp) * low(qsec)
+p
+```
+creates a 3-dimensional Pareto preference which is associated with `mtcars`. We can evaluate this using `peval(p)` which returns the Pareto optima:
+
+```{r, results='asis'}
+res <- peval(p)
+knitr::kable(select(res, mpg, hp, qsec))
+```
+
+Using `psel` instead of `peval` we can evaluate the preference on another data set (which does not change the association of `p`). Using dplyr we can first pick all cars with automatic transmission (`am == 0`) and then get the Pareto optima:
+
+```{r, results='asis'}
+res <- mtcars %>% filter(am == 0) %>% psel(p)
+knitr::kable(select(res, am, mpg, hp, qsec))
+```
+
+## Lexicographical order
+
+Database preferences allow some generalizations of Skyline queries like combining the Pareto order with the lexicographical order. Assume we prefer cars with manual transmission (`am == 0`). If two cars are equivalent according to this criterion, then the higher number of gears should be the decisive criterion. This is known as the lexicographical order and can be realized with
+
+```{r}
+p <- true(am == 1) & high(gear)
+```
+
+where `true` is a Boolean preference, where those tuples are preferred fulfilling the logical condition. The `&` operator is the non-commutative "Prioritization" creating a lexicographical order.
+
+The constructs `high`, `low` and `true` are the three base preferences. They also accept arbitrary arithmetic expressions (and accordingly logical, for `true`). For example, we can Pareto-combine `p` with a wish for an high power per cylinder ratio:
+
+```{r, results='asis'}
+p <- p * high(hp/cyl)
+res <- psel(mtcars, p)
+knitr::kable(select(res, am, gear, hp, cyl))
+```
+
+Here the two goals of the lexicographical order, as defined above, and the high `hp/cyl` ratio are simultaneously optimized.
+
+## Top-k selections
+
+In the above preference selection we just have one Pareto-optimal tuple for the data set `mtcars`. Probably we are also interested in the tuples slightly worse than the optimum. rPref offers a top-k preference selection, iterating the preference selection on the remainder on the data set until k tuples are returned. To get the 3 best tuples we use:
+
+```{r, results='asis'}
+res <- psel(mtcars, p, top = 3)
+knitr::kable(select(res, am, gear, hp, cyl, .level))
+```
+
+The column `.level` is additionally added to the result when `psel` is called with the `top` parameter. It counts the number of iterations needed to get this tuple. The k-th level of a Skyline is also called *the k-th stratum*. We see that the first three tuples have levels {1, 2, 3}. The top-k parameter produces a nondeterministic cut, i.e., there could be more tuples in the third level. To avoid the cut, we use the `at_least` parameter, returning all tuples from the last level:
+
+```{r, results='asis'}
+res <- psel(mtcars, p, at_least = 3)
+knitr::kable(select(res, am, gear, hp, cyl, .level))
+```
+
+Additionally there is a `top_level` parameter which allows to explicitly state the number of iterations. The preference selection with `top_level = 3` is identical to the statement above in this case, because just one tuple resides in each of the levels 1 and 2.
+
+
+## Grouped preference selection
+
+Using the grouping functionality from the dplyr package, we can perform a preference selection on each group separately. For example, we search for the cars maximizing `mpg` and `hp` in each group of cars with the same number of cylinders. This is done by:
+
+```{r, results='asis'}
+grouped_df <- group_by(mtcars, cyl)
+res <- psel(grouped_df, low(hp) * low(mpg))
+knitr::kable(select(res, cyl, hp, mpg))
+```
+
+The first line is the grouping operation from dplyr and the second line is the preference selection from rPref, which respects the grouping. The result is again a grouped data frame, containing the Pareto optima for each group of cylinders.
