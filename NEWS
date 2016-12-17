@@ -1,43 +1,10 @@
-rPref 1.1
+rPref 1.2
 =========
 
+* Changed object system for preferences from R6 to S4 classes
 
-* Added lazyeval to imports-list
+* Moved as.character documentation from general_pref to show.pref
 
-* Supports non-standard-evaluation (using lazyeval)
-  for low_, high_, and true_ preferences
-  
-* Added Rgraphviz, ggplot2, rmarkdown and knitr to 
-  suggests-list
+* Changed set.df/get.df to assoc.df/assoc.df<-
 
-* plot_btg uses Rgraphviz (if available) to plot
-  Better-Than-Graphs
-  
-* Added levelwise parameter to plot_btg
-  
-* Added two vignettes (Introduction and Visualization)
-
-* Fixed bug in top-k selection, when more than one
-  top-parameter and "and_connected = FALSE" is given
-  
-* Added C++11 to SystemRequirements
-
-* Substituted all usual pointers in the C++ Code
-  by C++11 shared pointers
-  (no more new/delete commands in the C++ code)
-
-* Slightly optimized Scalagon Top-k algorithm
-
-* Added option rPref.parallel.threads for specifying
-  the number of threads for parallel computation
-  
-* Preferences can have associated data frames, see ?set.df
-
-* Added pevel for preference selection using associated
-  data frames
-  
-* Changed parameters of init_pred_succ for calculating
-  predecessors/successors (old parametrization still works 
-  with a warning)
-  
-* Renamed eval.pref to partial.eval.pref
+* Improved error messages in psel, get_hasse_diag, ...

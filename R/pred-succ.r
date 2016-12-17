@@ -23,7 +23,7 @@
 #' 
 #' There \code{p} is a preference object and \code{df} a data frame. 
 #' When this done, the data frame \code{df} is associated with \code{p}, i.e.,
-#' implicitly \code{\link{set.df}} is called. 
+#' implicitly \code{\link{assoc.df}} is called. 
 #' If the preference has already an associcated data frame, \code{df} can be omitted. For example
 #' 
 #' \code{p <- low(mpg, df = mtcars)} \cr
@@ -82,33 +82,136 @@ init_pred_succ <- function(p, df = NULL) {
   # For compatibility with rPref <= 1.0 where we had init_pred_succ(df, p)
   if (is.preference(df) && !is.preference(p)) {
     warning('Wrong order of arguments in "init_pred_succ(p, df)". This has changed in rPref >= 1.1')
-    df$init_pred_succ(p, substitute(p))
+    parent_var <- substitute(df)
+    p <- init_pred_succ_internal(df, p, substitute(p))
   } else {
     # For the usual call of this function in rPref >= 1.1
-    p$init_pred_succ(df, substitute(df))
+    parent_var <- substitute(p)
+    p <- init_pred_succ_internal(p, df, substitute(df))
   }
+  # Returns nothing but modifies parent preference object
+  # One of the ugly hacks which were needed since we changed from reference classes to S4
+  if (!is.symbol(parent_var)) {
+    stop.syscall("init_pred_succ has to called on a preference stored in a variable.") 
+  }
+  assign(as.character(parent_var), p, parent.frame())
 }
+
 
 #' @rdname pred_succ
 #' @export
 hasse_pred <- function(p, v, intersect = FALSE) {
-  p$h_predsucc(v, do_intersect = intersect, succ = FALSE)
+  h_predsucc(p, v, do_intersect = intersect, succ = FALSE)
 }
 
 #' @rdname pred_succ
 #' @export
 hasse_succ <- function(p, v, intersect = FALSE) {
-  p$h_predsucc(v, do_intersect = intersect, succ = TRUE)
+  h_predsucc(p, v, do_intersect = intersect, succ = TRUE)
 }
 
 #' @rdname pred_succ
 #' @export
 all_pred <- function(p, v, intersect = FALSE) {
-  p$all_predsucc(v, do_intersect = intersect, succ = FALSE)
+  all_predsucc(p, v, do_intersect = intersect, succ = FALSE)
 }
 
 #' @rdname pred_succ
 #' @export
 all_succ <- function(p, v, intersect = FALSE) {
-  p$all_predsucc(v, do_intersect = intersect, succ = TRUE)
+  all_predsucc(p, v, do_intersect = intersect, succ = TRUE)
+}
+    
+
+# Internal implementation
+# -----------------------
+
+init_pred_succ_internal <- function(p, df, df_call) {
+  
+  pref.df.check(p, df)
+    
+  # Overwrite associcated data frame, do partial evaluation
+  if (!is.null(df)) {
+    p@df_src <- compose.df(df, df_call)
+    p <- evaluate(p, get_static_terms(p@df_src$df))
+  } else if (length(p@df_src) == 0) stop("No data source was specified!")
+  
+  # Use specified data.frame from now on
+  res <- get_scores(p, 1, p@df_src$df)
+  # We need the modified preference object for cmp/eq
+  p <- res$p
+  # Cached scorevals
+  p@scorevals <- res$scores
+  serialized <- pserialize(p)
+  # Get Hasse Matrix from C++ function, add 1 for R indices (starting at 1)
+  p@hasse_mtx <- t(get_hasse_impl(p@scorevals, serialized)) + 1
+  p@cache_available <- TRUE
+  
+  # returns modified preference
+  return(p)
+}
+
+# Hasse diagram successors/predecessors
+h_predsucc <- function(p, inds, do_intersect, succ) {
+  pref.df.check(p)
+  check_cache(p)
+  
+  # Select indices predecessors/successors
+  if (succ) {
+    l_index <- 1
+    r_index <- 2
+  } else {
+    l_index <- 2
+    r_index <- 1
+  }
+  
+  # Selection aggregation method, if inds is a vector (and not a single value)
+  if (do_intersect) agg <- intersect
+  else              agg <- union
+  
+  # Do the calculation
+  if (length(inds) == 0) {
+    return(numeric(0))
+  } else if (length(inds) == 1) { 
+    return(p@hasse_mtx[p@hasse_mtx[,l_index] == inds, r_index])
+  } else {
+    res_inds <- lapply(inds, function(x) p@hasse_mtx[p@hasse_mtx[,l_index] == x, r_index])
+    return(sort(Reduce(agg, res_inds[-1], res_inds[[1]])))
+  }
+}
+    
+# All succesors/predecessors (sorting not necessary because of "which")
+all_predsucc = function(p, inds, do_intersect, succ) {
+  pref.df.check(p)
+  check_cache(p)
+  # does not need hasse diagram, but needs p@scorevals
+  
+  # Select indices predecessors/successors
+  if (succ) cmpfun <- function(x, y) cmp(p, x, y, p@scorevals)
+  else      cmpfun <- function(x, y) cmp(p, y, x, p@scorevals)
+  
+  # Selection aggregation method, if inds is a vector (and not a single value)
+  if (do_intersect) agg <- pmin  # min is logically equivalent to intersection
+  else              agg <- pmax  # max is logically equivalent to union
+  
+  all_inds <- 1:nrow(p@scorevals)
+  if (length(inds) == 0) {
+    return(numeric(0))
+  } else if (length(inds) == 1) {
+    return(which(cmpfun(inds, all_inds)))
+  } else {
+    return(which(as.logical(do.call(agg, lapply(inds, function(x) cmpfun(x, all_inds) )))))
+  }
+}
+
+check_cache <- function(p) {
+  if (!p@cache_available)
+    stop.syscall(paste0("In calculation of predecessors/successors : No data set avaible. ",
+                        "Run `init_succ_pref(df)` or `assoc.df(p) <- df` first."))
+}
+
+pref.df.check <- function(pref, df = NULL) {
+  # Note that also data.table fulfills is.data.frame(.) = TRUE
+  if (!is.actual.preference(pref))        stop.syscall("First argument has to be a preference.")
+  if (!is.null(df) && !is.data.frame(df)) stop.syscall("Second argument has to be a data.frame or NULL.")
 }

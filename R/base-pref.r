@@ -85,7 +85,7 @@
 #' Then \code{p} is equivalent to the preference \code{true(cyl == 2)} as the variable \code{cyl} is a column in \code{mtcars}.
 #' Additionally the data set \code{mtcars} is associated with the preference \code{p}, 
 #' implying that the preference selection can be done with \code{\link{peval}}. 
-#' See \code{\link{set.df}} for details on associated data sets.
+#' See \code{\link{assoc.df}} for details on associated data sets.
 #' 
 #' The preference selection, i.e., \code{psel(mtcars, p)} can be invoked without the partial evaluation.
 #' But this results in an error, if the function \code{f} has meanwhile removed from the current environment.
@@ -119,37 +119,43 @@ NULL
 #' @rdname base_pref
 #' @export
 low <- function(expr, df = NULL) {
-  lowpref$new(get.lazy(substitute(expr), parent.frame()), df, substitute(df))
+  p <- methods::new("lowpref", get.lazy(substitute(expr), parent.frame()))
+  return(assoc.composed.df(p, compose.df(df, substitute(df))))
 }
 
 #' @rdname base_pref
 #' @export
 low_ <- function(expr, df = NULL) {
-  lowpref$new(get.lazy(expr, parent.frame()), df, substitute(df))
+  p <- methods::new("lowpref", get.lazy(expr, parent.frame()))
+  return(assoc.composed.df(p, compose.df(df, substitute(df))))
 }
 
 #' @rdname base_pref
 #' @export
 high <- function(expr, df = NULL) {
-  highpref$new(get.lazy(substitute(expr), parent.frame()), df, substitute(df))
+  p <- methods::new("highpref", get.lazy(substitute(expr), parent.frame()))
+  return(assoc.composed.df(p, compose.df(df, substitute(df))))
 }
 
 #' @rdname base_pref
 #' @export
 high_ <- function(expr, df = NULL) {
-  highpref$new(get.lazy(expr, parent.frame()), df, substitute(df))
+  p <- methods::new("highpref", get.lazy(expr, parent.frame()))
+  return(assoc.composed.df(p, compose.df(df, substitute(df))))
 }
 
 #' @rdname base_pref
 #' @export
 true <- function(expr, df = NULL) {
-  truepref$new(get.lazy(substitute(expr), parent.frame()), df, substitute(df))
+  p <- methods::new("truepref", get.lazy(substitute(expr), parent.frame()))
+  return(assoc.composed.df(p, compose.df(df, substitute(df))))
 }
 
 #' @rdname base_pref
 #' @export
 true_ <- function(expr, df = NULL) {
-  truepref$new(get.lazy(expr, parent.frame()), df, substitute(df))
+  p <- methods::new("truepref", get.lazy(expr, parent.frame()))
+  return(assoc.composed.df(p, compose.df(df, substitute(df))))
 }
 
 #' @rdname base_pref
@@ -157,6 +163,9 @@ true_ <- function(expr, df = NULL) {
 is.base_pref <- function(x) {
   inherits(x, "basepref")
 }
+
+# Helper functions
+# ----------------
 
 
 # transform chracter/expression in lazy_eval
@@ -169,3 +178,21 @@ get.lazy <- function(expr_chr, env) {
   return(as.lazy(expr_chr, env))
 }
 
+# Compose a data frame and its provenience to a list
+compose.df <- function(df, df_call) {
+  if (is.null(df)) {
+    return(list())
+  } else {
+    df_name <- as.character(as.expression(df_call))
+    return(list(df = df, info_str = paste0(class(df)[1], ' "', df_name, '" [', nrow(df), ' x ', ncol(df), ']')))
+  }
+}
+
+# Add a composed data.frame to a preference object and return it (this is not more a reference!)
+assoc.composed.df <- function(object, composed_df) {
+  object@df_src <- composed_df
+  if (length(composed_df) != 0) {
+    object <- evaluate(object, get_static_terms(composed_df$df))
+  }
+  return(object)
+}

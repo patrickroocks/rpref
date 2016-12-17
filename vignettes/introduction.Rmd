@@ -11,7 +11,7 @@ vignette: >
 
 ```{r, echo = FALSE, message = FALSE}
 library(rPref)
-library(dplyr)
+suppressPackageStartupMessages(library(dplyr))
 ```
 
 

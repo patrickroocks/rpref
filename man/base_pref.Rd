@@ -112,7 +112,7 @@ All variables occurring as columns in \code{df} remain untouched. For example, c
 Then \code{p} is equivalent to the preference \code{true(cyl == 2)} as the variable \code{cyl} is a column in \code{mtcars}.
 Additionally the data set \code{mtcars} is associated with the preference \code{p}, 
 implying that the preference selection can be done with \code{\link{peval}}. 
-See \code{\link{set.df}} for details on associated data sets.
+See \code{\link{assoc.df}} for details on associated data sets.
 
 The preference selection, i.e., \code{psel(mtcars, p)} can be invoked without the partial evaluation.
 But this results in an error, if the function \code{f} has meanwhile removed from the current environment.

@@ -7,7 +7,7 @@
 #' All complex preferences are mathematically strict partial orders (irreflexive and transitive).
 #' 
 #' @name complex_pref
-#' @param p,p1,p2 Preference objects (they can be either base preferences, see \code{\link{base_pref}}, or complex preferences)
+#' @param p,e1,e2 Preference objects (they can be either base preferences, see \code{\link{base_pref}}, or complex preferences)
 #' @param x An object to be tested if it is a complex preference.
 #'                
 #' 
@@ -127,43 +127,56 @@ NULL
 
 # Score functions are NOT needed for C++ algorithms but for igraph, etc.
 
-# Infix Pareto-Constructor
-#' @rdname complex_pref
 #' @export
-"*.preference" <- function(p1, p2) {
-  check_pref(p1, p2)
-  if (check_empty(p1, p2)) return(get_empty(p1, p2))
-  return(paretopref$new(p1, p2, get_df_src(p1, p2)))
-}
+#' @rdname complex_pref
+#' @aliases *,preference-method
+#' @docType methods
+setMethod("*", signature(e1 = "preference", e2 = "preference"),
+  function(e1, e2) {
+    check_pref(e1, e2)
+    if (check_empty(e1, e2)) return(get_empty(e1, e2))
+    p <- methods::new("paretopref", e1, e2)
+    return(assoc.composed.df(p, get_df_src(e1, e2)))
+})
 
 # Infix Prioritization-Constructor (special constructor as we have to consider prior-chains!)
 #' @rdname complex_pref
 #' @export
-"&.preference" <- function(p1, p2) {
-  check_pref(p1, p2)
-  if (check_empty(p1, p2)) return(get_empty(p1, p2))
-  return(priorpref$new(p1, p2, get_df_src(p1, p2)))
-}
-
+#' @aliases &,preference-method
+#' @docType methods
+setMethod("&", signature(e1 = "preference", e2 = "preference"),
+  function(e1, e2) {
+    check_pref(e1, e2)
+    if (check_empty(e1, e2)) return(get_empty(e1, e2))
+    p <- methods::new("priorpref", e1, e2)
+    return(assoc.composed.df(p, get_df_src(e1, e2)))
+})
 
 # Infix Intersection-Constructor
 #' @rdname complex_pref
 #' @export
-"|.preference" <- function(p1, p2) {
-  check_pref(p1, p2)
-  if (check_empty(p1, p2)) return(get_empty(p1, p2))
-  return(intersectionpref$new(p1, p2, get_df_src(p1, p2)))
-}
+#' @aliases |,preference-method
+#' @docType methods
+setMethod("|", signature(e1 = "preference", e2 = "preference"),
+  function(e1, e2) {
+    check_pref(e1, e2)
+    if (check_empty(e1, e2)) return(get_empty(e1, e2))
+    p <- methods::new("intersectionpref", e1, e2)
+    return(assoc.composed.df(p, get_df_src(e1, e2)))
+})
 
 # Infix-Disjount-Union-Constructor
 #' @rdname complex_pref
 #' @export
-"+.preference" <- function(p1, p2) {
-  check_pref(p1, p2)
-  if (check_empty(p1, p2)) return(get_empty(p1, p2))
-  return(unionpref$new(p1, p2, get_df_src(p1, p2)))
-}
-
+#' @aliases +,preference-method
+#' @docType methods
+setMethod("+", signature(e1 = "preference", e2 = "preference"),
+  function(e1, e2) {
+    check_pref(e1, e2)
+    if (check_empty(e1, e2)) return(get_empty(e1, e2))
+    p <- methods::new("unionpref", e1, e2)
+    return(assoc.composed.df(p, get_df_src(e1, e2)))
+})
 
 # Reverse preference
 #' @rdname complex_pref
@@ -171,9 +184,11 @@ NULL
 reverse <- function(p) {
   check_pref(p)
   if (is.empty_pref(p)) return(p)
-  return(reversepref$new(p, p$df_src))
+  p <- methods::new("reversepref", p)
+  return(assoc.composed.df(p, p@df_src))
 }
 
+# S3 style hack for an unary operator:
 # This entry has no @rdname as "-" is just used unary!
 # (it is exported, but invisible in the documentation
 #' @export
@@ -181,7 +196,6 @@ reverse <- function(p) {
   if (nargs() == 1) return(reverse(p1)) # calls reverse from above
   else stop("Operation not defined.")
 }
-
 
 #' @rdname complex_pref
 #' @export
@@ -202,6 +216,7 @@ check_pref <- function(p1, p2) {
 check_empty <- function(p1, p2) (is.empty_pref(p1) || is.empty_pref(p2))
 
 # Get the result of a complex operation with an empty pref
+# only called after check_empty is TRUE, i.e., at least one preference is empty
 get_empty <- function(p1, p2) {
   if (is.empty_pref(p1))
     return(p2) # perhaps empty
@@ -211,15 +226,15 @@ get_empty <- function(p1, p2) {
 
 # Get non-NULL dataframe source
 get_df_src <- function(p1, p2) {
-  if (is.null(p1$df_src) && is.null(p2$df_src)) {
-    return(NULL)
-  } else if (!is.null(p1$df_src) && !is.null(p2$df_src)) {
-    # Same reference or (at least) same actual data set?
-    if (!(identical(p1$df_src, p2$df_src) || identical(p1$df_src$df, p2$df_src$df)))
+  if (length(p1@df_src) == 0 && length(p2@df_src) == 0) {
+    return(list())
+  } else if (length(p1@df_src) > 0 && length(p2@df_src) > 0) {
+    # Same actual data set?
+    if (!(identical(p1@df_src$df, p2@df_src$df)))
       stop("Cannot compose preferences with different associated data sets")
-  } else if (!is.null(p1$df_src)) {
-    return(p1$df_src)
+  } else if (length(p1@df_src) > 0) {
+    return(p1@df_src)
   } else {
-    return(p2$df_src) 
+    return(p2@df_src) 
   }
 }

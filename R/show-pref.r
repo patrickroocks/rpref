@@ -58,20 +58,23 @@ show.query <- function(p, dialect = 'EXASOL', df = NULL) {
   return(paste0('PREFERRING ', show_pref_sql(p, dialect, 'PREF', get_static_terms(df)))) # parent node "PREF" means root node
 }
 
+# ==========================================================================================================
 
 #' Partial Evaluation and String Output of Preferences
 #' 
 #' Functions to substitute variables and functions in preferences 
 #' which can be calculated before the preference is evaluated on a data frame
-#' and associating preferences with data frames.
+#' and character output of preferences.
 #' 
-#' @param p The preference to be shown or partially evaluated.
+#' @name show.pref
+#' @param p,x The preference to be shown or partially evaluated.
 #' @param df (optional) A data frame on which the preference operates. Used for partial evaluation.
+#' @param ... Optional arguments passed to \code{as.character}.
 #' 
 #' @details The function \code{pref.str} (or \code{as.character(p)} for a preference \code{p}) returns the preference string 
 #' while \code{show.pref} outputs it directly to the console, preceded by \code{'[Preference]'}.
 #' If \code{df} is specified, then a partial evaluation of the preference is done before converting it to a string. 
-#' With \code{as.expression(p)} the R code for constructing a given preference is given.
+#' 
 #' 
 #' The function \code{partial.eval.pref} (with given data frame \code{df}) partially evaluates the internal preference expression and 
 #' returns again a preference object. All expressions in \code{p} are evaluated in the environment
@@ -79,7 +82,7 @@ show.query <- function(p, dialect = 'EXASOL', df = NULL) {
 #' and except the special variable \code{df__}, which accesses the entire data set (see \code{\link{psel}}).
 #' The content of the data frame \code{df} does not matter; only \code{names(df)} is used to get the "free variables" in \code{p}.
 #' 
-#' If \code{p} has already an associated data frame (see \code{\link{set.df}}), 
+#' If \code{p} has already an associated data frame (see \code{\link{assoc.df}}), 
 #' then a partial evaluation was already done when the data frame was associated.
 #' In this case, the \code{df} parameter should not be used.
 #' The association will not be changed if one of these function are called 
@@ -113,8 +116,22 @@ show.query <- function(p, dialect = 'EXASOL', df = NULL) {
 #' @export
 show.pref <- function(p, df = NULL) {
   # Output string representation on the console
+  # this does not replace setMethod("show") as show does not have the df parameter!
   return(cat('[Preference] ', pref.str(p, df), '\n', sep = ''))
 }
+
+
+
+#' @export
+#' @rdname show.pref
+#' @aliases as.character,preference-method as.character,basepref-method as.character,emptypref-method as.character,complexpref-method as.character,reversepref-method
+#' @docType methods
+setMethod("as.character", signature(x = "preference"),
+  function(x, ...) {
+    methods::callNextMethod()
+  }
+)
+
 
 # Internal call of evaluation, no validity check of paramters
 eval.pref.internal <- function(p, df = NULL) {
@@ -122,9 +139,7 @@ eval.pref.internal <- function(p, df = NULL) {
   if (is.null(df)) {
     return(p)
   } else {
-    p_new <- p$clone(deep = TRUE)
-    p_new$evaluate(get_static_terms(df))
-    return(p_new)
+    return(evaluate(p, get_static_terms(df)))
   }
 }
 
@@ -132,7 +147,7 @@ eval.pref.internal <- function(p, df = NULL) {
 #' @rdname show.pref
 pref.str <- function(p, df = NULL) {
   if (!is.actual.preference(p)) stop("This function needs a preference as first argument.")
-  return(eval.pref.internal(p, df)$get_str())
+  return(as.character(eval.pref.internal(p, df)))
 }
 
 #' @export
@@ -179,17 +194,17 @@ show_pref_sql <- function(p, dialect, parent_op = '', static_terms = NULL) {
     return(show_base_pref(p, dialect, static_terms))
   } else if (is.reversepref(p)) { 
     if (dialect == EXA) # INVERSE is notated as prefix in EXASOL
-      return(paste0(use_map[['reverse']], ' (', show_pref_sql(p$p, dialect, static_terms = static_terms), ')'))
+      return(paste0(use_map[['reverse']], ' (', show_pref_sql(p@p, dialect, static_terms = static_terms), ')'))
     else  # "DUAL" is notated as suffix in Preference SQL!
-      return(paste0('(', show_pref_sql(p$p, dialect, static_terms = static_terms), ') ', use_map[['reverse']]))
+      return(paste0('(', show_pref_sql(p@p, dialect, static_terms = static_terms), ') ', use_map[['reverse']]))
       
   } else if (is.binarycomplexpref(p)) {
     # usual complex preference (not inverse!)
-    opchr <- use_map[[p$op]]
+    opchr <- use_map[[p@op]]
     # Check if operator is available in the given dialect
-    if (is.na(opchr)) stop('Operator "', p$op, '" is not available in the dialect "', dialect, '".')
-    res <- paste0(show_pref_sql(p$p1, dialect, opchr, static_terms = static_terms), ' ', opchr, ' ', 
-                  show_pref_sql(p$p2, dialect, opchr, static_terms = static_terms))
+    if (is.na(opchr)) stop('Operator "', p@op, '" is not available in the dialect "', dialect, '".')
+    res <- paste0(show_pref_sql(p@p1, dialect, opchr, static_terms = static_terms), ' ', opchr, ' ', 
+                  show_pref_sql(p@p2, dialect, opchr, static_terms = static_terms))
     if (parent_op != opchr && parent_op != 'PREF') res <- paste0('(', res, ')')
     return(res)
   }
@@ -225,7 +240,7 @@ show_base_pref <- function(p, dialect, static_terms = NULL) {
 # Add braces for non-single term 
 get_expr_sql <- function(p, static_terms = NULL) {
   # Inner expression
-  expr <- as.expression(p$get_inner_expr(static_terms))
+  expr <- as.expression(get_inner_expr(p, static_terms))
   # Make string of inner expression
   expr_str <- as.character(expr)
   if (length(expr[[1]]) != 1) return(paste0('(', expr_str, ')'))  # embrace complex expressions

@@ -1,6 +1,6 @@
  
  
-library(dplyr)
+suppressPackageStartupMessages(library(dplyr))
 
 
 # Data generator for 2-dim anticor data

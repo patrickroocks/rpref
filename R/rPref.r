@@ -62,5 +62,6 @@
 #' @useDynLib rPref
 #' @importFrom Rcpp cppFunction
 #' @importFrom RcppParallel RcppParallelLibs
+#' @importFrom methods new
 #' @import igraph
 NULL

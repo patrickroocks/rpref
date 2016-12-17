@@ -11,6 +11,9 @@ test_that("Test computation of Hasse diagramm", {
   df <- data.frame(id = 1:4)
   expect_equal(get_hasse_diag(df, (true(id == 1) | -true(id == 2)) + (true(id == 3) | -true(id == 4)) ), 
               t(matrix(c(1, 2, 3, 4), 2)))
+  
+  expect_equal(get_hasse_diag(df, layered(id, 1, 2, 3, 4)), 
+              t(matrix(c(1, 2, 2, 3, 3, 4), 2)))
 })
 
 
@@ -64,7 +67,7 @@ test_that("Test predecessors and successors", {
   expect_error(all_succ(p, 1)) # Need to call init_pred_succ first!
   
   # Evaluate pref (to substitute a,b,c in true(id %in% c(a,b,c))) and associate data.frame
-  set.df(p, df)
+  assoc.df(p) <- df
   
   expect_identical(as.character(p), 
                    '((true(id == 1) * true(id == 2)) & true(id == 3)) * (true(id == 2) & -true(id %in% c(1, 2, 3)) & -true(id == 5))')

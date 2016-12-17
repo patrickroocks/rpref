@@ -1,5 +1,5 @@
 
-library(dplyr)
+suppressPackageStartupMessages(library(dplyr))
 
 # Run all tests for parallel AND for non-parallel mode
 for (parallelity in c(FALSE, TRUE)) {
@@ -33,11 +33,11 @@ for (parallelity in c(FALSE, TRUE)) {
     
     # Test associated data frames
     p <- high(mpg) * high(hp)
-    expect_equal(get.df(p), NULL)
+    expect_equal(assoc.df(p), NULL)
     
-    set.df(p, mtcars)
+    assoc.df(p) <- mtcars
     expect_equal(sort(peval(p)$mpg), c(15, 15.8, 17.3, 19.7, 30.4, 32.4, 33.9))
-    expect_equal(get.df(p), mtcars)
+    expect_equal(assoc.df(p), mtcars)
     
     p <- true(mpg < 15) * true(am == 0, df = mtcars)
     expect_equal(sort(peval(p)$mpg), c(10.4, 10.4, 13.3, 14.3, 14.7))
@@ -56,6 +56,7 @@ for (parallelity in c(FALSE, TRUE)) {
     expect_equal(psel(mtcars, rPref::between(hp, 110, 120))$hp, c(110, 110, 110, 113))
     expect_equal(psel(mtcars, rPref::between(hp, 115, 122))$hp, c(123, 123))
     
+    expect_equal(psel(mtcars, layered(cyl, 3, 4, 8))$cyl, rep(4, 11))
     expect_equal(psel(mtcars, -layered(cyl, c(4, 6), 8))$cyl, rep(8, 14))
     expect_equal(rownames(psel(mtcars, true(mpg < 22) & true(cyl == 4) & true(wt < 3 & gear == 4))), "Volvo 142E")
     

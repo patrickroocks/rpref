@@ -58,7 +58,7 @@ Hence \code{psel(df, pref)} is equivalent to \code{df[psel.indices(df, pref),]} 
 \item Finally, \code{peval} does the same like \code{psel}, but assumes that \code{p} has an associated data frame
        which is used for the preference selection.
        Consider \code{\link{base_pref}} to see how base preferences are associated with data sets
-       or use \code{\link{set.df}} to explicitly associate a preference with a data frame.
+       or use \code{\link{assoc.df}} to explicitly associate a preference with a data frame.
 }
 }
 \section{Top-k Preference Selection}{

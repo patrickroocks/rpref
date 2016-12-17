@@ -6,8 +6,8 @@
 #' @name general_pref
 #' 
 #' @param x A preference, or, for \code{is.preference}, an object to be tested if it is an (empty) preference.
-#' @param df A data frame to associate with a preference object.
-#' @param ... Optional arguments passed to \code{as.character} and \code{as.expression}.
+#' @param value A data frame to associate with a preference object.
+#' @param ... Optional arguments passed to \code{as.expression}.
 #' 
 #' @details 
 #' 
@@ -25,16 +25,16 @@
 #' The function \code{is.empty_pref} returns \code{TRUE} if \code{x} is the empty preference object 
 #' \code{empty()} and \code{FALSE} otherwise.
 #' 
-#' With \code{set.df} a preference is associated with a data frame.
-#' This means, a partial evaluation based on this data frame is done. 
+#' With \code{assoc.df} the associated data frame of a preference can be retrieved or set.
+#' Setting the associated data frame means that a partial evaluation based on this data frame is done. 
 #' See \code{\link{show.pref}} for details on partial evaluation of preferences.
 #' Next, the preference is linked to that data frame, such that \code{\link{peval}(p)} can be used instead of \code{psel(df, p)}.
-#' The function \code{get.df} is the inverse to \code{set.df} and returns the associated data frame.
 #' It returns \code{NULL} if no data frame is associated.
+#' Use \code{set.assoc.df(NULL)} to delete an associated data frame.
 #' 
 #' @seealso See \code{\link{base_pref}} for the construction of base preferences,
 #' and \code{\link{complex_pref}} for the construction of complex preferences. 
-#' See \code{\link{show.pref}} for a partial evaluation of preference terms.
+#' See \code{\link{show.pref}} for string output and partial evaluation of preference terms.
 #' 
 #' @examples 
 #' 
@@ -50,11 +50,10 @@
 NULL
 
 
-
 # Neutral element
 #' @rdname general_pref
 #' @export
-empty <- function() emptypref$new()
+empty <- function() methods::new("emptypref")
 
 # Check for empty preference
 #' @rdname general_pref
@@ -66,39 +65,60 @@ is.empty_pref <- function(x) {
 # Length of a preference term (number of base preferences)
 #' @export
 #' @rdname general_pref
-length.preference <- function(x) {
-  x$get_length()
-}
+#' @aliases length,preference-method length,basepref-method length,emptypref-method length,complexpref-method length,reversepref-method
+#' @docType methods
+setMethod("length", signature(x = "preference"),
+  function(x) {
+    methods::callNextMethod()
+  }
+)
 
 #' @rdname general_pref
 #' @export
 is.preference <- function(x) {
+  # intentionally not a generic "is" method
   inherits(x, "preference")
 }
-  
-#' @export
-#' @rdname general_pref
-as.expression.preference <- function(x, ...) {
-  methods::callNextMethod()
-}
 
 #' @export
 #' @rdname general_pref
-as.character.preference <- function(x, ...) {
-  x$get_str()
-}
+#' @aliases as.expression,preference-method as.expression,basepref-method as.expression,emptypref-method as.expression,complexpref-method as.expression,reversepref-method
+#' @docType methods
+setMethod("as.expression", signature(x = "preference"),
+  function(x, ...) {
+    methods::callNextMethod()
+  }
+)
 
+setGeneric("assoc.df<-", function(x, value) standardGeneric("assoc.df<-"))
+setGeneric("assoc.df",   function(x)        standardGeneric("assoc.df"))
+
+# how to document s4 methods:
+# http://stackoverflow.com/questions/4396768/how-to-properly-document-s4-and-methods-using-roxygen
 
 
 #' @export
 #' @rdname general_pref
-set.df <- function(x, df) {
-  x$set_df_src(dataframe_src$new(df, substitute(df)))
-}
+#' @name assoc.df
+#' @aliases assoc.df,preference-method
+#' @docType methods
+setMethod("assoc.df", signature = "preference",
+  function(x) {
+    return(x@df_src$df)
+})
+
 
 #' @export
 #' @rdname general_pref
-get.df <- function(x) {
-  x$df_src$df
-}
+#' @name assoc.df<-
+#' @aliases assoc.df<-,preference-method
+#' @docType methods
+setReplaceMethod("assoc.df", signature = "preference",
+  function(x, value) {
+    # this does not modify the parent frame variable (like init_pred_succ does)
+    # instead a new (evaled!) preference object is returned
+    # assocComposedDf and compose.df are defined in base_pref
+    x <- assoc.composed.df(x, compose.df(value, substitute(value)))
+    return(x)
+})
 

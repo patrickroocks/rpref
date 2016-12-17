@@ -11,7 +11,7 @@ vignette: >
 
 ```{r, echo = FALSE, message = FALSE}
 library(rPref)
-library(dplyr)
+suppressPackageStartupMessages(library(dplyr))
 library(ggplot2)
 ```
 
@@ -84,22 +84,14 @@ We use `plot_btg` to generate the Better-Than-Graph. This uses Rgraphviz and the
 plot_btg(df, p)
 ```
 
-The tuples having the same level are placed on the same row. Here we have 4 rows, corresponding to the 4 levels which were selected using `top_level = 4`. 
-
-To get a graph with more meaningful labels we create a label string containing all relevant columns from the data set `mtcars` for the preference `p` and the row number `num`:
-
-```{r}
-labels <- paste(df$num, paste(df$am, df$gear, df$mpg, sep = ";"), sep = ": ")
-plot_btg(df, p, labels)
-```
-
+The tuples having the same level are placed on the same row. Here we have 4 rows, corresponding to the 4 levels which were selected using `top_level = 4`. The label of each node corresponds to the row number of the data frame, i.e., the `num` column in this case.
 
 ## Predecessors and successors in the BTG
 
 In addition to the visualization, rPref offers functions to explore the predecessors and successors of the Better-Than-Graph. First we have to associate the preference with the given data set and initialize the predecessor/successor functions. This initialization internally calculates all Better-Than-Relations on the data set.
 
 ```{r}
-set.df(p, df)
+assoc.df(p) <- df
 init_pred_succ(p)
 ```
 

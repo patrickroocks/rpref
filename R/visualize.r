@@ -120,8 +120,8 @@ plot_btg <- function(df, pref, labels = 1:nrow(df), flip.edges = FALSE,
                      levelwise = TRUE,
                      use_dot = "Rgraphviz" %in% rownames(installed.packages())) {
   
-  # check (only labels!)
-  check.plot.labels(labels = labels)
+  # check 
+  check.plot.base(df, pref, labels)
   
   # Get BTG (including checks for df/pref)
   btg <- get_btg(df, pref, flip.edges, use_dot)
@@ -226,8 +226,7 @@ get_btg <- function(df, pref, flip.edges = FALSE,
 get_btg_dot <- function(df, pref, labels = 1:nrow(df), flip.edges = FALSE, 
                         levelwise = TRUE, file = NULL) {
   
-  check.plot.base(df, pref)
-  check.plot.labels(labels)
+  check.plot.base(df, pref, labels)
   
   if (flip.edges) pref <- -pref
   
@@ -297,20 +296,17 @@ get_btg_dot <- function(df, pref, labels = 1:nrow(df), flip.edges = FALSE,
 # Internal check before plotting
 check.plot.base <- function(df, pref, labels = NULL) {
   
+  # check for df/pref
+  df.pref.check(df, pref)
+  
   # Stop if empty df
-  if (nrow(df) == 0) stop("No nodes available (empty data set)")
+  if (nrow(df) == 0) stop.syscall("No nodes for plotting available (empty data set)")
   
-  # Stop if no preference is given
-  if (!is.preference(pref)) 
-    stop("Second argument of BTG function has to be a preference")
-}
-
-check.plot.labels <- function(labels) {
-  
-  # Duplicate labels can be plotted but are probably senseless
-  ind <- anyDuplicated(labels)
-  if (ind > 0)
-    warning(paste0("The labels are not unique! First duplicated label is '", labels[ind], "'"))
+  if (length(labels) > 0) {
+    ind <- anyDuplicated(labels)
+    if (ind > 0)
+      warning(paste0("The labels are not unique! First duplicated label is '", labels[ind], "'."))
+  }
 }
 
 
@@ -339,9 +335,13 @@ check.plot.labels <- function(labels) {
 #' 
 #' @export 
 get_hasse_diag <- function(df, pref) {
+  
+  df.pref.check(df, pref)
+  
   # Calculate Hasse diagramm for pref on df
-  scores <- pref$get_scorevals(1, df)$scores
-  pref_serial <- pref$serialize()
+  res <- get_scores(pref, 1, df)
+  scores <- res$scores
+  pref_serial <- pserialize(res$p)
   links <- t(get_hasse_impl(scores, pref_serial)) + 1
   return(links)
 }
@@ -392,19 +392,21 @@ get_hasse_diag <- function(df, pref) {
 #' @export
 plot_front <- function(df, pref, ...) {
   
+  df.pref.check(df, pref)
+  
   # Check if appropriate preference
-  if (!(   is.binarycomplexpref(pref) && (pref$op == '*' || pref$op == '|')
-        && (is.lowpref(pref$p1) || is.highpref(pref$p1))
-        && (is.lowpref(pref$p2) || is.highpref(pref$p2))  ))
+  if (!(   is.binarycomplexpref(pref) && (pref@op == '*' || pref@op == '|')
+        && (is.lowpref(pref@p1) || is.highpref(pref@p1))
+        && (is.lowpref(pref@p2) || is.highpref(pref@p2))  ))
     stop("The plot_front function can only be applied to a 2-dimensional pareto preference of low/high preferences!")
     
   
   maxima <- psel(df, pref)
   
   # Get evaluated expressions (similar to score values, but for "high" we have to negate)
-  scores <- pref$get_scorevals(1, maxima)$scores
-  if (is.highpref(pref$p1)) scores[,1] <- -scores[,1]
-  if (is.highpref(pref$p2)) scores[,2] <- -scores[,2]
+  scores <- get_scores(pref, 1, maxima)$scores
+  if (is.highpref(pref@p1)) scores[,1] <- -scores[,1]
+  if (is.highpref(pref@p2)) scores[,2] <- -scores[,2]
   
   # Get bounding box of current plot
   xmin <- par("usr")[1]
@@ -412,7 +414,7 @@ plot_front <- function(df, pref, ...) {
   ymin <- par("usr")[3]
   ymax <- par("usr")[4]
   
-  if (is.highpref(pref$p1) && is.highpref(pref$p2)) {
+  if (is.highpref(pref@p1) && is.highpref(pref@p2)) {
     
     # Sort by x in ascending order and y in descending order
     scores <- scores[order(scores[,1], -scores[,2]),]
@@ -421,7 +423,7 @@ plot_front <- function(df, pref, ...) {
     segments(c(xmin, scores[-nrow(scores),1]), scores[,2], scores[,1], scores[,2], ...)
     segments(scores[,1], scores[,2], scores[,1], c(scores[-1,2], ymin), ...)
     
-  } else if (is.lowpref(pref$p1) && is.lowpref(pref$p2)) {
+  } else if (is.lowpref(pref@p1) && is.lowpref(pref@p2)) {
     
     # Sort by x in ascending order and y in descending order
     scores <- scores[order(scores[,1], -scores[,2]),]
@@ -430,7 +432,7 @@ plot_front <- function(df, pref, ...) {
     segments(scores[,1], scores[,2], c(scores[-1,1], xmax), scores[,2], ...)
     segments(scores[,1], c(ymax, scores[-nrow(scores),2]), scores[,1], scores[,2], ...)
   
-  } else if (is.lowpref(pref$p1) && is.highpref(pref$p2)) {
+  } else if (is.lowpref(pref@p1) && is.highpref(pref@p2)) {
     
     # Sort by x in ascending order and y in descending order
     scores <- scores[order(scores[,1], scores[,2]),]
@@ -439,7 +441,7 @@ plot_front <- function(df, pref, ...) {
     segments(scores[,1], scores[,2], c(scores[-1,1], xmax), scores[,2], ...)
     segments(scores[,1], c(ymin, scores[-nrow(scores),2]), scores[,1], scores[,2], ...)
   
-  } else if (is.highpref(pref$p1) && is.lowpref(pref$p2)) {
+  } else if (is.highpref(pref@p1) && is.lowpref(pref@p2)) {
     
     # Sort by x in ascending order and y in ascending order
     scores <- scores[order(scores[,1], scores[,2]),]

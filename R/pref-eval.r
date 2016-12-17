@@ -45,7 +45,7 @@
 #' \item Finally, \code{peval} does the same like \code{psel}, but assumes that \code{p} has an associated data frame
 #'        which is used for the preference selection.
 #'        Consider \code{\link{base_pref}} to see how base preferences are associated with data sets
-#'        or use \code{\link{set.df}} to explicitly associate a preference with a data frame.
+#'        or use \code{\link{assoc.df}} to explicitly associate a preference with a data frame.
 #' }
 #' 
 #' @section Top-k Preference Selection:
@@ -138,7 +138,9 @@
 #' # return size of each maxima group
 #' summarise(psel(group_by(mtcars, cyl), low(mpg)), n())
 #' 
-psel <- function(df, pref, ...) {  
+psel <- function(df, pref, ...) { 
+  
+  df.pref.check(df, pref)
   
   vars = list(...)
   
@@ -186,10 +188,8 @@ psel <- function(df, pref, ...) {
 #' @importFrom RcppParallel defaultNumThreads
 psel.indices <- function(df, pref, ...) {
   
-  # Note that also data.table fulfills is.data.frame(.) = TRUE
-  if (!is.data.frame(df))          stop("Preference selection needs a data.frame as first argument.")
-  if (!is.actual.preference(pref)) stop("Preference selection needs a preference as second argument.")
-    
+  df.pref.check(df, pref)
+  
   # ** Get all special arguments for top-k selections
   
   vars <- list(...)
@@ -237,9 +237,11 @@ psel.indices <- function(df, pref, ...) {
   
   # ** Calculate score/serial pref
  
-  # Precalculate score values for given preference, get_corevals must be called before serialize!
-  scores <- pref$get_scorevals(1, df)$scores
-  pref_serial <- pref$serialize()
+  # Precalculate score values for given preference, get_scores must be called before serialize!
+  # We need the correct priorchains for serializing!
+  res <- get_scores(pref, 1, df)
+  scores <- res$scores
+  pref_serial <- pserialize(res$p)
   
   # ** Get options
   
@@ -293,10 +295,10 @@ psel.indices <- function(df, pref, ...) {
 #' @export
 #' @rdname psel
 peval <- function(pref, ...) {
-  if (is.null(pref$df_src))
-    stop("The given preference has no associated data frame. Call `set.df(pref, df)' first.")
+  if (length(pref@df_src) == 0)
+    stop("The given preference has no associated data frame. Call `assoc.df(pref) <- df' first.")
   else
-    return(psel(pref$df_src$df, pref, ...))
+    return(psel(pref@df_src$df, pref, ...))
 }
   
 
@@ -305,8 +307,18 @@ check.singleint.null2minus <- function(val, name) {
   if (is.null(val)) 
     return(-1)
   else if (!(is.numeric(val) && length(val) == 1 && round(val) == val && val >= 0))
-    stop(paste0('Error in preference selection: Parameter ', name, ' must be a positive single integer value'), call. = FALSE)
+    stop.syscall(paste0('Parameter ', name, ' must be a positive single integer value'))
   else
     return(val)
 }
 
+df.pref.check <- function(df, pref) {
+  # Note that also data.table fulfills is.data.frame(.) = TRUE
+  if (!is.data.frame(df))          stop.syscall("First argument has to be a data.frame.")
+  if (!is.actual.preference(pref)) stop.syscall("Second argument has to be a preference.")
+}
+
+stop.syscall <- function(message) {
+  message <- paste0("Error in ", deparse(sys.calls()[[sys.nframe()-1]]), " : ", message)
+  stop(message, call. = FALSE)
+}

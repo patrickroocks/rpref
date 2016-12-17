@@ -55,7 +55,8 @@ NULL
 #' @export
 around <- function(expr, center, df = NULL) {
   expr <- call('abs', call('-', substitute(expr), center))
-  return(lowpref$new(as.lazy(expr, parent.frame()), df, substitute(df)))
+  p <- methods::new("lowpref", as.lazy(expr, parent.frame()))
+  return(assoc.composed.df(p, compose.df(df, substitute(df))))
 }
 
 
@@ -64,14 +65,16 @@ around <- function(expr, center, df = NULL) {
 between <- function(expr, left, right, df = NULL) {
   expr <- substitute(expr)
   between_expr <- call('pmax', call('-', left, expr), 0, call('-', expr, right))
-  return(lowpref$new(as.lazy(between_expr, parent.frame()), df, substitute(df)))
+  p <- methods::new("lowpref", as.lazy(between_expr, parent.frame()))
+  return(assoc.composed.df(p, compose.df(df, substitute(df))))
 }
 
 #' @rdname base_pref_macros
 #' @export
 pos <- function(expr, pos_value, df = NULL) {
   expr <- call('%in%', substitute(expr), pos_value)
-  return(truepref$new(as.lazy(expr, parent.frame()), df, substitute(df)))
+  p <- methods::new("truepref", as.lazy(expr, parent.frame()))
+  return(assoc.composed.df(p, compose.df(df, substitute(df))))
 }
 
 #' @rdname base_pref_macros
@@ -79,10 +82,13 @@ pos <- function(expr, pos_value, df = NULL) {
 layered <- function(expr, ..., df = NULL) {
   sl <- list(...)
   if (length(sl) < 2) stop("Empty layered preference is not allowed!")
+  par_frame <- parent.frame()
+  composed_df <- compose.df(df, substitute(df))
   expr <- substitute(expr)
   layers <- lapply(sl, function(x) { 
     tmp_call <- call('%in%', expr, x)
-    return(truepref$new(as.lazy(tmp_call, parent.frame()), df, substitute(df)))
+    p <- methods::new("truepref", as.lazy(tmp_call, par_frame))
+    return(assoc.composed.df(p, composed_df))
   })
   return(Reduce('&', layers))
 }
