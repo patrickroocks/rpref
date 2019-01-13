@@ -112,7 +112,7 @@
 #' 
 #' 
 #' @name psel
-#' @importFrom dplyr is.grouped_df group_by_
+#' @importFrom dplyr is.grouped_df group_by
 #' @export
 #' 
 #' @examples
@@ -164,27 +164,23 @@ psel <- function(df, pref, ...) {
   if (!show_level) indices <- tres # psel.indices.top returned just indices when show_level = FALSE
   else indices <- tres[['.indices']]
   
-  # Preference subset
-  if (!dplyr::is.grouped_df(df)) res <- df[indices,,drop=FALSE] # Usual preference selection
-  else res <- dplyr::group_by_(df[indices,,drop=FALSE], .dots = attr(df, 'vars')) # Grouped preference selection - regroup!
+  # Apply indices (potential grouping is preserved!)
+  res <- df[indices,,drop=FALSE] 
   
   # Add levels if show_level is true
-  if (!show_level) return(res)
-  else {
+  if (!show_level) {
+    return(res)
+  } else {
     res[['.level']] <- tres[['.level']]
     return(res)
   }
-  
-  # Do the preference selection
-  if (!dplyr::is.grouped_df(df)) return(df[res,]) # Usual preference selection
-  else return(dplyr::group_by_(df[res,], .dots = attr(df, 'vars'))) # Grouped preference selection - regroup!
 }
 
 
 
 #' @export
 #' @rdname psel
-#' @importFrom dplyr is.grouped_df group_by_
+#' @importFrom dplyr is.grouped_df
 #' @importFrom RcppParallel defaultNumThreads
 psel.indices <- function(df, pref, ...) {
   
@@ -227,12 +223,21 @@ psel.indices <- function(df, pref, ...) {
   
   # ** get grouping 
   
-  # (grouped data.tables have been removed from dplyr 0.4.3.9)
+  raise_grouping_error <- function() {
+    stop("Could not find grouping indices in grouped data.frame! Probably rPref and dplyr became incompatible.")
+  }
+  
+  # (in dplyr 0.8 is.grouped_df is true for group_by(x) where x is a data.frame or data.table)
   is_grouped <- dplyr::is.grouped_df(df)
   if (is_grouped) {
-    group_indices <- attr(df, 'indices')
-    if (is.null(group_indices)) 
-      stop("Could not find grouping indices in grouped data.frame!")
+    groups <- attr(df, 'groups')
+    # Must have at least 2 columns: At least one grouping var and ".rows"
+    if (is.null(groups) || length(groups) < 2) raise_grouping_error()
+    group_indices = groups[[length(groups)]]
+    if (!is.list(group_indices) || !all(vapply(group_indices, is.numeric, TRUE))) raise_grouping_error()
+    
+    # These are R indices starting at 1, and we need C indices starting at 0
+    group_indices <- lapply(group_indices, function(l) l - 1)
   }
   
   # ** Calculate score/serial pref

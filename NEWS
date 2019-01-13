@@ -1,10 +1,6 @@
-rPref 1.2
+rPref 1.3
 =========
 
-* Changed object system for preferences from R6 to S4 classes
+* Compatibility to dplyr 0.8.0
 
-* Moved as.character documentation from general_pref to show.pref
-
-* Changed set.df/get.df to assoc.df/assoc.df<-
-
-* Improved error messages in psel, get_hasse_diag, ...
+* Added package citation
