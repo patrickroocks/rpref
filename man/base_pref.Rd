@@ -2,13 +2,13 @@
 % Please edit documentation in R/base-pref.r
 \name{base_pref}
 \alias{base_pref}
-\alias{high}
-\alias{high_}
-\alias{is.base_pref}
 \alias{low}
 \alias{low_}
+\alias{high}
+\alias{high_}
 \alias{true}
 \alias{true_}
+\alias{is.base_pref}
 \title{Base Preferences}
 \usage{
 low(expr, df = NULL)
@@ -120,6 +120,7 @@ Hence it is safer to do an early partial evaluation of all preferences, as far a
 
 The partial evaluation can be done manually by \code{\link{partial.eval.pref}}.
 }
+
 \examples{
 # define a preference with a score value combining mpg and hp
 p1 <- high(4 * mpg + hp)
@@ -142,4 +143,3 @@ See \code{\link{complex_pref}} how to compose complex preferences to retrieve e.
 See \code{\link{general_pref}} for functions applying to all kind of preferences.
 See \code{\link{base_pref_macros}} for more base preferences.
 }
-

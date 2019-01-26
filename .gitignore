@@ -1,2 +1,4 @@
 Meta
 doc
+*.o
+*.so

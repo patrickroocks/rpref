@@ -2,17 +2,17 @@
 % Please edit documentation in R/complex-pref.r
 \docType{methods}
 \name{complex_pref}
-\alias{&,preference,preference-method}
-\alias{&,preference-method}
+\alias{complex_pref}
 \alias{*,preference,preference-method}
 \alias{*,preference-method}
-\alias{+,preference,preference-method}
-\alias{+,preference-method}
-\alias{complex_pref}
-\alias{is.complex_pref}
-\alias{reverse}
+\alias{&,preference,preference-method}
+\alias{&,preference-method}
 \alias{|,preference,preference-method}
 \alias{|,preference-method}
+\alias{+,preference,preference-method}
+\alias{+,preference-method}
+\alias{reverse}
+\alias{is.complex_pref}
 \title{Complex Preferences}
 \usage{
 \S4method{*}{preference,preference}(e1, e2)
@@ -127,6 +127,7 @@ generates the following console output:
 
 We see that the association with the data set is propagated and \code{max(mtcars$cyl)} is partially evaluated.
 }
+
 \examples{
 # define preference for cars with low consumption (high mpg-value) 
 # and simultaneously high horsepower
@@ -152,4 +153,3 @@ See \code{\link{base_pref}} for the construction of base preferences.
 See \code{\link{general_pref}} for functions applicable to all kind of preferences.
 See \code{\link{psel}} for the evaluation of preferences.
 }
-

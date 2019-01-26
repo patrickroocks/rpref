@@ -29,4 +29,3 @@ get_hasse_diag(mtcars, low(mpg))
 \seealso{
 \code{\link{get_btg}} to plot the Hasse diagram.
 }
-

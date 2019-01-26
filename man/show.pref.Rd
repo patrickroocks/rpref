@@ -2,14 +2,14 @@
 % Please edit documentation in R/show-pref.r
 \docType{methods}
 \name{show.pref}
-\alias{as.character,basepref-method}
-\alias{as.character,complexpref-method}
-\alias{as.character,emptypref-method}
-\alias{as.character,preference-method}
-\alias{as.character,reversepref-method}
-\alias{partial.eval.pref}
-\alias{pref.str}
 \alias{show.pref}
+\alias{as.character,preference-method}
+\alias{as.character,basepref-method}
+\alias{as.character,emptypref-method}
+\alias{as.character,complexpref-method}
+\alias{as.character,reversepref-method}
+\alias{pref.str}
+\alias{partial.eval.pref}
 \title{Partial Evaluation and String Output of Preferences}
 \usage{
 show.pref(p, df = NULL)
@@ -62,6 +62,7 @@ The following equalities hold:
   \item \code{show(partial.eval.pref(p, df))} produces the same console output as \code{show.pref(p, df)}
 }
 }
+
 \examples{
 
 f <- function(x) 2*x
@@ -78,4 +79,3 @@ partial.eval.pref(p, mtcars)
 \seealso{
 See \code{\link{general_pref}} for more utility functions for preferences.
 }
-

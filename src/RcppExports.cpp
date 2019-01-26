@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // get_hasse_impl
 NumericVector get_hasse_impl(DataFrame scores, List serial_pref);
-RcppExport SEXP rPref_get_hasse_impl(SEXP scoresSEXP, SEXP serial_prefSEXP) {
+RcppExport SEXP _rPref_get_hasse_impl(SEXP scoresSEXP, SEXP serial_prefSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -19,7 +19,7 @@ END_RCPP
 }
 // pref_select_top_impl
 DataFrame pref_select_top_impl(DataFrame scores, List serial_pref, int N, double alpha, int top, int at_least, int toplevel, bool and_connected, bool show_levels);
-RcppExport SEXP rPref_pref_select_top_impl(SEXP scoresSEXP, SEXP serial_prefSEXP, SEXP NSEXP, SEXP alphaSEXP, SEXP topSEXP, SEXP at_leastSEXP, SEXP toplevelSEXP, SEXP and_connectedSEXP, SEXP show_levelsSEXP) {
+RcppExport SEXP _rPref_pref_select_top_impl(SEXP scoresSEXP, SEXP serial_prefSEXP, SEXP NSEXP, SEXP alphaSEXP, SEXP topSEXP, SEXP at_leastSEXP, SEXP toplevelSEXP, SEXP and_connectedSEXP, SEXP show_levelsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -38,7 +38,7 @@ END_RCPP
 }
 // grouped_pref_sel_top_impl
 DataFrame grouped_pref_sel_top_impl(List indices, DataFrame scores, List serial_pref, int N, double alpha, int top, int at_least, int toplevel, bool and_connected, bool show_levels);
-RcppExport SEXP rPref_grouped_pref_sel_top_impl(SEXP indicesSEXP, SEXP scoresSEXP, SEXP serial_prefSEXP, SEXP NSEXP, SEXP alphaSEXP, SEXP topSEXP, SEXP at_leastSEXP, SEXP toplevelSEXP, SEXP and_connectedSEXP, SEXP show_levelsSEXP) {
+RcppExport SEXP _rPref_grouped_pref_sel_top_impl(SEXP indicesSEXP, SEXP scoresSEXP, SEXP serial_prefSEXP, SEXP NSEXP, SEXP alphaSEXP, SEXP topSEXP, SEXP at_leastSEXP, SEXP toplevelSEXP, SEXP and_connectedSEXP, SEXP show_levelsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -58,7 +58,7 @@ END_RCPP
 }
 // pref_select_impl
 NumericVector pref_select_impl(DataFrame scores, List serial_pref, int N, double alpha);
-RcppExport SEXP rPref_pref_select_impl(SEXP scoresSEXP, SEXP serial_prefSEXP, SEXP NSEXP, SEXP alphaSEXP) {
+RcppExport SEXP _rPref_pref_select_impl(SEXP scoresSEXP, SEXP serial_prefSEXP, SEXP NSEXP, SEXP alphaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -72,7 +72,7 @@ END_RCPP
 }
 // grouped_pref_sel_impl
 NumericVector grouped_pref_sel_impl(List indices, DataFrame scores, List serial_pref, int N, double alpha);
-RcppExport SEXP rPref_grouped_pref_sel_impl(SEXP indicesSEXP, SEXP scoresSEXP, SEXP serial_prefSEXP, SEXP NSEXP, SEXP alphaSEXP) {
+RcppExport SEXP _rPref_grouped_pref_sel_impl(SEXP indicesSEXP, SEXP scoresSEXP, SEXP serial_prefSEXP, SEXP NSEXP, SEXP alphaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -84,4 +84,18 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(grouped_pref_sel_impl(indices, scores, serial_pref, N, alpha));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_rPref_get_hasse_impl", (DL_FUNC) &_rPref_get_hasse_impl, 2},
+    {"_rPref_pref_select_top_impl", (DL_FUNC) &_rPref_pref_select_top_impl, 9},
+    {"_rPref_grouped_pref_sel_top_impl", (DL_FUNC) &_rPref_grouped_pref_sel_top_impl, 10},
+    {"_rPref_pref_select_impl", (DL_FUNC) &_rPref_pref_select_impl, 4},
+    {"_rPref_grouped_pref_sel_impl", (DL_FUNC) &_rPref_grouped_pref_sel_impl, 5},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_rPref(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }

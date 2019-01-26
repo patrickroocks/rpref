@@ -48,4 +48,3 @@ show_front(high(hp) | high(mpg))
 
 
 }
-

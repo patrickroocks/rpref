@@ -49,4 +49,3 @@ W. Kiessling, M. Endres, F. Wenzel (2011): The Preference SQL System - An Overvi
 S. Mandl, O. Kozachuk, M. Endres, W. Kiessling (2015): Preference Analytics in EXASolution. 
 16th Conference on Database Systems for Business, Technology, and Web.
 }
-

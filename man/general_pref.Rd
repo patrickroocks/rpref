@@ -2,24 +2,24 @@
 % Please edit documentation in R/general-pref.r
 \docType{methods}
 \name{general_pref}
-\alias{as.expression,basepref-method}
-\alias{as.expression,complexpref-method}
-\alias{as.expression,emptypref-method}
+\alias{general_pref}
+\alias{empty}
+\alias{is.empty_pref}
+\alias{length,preference-method}
+\alias{length,basepref-method}
+\alias{length,emptypref-method}
+\alias{length,complexpref-method}
+\alias{length,reversepref-method}
+\alias{is.preference}
 \alias{as.expression,preference-method}
+\alias{as.expression,basepref-method}
+\alias{as.expression,emptypref-method}
+\alias{as.expression,complexpref-method}
 \alias{as.expression,reversepref-method}
 \alias{assoc.df}
 \alias{assoc.df,preference-method}
 \alias{assoc.df<-}
 \alias{assoc.df<-,preference-method}
-\alias{empty}
-\alias{general_pref}
-\alias{is.empty_pref}
-\alias{is.preference}
-\alias{length,basepref-method}
-\alias{length,complexpref-method}
-\alias{length,emptypref-method}
-\alias{length,preference-method}
-\alias{length,reversepref-method}
 \title{Utility Functions for Preferences}
 \usage{
 empty()
@@ -85,4 +85,3 @@ See \code{\link{base_pref}} for the construction of base preferences,
 and \code{\link{complex_pref}} for the construction of complex preferences. 
 See \code{\link{show.pref}} for string output and partial evaluation of preference terms.
 }
-
