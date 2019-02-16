@@ -1,14 +1,16 @@
 Package: rPref
 Version: 1.3
-Date: 2019-02-01
+Date: 2019-02-15
 Title: Database Preferences and Skyline Computation
 Author: Patrick Roocks <mail@p-roocks.de>
 Maintainer: Patrick Roocks <mail@p-roocks.de>
 Description: Routines to select and visualize the maxima for a given strict
     partial order. This especially includes the computation of the Pareto
-    frontier, also known as (Top-k) Skyline operator, and some
-    generalizations (database preferences).
-URL: http://www.p-roocks.de/rpref
+    frontier, also known as (Top-k) Skyline operator (see Börzsönyi, et al. 
+    (2001) <doi:10.1109/ICDE.2001.914855>), and some generalizations 
+    known as database preferences (see Kießling (2002) 
+    <doi:10.1016/B978-155860869-6/50035-4>).
+URL: https://www.p-roocks.de/rpref
 Depends:
     R (>= 3.1.2)
 Imports:
