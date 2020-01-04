@@ -1,6 +1,4 @@
-rPref 1.3
+rPref 1.4
 =========
 
-* Compatibility to dplyr 0.8.0
-
-* Added package citation
+* Performance optimizations / code cleanup in the C++ code

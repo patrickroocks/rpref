@@ -1,12 +1,5 @@
-
+#pragma once
 
 #include "pref-classes.h"
 
-
-// --------------------------------------------------------------------------------------------------------------------------------
-// From here from VS
-// --------------------------------------------------------------------------------------------------------------------------------
-
-  
-list<int> get_transitive_reduction(ppref p, int& ntuples);
-  
+std::list<int> get_transitive_reduction(const ppref& p, int ntuples);

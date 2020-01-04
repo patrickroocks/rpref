@@ -1,46 +1,33 @@
-
-#include <Rcpp.h>
-using namespace Rcpp;
-
-
 // [[Rcpp::depends(RcppParallel)]]
 #include <RcppParallel.h>
 using namespace RcppParallel;
 
 #include "scalagon.h" // Includes BNL, pref classes and Scalagon
 
+using namespace Rcpp;
+
 // Scalagon/BNL Wrapper for parallel and non-parallel. 
-
-
-// --------------------------------------------------------------------------------------------------------------------------------
-// --------------------------------------------------------------------------------------------------------------------------------
 
 // for non-grouping / grouping and non-topk
 // Adding functionality for top-k does not make sense - top-k returns a pairlist!
 class Psel_worker : public Worker {
 public:
-   
-  // input index vectors to read from
+  // input
   std::vector< std::vector<int> > vs;
-  
-  // Preference
   ppref p;
-  
-  // output lists to write to
-  std::vector< std::list<int> > results;
-  
   double alpha;
   
-  // Sample indices
+  std::vector< std::vector<int> > results;
   std::vector< std::vector<int> > samples_ind;
   
   // initialize from Rcpp input and output matrixes (the RMatrix class
   // can be automatically converted to from the Rcpp matrix type)
   Psel_worker(std::vector< std::vector<int> >& vs, ppref p, int N, double alpha, std::vector< std::vector<int> >& samples_ind) : 
-    vs(vs), p(p), results(N), alpha(alpha), samples_ind(samples_ind) { }
+    vs(vs), p(p), results(N), alpha(alpha), samples_ind(samples_ind) {}
    
    // function call operator that work for the specified range (begin/end)
-  void operator()(std::size_t begin, std::size_t end) {
+  void operator()(std::size_t begin, std::size_t end)
+  {
     for (std::size_t k = begin; k < end; k++) {
       scalagon scal_alg(true);
       scal_alg.sample_ind = samples_ind[k];
@@ -49,29 +36,23 @@ public:
   }
 };
 
-
-
 // --------------------------------------------------------------------------------------------------------------------------------
 
 
 // Parallel preference selection (without top-k)
 // subdivide dataset in N parts
 
-
 // [[Rcpp::export]]
-NumericVector pref_select_impl(DataFrame scores, List serial_pref, int N, double alpha) {
-  
+NumericVector pref_select_impl(DataFrame scores, List serial_pref, int N, double alpha)
+{
   NumericVector col1 = scores[0];  
-  int ntuples = col1.size();
-  
-  // check for empty dataset
+  const int ntuples = col1.size();
   if (ntuples == 0) return NumericVector();
+  std::vector<int> res;
+  res.reserve(ntuples);
   
   // De-Serialize preference
   ppref p = CreatePreference(serial_pref, scores);
-    
-  // Result list
-  std::list<int> res;
   
   // Scalagon instance for non-parallel run or final run in parallel case
   scalagon scal_alg;
@@ -81,7 +62,7 @@ NumericVector pref_select_impl(DataFrame scores, List serial_pref, int N, double
     
     // Create index vector
     std::vector<int> v(ntuples);
-    for (int i=0; i<ntuples; i++) v[i] = i;
+    for (int i=0; i < ntuples; i++) v[i] = i;
     
     res = scal_alg.run(v, p, alpha);
   
@@ -116,22 +97,18 @@ NumericVector pref_select_impl(DataFrame scores, List serial_pref, int N, double
     parallelFor(0, N_parts, worker);
     
     // Clue together
-    for (int k=0; k<N_parts; k++) 
-      res.splice(res.end(), worker.results[k]);
+    for (int k=0; k < N_parts; k++) res += worker.results[k];
     
-    // Merge and execute (top k) BNL again
-    std::vector<int> vec_merged(res.begin(), res.end());
-    res = scal_alg.run(vec_merged, p, alpha);
+    // execute (top k) BNL again
+    res = scal_alg.run(res, p, alpha);
   
   }
   
   // Return result
-  return(NumericVector(res.begin(), res.end()));
+  return NumericVector(res.begin(), res.end());
 }
 
 
-
-           
 // --------------------------------------------------------------------------------------------------------------------------------
 
 // Parallel grouped preference selection
@@ -142,8 +119,9 @@ NumericVector pref_select_impl(DataFrame scores, List serial_pref, int N, double
 // [[Rcpp::export]]
 NumericVector grouped_pref_sel_impl(List indices, DataFrame scores, List serial_pref, int N, double alpha) {
   
-  int nind = indices.length();
-  std::list<int> res;
+  const int nind = indices.length();
+  std::vector<int> res;
+  res.reserve(nind);
   
   if (nind == 0) return NumericVector();
   
@@ -166,8 +144,7 @@ NumericVector grouped_pref_sel_impl(List indices, DataFrame scores, List serial_
     parallelFor(0, nind, worker);
     
     // Clue together
-    for (int i=0; i<nind; i++) 
-      res.splice(res.end(), worker.results[i]);
+    for (int i=0; i < nind; i++) res += worker.results[i];
     
   } else { // non parallel case
   
@@ -175,10 +152,9 @@ NumericVector grouped_pref_sel_impl(List indices, DataFrame scores, List serial_
   
     for (int i=0; i<nind; i++) {
       std::vector<int> group_indices = as< std::vector<int> >(indices[i]);
-      std::list<int> tres = scal_alg.run(group_indices, p, alpha);
-      res.splice(res.end(), tres);
+      res += scal_alg.run(group_indices, p, alpha);
     }
   }
   
-  return(NumericVector(res.begin(), res.end()));
+  return NumericVector(res.begin(), res.end());
 }

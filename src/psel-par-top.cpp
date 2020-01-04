@@ -1,50 +1,36 @@
-
-#include <Rcpp.h>
-using namespace Rcpp;
-
-
 // [[Rcpp::depends(RcppParallel)]]
 #include <RcppParallel.h>
 using namespace RcppParallel;
 
 #include "scalagon.h" // Includes BNL, pref classes and Scalagon
 
+using namespace Rcpp;
+
 // Scalagon/BNL Wrapper for parallel and non-parallel TOP-(LEVEL-)k SELECTION
 
-
-// --------------------------------------------------------------------------------------------------------------------------------
-// --------------------------------------------------------------------------------------------------------------------------------
-
 // for non-grouping topk and grouping topk without levels
-class Psel_worker_top : public Worker {
+class Psel_worker_top : public Worker
+{
 public:
-   
-  // input index vectors to read from
+  // input
   std::vector< std::vector<int> > vs;
-  
-  // Preference
   ppref p;
-  
-  // output lists to write to
-  std::vector< std::list<int> > results;
-  
-  // alpha value for Scalagon Scaling Factor 
   double alpha;
-  
-  // TOP-k settings
   topk_setting ts;
   
-  // Sample indices
+  std::vector< std::vector<int> > results;
+  
   std::vector< std::vector<int> > samples_ind;
   
   // initialize from Rcpp input and output matrixes (the RMatrix class
   // can be automatically converted to from the Rcpp matrix type)
   Psel_worker_top(std::vector< std::vector<int> >& vs, ppref p, int N, double alpha, 
-    topk_setting& ts, std::vector< std::vector<int> >& samples_ind) : 
-    vs(vs), p(p), results(N), alpha(alpha), ts(ts), samples_ind(samples_ind) { }
+                  topk_setting& ts, std::vector< std::vector<int> >& samples_ind) : 
+    vs(vs), p(p), results(N), alpha(alpha), ts(ts), samples_ind(samples_ind) {}
    
-   // function call operator that work for the specified range (begin/end)
-  void operator()(std::size_t begin, std::size_t end) {
+  // function call operator that work for the specified range (begin/end)
+  void operator()(std::size_t begin, std::size_t end)
+  {
     for (std::size_t k = begin; k < end; k++) {
       scalagon scal_alg(true);
       scal_alg.sample_ind = samples_ind[k];
@@ -58,35 +44,28 @@ public:
 // --------------------------------------------------------------------------------------------------------------------------------
 
 // for grouping topk with levels (parallel computation of final results WITH level)
-class Psel_worker_top_level : public Worker {
+class Psel_worker_top_level : public Worker
+{
 public:
-   
-  // input index vectors to read from
+  // input
   std::vector< std::vector<int> > vs;
-  
-  // Preference
   ppref p;
-  
-  // output lists to write to
-  std::vector< pair_list > results;
-  
-  // alpha value for Scalagon Scaling Factor 
   double alpha;
-  
-  // TOP-k settings
   topk_setting ts;
   
-  // Sample indices
+  std::vector< pair_vector > results;
+  
   std::vector< std::vector<int> > samples_ind;
   
   // initialize from Rcpp input and output matrixes (the RMatrix class
   // can be automatically converted to from the Rcpp matrix type)
   Psel_worker_top_level(std::vector< std::vector<int> >& vs, ppref p, int N, double alpha,
                         topk_setting& ts, std::vector< std::vector<int> >& samples_ind) : 
-    vs(vs), p(p), results(N), alpha(alpha), ts(ts), samples_ind(samples_ind) { }
+    vs(vs), p(p), results(N), alpha(alpha), ts(ts), samples_ind(samples_ind) {}
    
    // function call operator that work for the specified range (begin/end)
-  void operator()(std::size_t begin, std::size_t end) {
+  void operator()(std::size_t begin, std::size_t end)
+  {
     for (std::size_t k = begin; k < end; k++) {
       scalagon scal_alg(true);
       scal_alg.sample_ind = samples_ind[k];
@@ -107,21 +86,17 @@ public:
 
 // [[Rcpp::export]]
 DataFrame pref_select_top_impl(DataFrame scores, List serial_pref, int N, double alpha, 
-                               int top, int at_least, int toplevel, bool and_connected, bool show_levels) {
+                               int top, int at_least, int toplevel, bool and_connected, bool show_levels)
+{
+  NumericVector col1 = scores[0];
+  const int ntuples = col1.size();
   
-  NumericVector col1 = scores[0];  
-  int ntuples = col1.size();
-  
-  if (ntuples == 0) return(DataFrame::create(Named(".indices") = NumericVector(),
-                                             Named(".level")   = NumericVector()));
+  if (ntuples == 0) return DataFrame::create(Named(".indices") = NumericVector(),
+                                             Named(".level")   = NumericVector());
   
   topk_setting ts(top, at_least, toplevel, and_connected);
-  
-  // De-Serialize preference
-  ppref p = CreatePreference(serial_pref, scores);  
-  
-  // Result list
-  flex_list res;
+  ppref p = CreatePreference(serial_pref, scores);
+  flex_vector res;
   
   // Scalagon instance
   scalagon scal_alg;
@@ -133,7 +108,7 @@ DataFrame pref_select_top_impl(DataFrame scores, List serial_pref, int N, double
     std::vector<int> v(ntuples);
     for (int i = 0; i < ntuples; i++) v[i] = i;
     
-    res = scal_alg.run_topk(v, p, ts, alpha, show_levels); // res is flex_list
+    res = scal_alg.run_topk(v, p, ts, alpha, show_levels); // res is flex_vector
   
   } else { // N > 1, parallel case
   
@@ -165,39 +140,35 @@ DataFrame pref_select_top_impl(DataFrame scores, List serial_pref, int N, double
     Psel_worker_top worker(vs, p, N_parts, alpha, ts, samples_ind);
     parallelFor(0, N_parts, worker);
     
-    std::list<int> list_merged;
+    std::vector<int> vector_merged;
     
     // Clue together
-    for (int k=0; k<N_parts; k++) 
-      list_merged.splice(list_merged.end(), worker.results[k]);
+    for (int k=0; k < N_parts; k++) vector_merged += worker.results[k];
     
     // Merge and execute top k Scalagon/BNL again, potentially WITH LEVELS
-    std::vector<int> vec_merged(list_merged.begin(), list_merged.end());
-    res = scal_alg.run_topk(vec_merged, p, ts, alpha, show_levels); // res is flex_list
+    res = scal_alg.run_topk(vector_merged, p, ts, alpha, show_levels); // res is flex_vector
   }
   
   if (!show_levels) {
-    // Return just indices (first member of flex_list)
-    return(DataFrame::create(Named(".indices") = NumericVector(res.first.begin(), res.first.end())));
+    // Return just indices (first member of flex_vector)
+    return DataFrame::create(Named(".indices") = NumericVector(res.first.begin(), res.first.end()));
   } else {
-    int nres = res.second.size();
-    int count = 0;
-    NumericVector ind(nres);
-    NumericVector levels(nres);
+    // Return indices and level (second member of flex_vector)
+    const int nres = res.second.size();
+    std::vector<int> res_ind;
+    std::vector<int> res_levels;
+    res_ind.reserve(nres);
+    res_levels.reserve(nres);
     
-		for (pair_list::iterator j = res.second.begin(); j != res.second.end(); ++j) {
-      levels[count] = j->first;
-      ind[count] = j->second;
-      count++;
-		}
-
-    return(DataFrame::create(Named(".indices") = ind,
-                             Named(".level")   = levels));
+    for (const std::pair<int,int> & u : res.second) {
+      res_levels.push_back(u.first);
+      res_ind   .push_back(u.second);
+    }
+    
+    return DataFrame::create(Named(".indices") = NumericVector(res_ind.begin(),    res_ind.end()),
+                             Named(".level")   = NumericVector(res_levels.begin(), res_levels.end()));
   }
-  
 }
-
-
 
            
 // --------------------------------------------------------------------------------------------------------------------------------
@@ -205,17 +176,17 @@ DataFrame pref_select_top_impl(DataFrame scores, List serial_pref, int N, double
 // Parallel grouped preference TOP K selection
 // ===========================================
 
-// Grouped preference evaluation, based on Groups from dplyr
+// Grouped preference evaluation, based on groups from dplyr
 // Groups are given via indices list, calculated in dplyr
 
 // [[Rcpp::export]]
 DataFrame grouped_pref_sel_top_impl(List indices, DataFrame scores, List serial_pref, int N, double alpha, 
-                                        int top, int at_least, int toplevel, bool and_connected, bool show_levels) {
+                                    int top, int at_least, int toplevel, bool and_connected, bool show_levels)
+{
+  const int nind = indices.length(); // Number of groups
   
-  int nind = indices.length(); // Number of groups
-  
-  if (nind == 0) return(DataFrame::create(Named(".indices") = NumericVector(),
-                                          Named(".level")   = NumericVector()));
+  if (nind == 0) return DataFrame::create(Named(".indices") = NumericVector(),
+                                          Named(".level")   = NumericVector());
   
   topk_setting ts(top, at_least, toplevel, and_connected);
   
@@ -234,15 +205,13 @@ DataFrame grouped_pref_sel_top_impl(List indices, DataFrame scores, List serial_
       samples_ind[i] = get_sample(vs[i].size()); // Sample indices for this partition
     }
   }
-  
-  DataFrame result_df;
 
   if (!show_levels) {
     
     // Do not show levels - Return just indices 
     // ----------------------------------------
     
-    std::list<int> res;
+    std::vector<int> res;
     if (N > 1) { // parallel case - process groups in parallel
     
       // Create worker
@@ -252,26 +221,24 @@ DataFrame grouped_pref_sel_top_impl(List indices, DataFrame scores, List serial_
       parallelFor(0, nind, worker);
       
       // Clue together
-      for (int i=0; i<nind; i++) 
-        res.splice(res.end(), worker.results[i]);
+      for (int i=0; i < nind; i++) res += worker.results[i];
       
     } else { // non parallel case
     
-      for (int i=0; i<nind; i++) {
+      for (int i=0; i < nind; i++) {
         std::vector<int> group_indices = as< std::vector<int> >(indices[i]);
-        std::list<int> tres = scal_alg.run_topk(group_indices, p, ts, alpha, false).first; // no levels
-        res.splice(res.end(), tres);
+        res += scal_alg.run_topk(group_indices, p, ts, alpha, false).first; // no levels
       }
     }
     
-    result_df = DataFrame::create(Named(".indices") = NumericVector(res.begin(), res.end()));
+    return DataFrame::create(Named(".indices") = NumericVector(res.begin(), res.end()));
     
   } else {
     
     // Show levels - Return indices+levels
     // -----------------------------------
     
-    pair_list res;
+    pair_vector res;
     if (N > 1) { // parallel case - process groups in parallel
     
       // Create worker for top-k WITH levels
@@ -281,36 +248,28 @@ DataFrame grouped_pref_sel_top_impl(List indices, DataFrame scores, List serial_
       parallelFor(0, nind, worker);
       
       // Clue together
-      for (int i = 0; i < nind; i++) 
-        res.splice(res.end(), worker.results[i]);
+      for (int i = 0; i < nind; i++) res += worker.results[i];
       
     } else { // non parallel case
     
-      for (int i=0; i<nind; i++) {
+      for (int i=0; i < nind; i++) {
         std::vector<int> group_indices = as< std::vector<int> >(indices[i]);
-        pair_list tres = scal_alg.run_topk(group_indices, p, ts, alpha, true).second; // no levels
-        res.splice(res.end(), tres);
+        res += scal_alg.run_topk(group_indices, p, ts, alpha, true).second; // no levels
       }
     }
     
-    int nres = res.size();
-    int count = 0;
-    NumericVector ind(nres);
-    NumericVector levels(nres);
+    const int nres = res.size();
+    std::vector<int> res_ind;
+    std::vector<int> res_levels;
+    res_ind.reserve(nres);
+    res_levels.reserve(nres);
     
-  	for (pair_list::iterator j = res.begin(); j != res.end(); ++j) {
-      levels[count] = j->first;
-      ind[count] = j->second;
-      count++;
-		}
+    for (const std::pair<int,int> & u : res) {
+      res_levels.push_back(u.first);
+      res_ind   .push_back(u.second);
+    }
 
-    result_df = DataFrame::create(Named(".indices") = ind,
-                                  Named(".level")   = levels);
+    return DataFrame::create(Named(".indices") = NumericVector(res_ind.begin(),    res_ind.end()),
+                             Named(".level")   = NumericVector(res_levels.begin(), res_levels.end()));
   }
-    
-  
-  // Return result
-  return(result_df);
 }
-
-

@@ -1,176 +1,145 @@
-
-
 #include "bnl.h"
 
+using namespace std;
 
-// --------------------------------------------------------------------------------------------------------------------------------
-// From here from VS
-// --------------------------------------------------------------------------------------------------------------------------------
-
-
-bnl::bnl()
+vector<int> bnl::run(const vector<int>& indices, const ppref& p)
 {
-}
-
-
-bnl::~bnl()
-{
-}
-
-
-list<int> bnl::run(vector<int>& indices, ppref& p) {
-  
   bool dominated;
   int ntuples = indices.size();
   
-  if (ntuples == 0) return list<int>();
+  if (ntuples == 0) return vector<int>();
   
-  list<int> window;
-  list<int>::iterator j;
+  vector<int> window;
+  vector<int> window_next;
   
-  window.push_back(indices[0]);
+  window.reserve(ntuples);
+  window_next.reserve(ntuples);
   
-  for (int i = 1; i<ntuples; ++i) {
+  for (int u : indices) {
     
     dominated = false;
-    for (j = window.begin(); j != window.end(); ) {
-      if (p->cmp(*j, indices[i])) { // *j (window element) is better
+    for (int v : window) {
+      if (p->cmp(v, u)) { // v (window element) is better
         dominated = true;
         break;
+      } else if (!p->cmp(u, v)) { // u (picked element) is NOT better
+        window_next.push_back(v);
       }
-      else if (p->cmp(indices[i], *j)) { // indices[i] (picked element) is better
-        // delete j
-        j = window.erase(j);
-        if (j == window.end()) break;
-        else continue;
-      }
-      ++j;
     }
     if (!dominated) {
-      window.push_back(indices[i]);
+      swap(window, window_next);
+      window.push_back(u);
     }
+    window_next.clear();
   }
   
-  // return Window as a numeric list
   return window;
-  
 }
 
 
 // --------------------------------------------------------------------------------------------------------------------------------
 
 // Standard BNL with remainder, for top(level) k calculation WITHOUT using Scalagon
-list<int> bnl::run_remainder(vector<int>& v, vector<int>& remainder, ppref& p) {
+vector<int> bnl::run_remainder(const vector<int>& vec, vector<int>& remainder, const ppref& p)
+{
+  const int ntuples = vec.size();
+  if (ntuples == 0) return vector<int>();
   
-  bool dominated;
-  int count = 0;
-  int ntuples = v.size();
+  vector<int> window;
+  vector<int> window_next;
+  window.reserve(ntuples);
+  window_next.reserve(ntuples);
   
-  if (ntuples == 0) return list<int>();
-  
-  list<int> window;
-  list<int>::iterator j;
-  
-  window.push_back(v[0]);
-  
-  for (int i = 1; i<ntuples; ++i) {
-    
-    dominated = false;
-    for (j = window.begin(); j != window.end();) {
-      if (p->cmp(*j, v[i])) { // *j (window element) is better
+  for (int u : vec) {
+    bool dominated = false;
+    for (int v : window) {
+      if (p->cmp(v, u)) { // v (window element) is better
         dominated = true;
         break;
-      } else if (p->cmp(v[i], *j)) { // v[i] (picked element) is better
-        remainder[count] = *j;
-        count++;
-        
-        // delete j
-        j = window.erase(j);
-        if (j == window.end()) break;
-        else continue;
+      } else if (p->cmp(u, v)) { // u (picked element) is better
+        remainder.push_back(v);
+      } else {
+        window_next.push_back(v);
       }
-      ++j;
     }
     if (!dominated) {
-      window.push_back(v[i]);
+      swap(window, window_next);
+      window.push_back(u);
     } else {
-      remainder[count] = v[i];
-      count++;
+      remainder.push_back(u);
     }
+    window_next.clear();
   }
-  remainder.resize(count);
   
-  // return Window as a numeric list
   return window;
 }
 
 
 // Helper function: Add levels to result
-pair_list bnl::add_level(const list<int>& lst, const int level) {
-  pair_list res;
-  for (list<int>::const_iterator j = lst.begin(); j != lst.end(); ++j)
-    res.push_back(pair<int, int>(level, *j));
-  return(res);
+pair_vector bnl::add_level(const vector<int>& vec, int level)
+{
+  pair_vector res;
+  res.reserve(vec.size());
+  for (int u : vec) res.push_back(pair<int, int>(level, u));
+  return res;
 }
 
 // --------------------------------------------------------------------------------------------------------------------------------
 
 
-
-
 // Internal top-k BNL (v is NOT a reference, will be edited!) returning NO LEVELS
 // special cases (level=1, no topk) are handled by scalagon!
-list<int> bnl::run_topk(vector<int> v, ppref& p, topk_setting& ts) {
-  
-  list<int> final_result;
-  
-  int ntuples = v.size();
+vector<int> bnl::run_topk(vector<int> v, const ppref& p, const topk_setting& ts)
+{
+  const int ntuples = v.size();
   int nres = 0;
   
-  vector<int> remainder(ntuples);
+  vector<int> final_result;
+  vector<int> remainder;
+  final_result.reserve(ntuples);
+  remainder.reserve(ntuples);
   
   int level = 1;
   while (true) {
-    list<int> res = run_remainder(v, remainder, p);
-    int rsize = res.size();
+    vector<int> res = run_remainder(v, remainder, p);
+    const int rsize = res.size();
     if (rsize == 0) break; // no more tuples
     nres += rsize;
-    final_result.splice(final_result.end(), res);
+    final_result += res;
     swap(v, remainder);
+    remainder.clear();
     if (ts.do_break(level, nres)) break;
     level++;
   }
   
-  ts.cut(final_result, nres);
-  
+  ts.cut(final_result);
   return final_result;
 }
 
 // Internal top-k BNL (v is NOT a reference, will be edited!) returning levels
 // special cases (level=1, no topk) are handled before!
-pair_list bnl::run_topk_lev(vector<int> v, ppref& p, topk_setting& ts) {
+pair_vector bnl::run_topk_lev(vector<int> vec, const ppref& p, const topk_setting& ts)
+{
+  const int ntuples = vec.size();
   
-  pair_list final_result;
+  vector<int> remainder;
+  pair_vector final_result;
   
-  int ntuples = v.size();
-  int nres = 0;
-  
-  vector<int> remainder(ntuples);
+  final_result.reserve(ntuples);
+  remainder.reserve(ntuples);
   
   int level = 1;
   while (true) {
-    pair_list res = add_level(run_remainder(v, remainder, p), level);
-    int rsize = res.size();
-    if (rsize == 0) break; // no more tuples
-    nres += rsize;
-    final_result.splice(final_result.end(), res);
-    swap(v, remainder);
-    if (ts.do_break(level, nres)) break;
+    pair_vector res = add_level(run_remainder(vec, remainder, p), level);
+    if (res.empty()) break; // no more tuples
+    final_result += res;
+    swap(vec, remainder);
+    remainder.clear();
+    if (ts.do_break(level, final_result.size())) break;
     level++;
   }
   
-  ts.cut(final_result, nres);
-  
+  ts.cut(final_result);
   return final_result;
 }
 
@@ -179,44 +148,37 @@ pair_list bnl::run_topk_lev(vector<int> v, ppref& p, topk_setting& ts) {
 
 // BNL for top-k calculation with remainder and additional index vector for scalagon
 // add remainder beginnung at remcount
-pair_list bnl::run_remainder_paired(pair_vector& index_pairs, int paircount, 
-                                    pair_vector& remainder_pairs, int& remcount, ppref& p) {
+pair_vector bnl::run_remainder_paired(const pair_vector& index_pairs, pair_vector& remainder_pairs, const ppref& p)
+{
+  const int ntuples = index_pairs.size();
+  if (ntuples == 0) return pair_vector();
   
-  if (paircount == 0) return pair_list();
+  pair_vector window;
+  pair_vector window_next;
+  window.reserve(ntuples);
+  window_next.reserve(ntuples);
   
-  bool dominated;
-  pair_list window;
-  pair_list::iterator j;
-  
-  window.push_back(index_pairs[0]);
-  
-  for (int i = 1; i < paircount; ++i) {
+  for (const pair<int,int> & u : index_pairs) {
     
-    dominated = false;
-    for (j = window.begin(); j != window.end();) {
-      if (p->cmp(j->first, index_pairs[i].first)) { // *j (window element) is better
+    bool dominated = false;
+    for (const pair<int,int> & v : window) {
+      if (p->cmp(v.first, u.first)) { // v (window element) is better
         dominated = true;
         break;
-      } else if (p->cmp(index_pairs[i].first, j->first)) { // v[i] (picked element) is better
-        remainder_pairs[remcount] = *j;
-        remcount++;
-        
-        // delete j
-        j = window.erase(j);
-        if (j == window.end()) break;
-        else continue;
+      } else if (p->cmp(u.first, v.first)) { // u (picked element) is better
+        remainder_pairs.push_back(v);
+      } else {
+        window_next.push_back(v);
       }
-      ++j;
     }
     if (!dominated) {
-      window.push_back(index_pairs[i]);
+      swap(window, window_next);
+      window.push_back(u);
     } else {
-      remainder_pairs[remcount] = index_pairs[i];
-      remcount++;
+      remainder_pairs.push_back(u);
     }
+    window_next.clear();
   }
-  // do not resize reminder! 
-  // return remcount via reference
-  // return Window as a numeric list
+
   return window;
 }

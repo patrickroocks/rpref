@@ -1,5 +1,3 @@
-
-
 #' Preference Selection
 #' 
 #' Evaluates a preference on a given data set, i.e., 
@@ -224,7 +222,7 @@ psel.indices <- function(df, pref, ...) {
   # ** get grouping 
   
   raise_grouping_error <- function() {
-    stop("Could not find grouping indices in grouped data.frame! Probably rPref and dplyr became incompatible.")
+    stop("Could not find grouping indices in grouped data frame! Probably rPref and dplyr became incompatible.")
   }
   
   # (in dplyr 0.8 is.grouped_df is true for group_by(x) where x is a data.frame or data.table)
@@ -319,7 +317,7 @@ check.singleint.null2minus <- function(val, name) {
 
 df.pref.check <- function(df, pref) {
   # Note that also data.table fulfills is.data.frame(.) = TRUE
-  if (!is.data.frame(df))          stop.syscall("First argument has to be a data.frame.")
+  if (!is.data.frame(df))          stop.syscall("First argument has to be a data frame.")
   if (!is.actual.preference(pref)) stop.syscall("Second argument has to be a preference.")
 }
 

@@ -47,7 +47,6 @@ for (parallelity in c(FALSE, TRUE)) {
       set2 <- sort(psel.indices(df2g, low(x1) %op% low(x2)))
       set3 <- sort(psel.indices(df3, low(x1) %op% (true(x2 < 0.5) * low(x3))))
       
-      
       options(rPref.scalagon.alpha = 10)
       expect_equal(sort(psel.indices(df2, low(x1) %op% low(x2))), set1)
       expect_equal(sort(psel.indices(df2g, low(x1) %op% low(x2))), set2)
@@ -56,7 +55,6 @@ for (parallelity in c(FALSE, TRUE)) {
       # * Compare top-k preference selection
       
       # Compare tuple indices AND level values
-      
       options(rPref.scalagon.alpha = 0)
       set1 <- arrange(psel.indices(df2, low(x1) %op% low(x2), at_least = 500, show_level = TRUE), .indices)
       set2 <- arrange(psel.indices(df2g, high(x1) %op% low(x2), at_least = 20, show_level = TRUE), .indices)

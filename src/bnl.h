@@ -1,24 +1,24 @@
+#pragma once
 
-#include "topk_setting.h"
-
+#include "topk-setting.h"
 #include "pref-classes.h"
-
-
-// --------------------------------------------------------------------------------------------------------------------------------
-// From here from VS
-// --------------------------------------------------------------------------------------------------------------------------------
-
 
 // ----------------------------------------------------------------------------------------------------------------------------------------
 
-// List of pairs (for <level, v-index> or for <v-index, s-index>
-typedef list< pair<int, int> > pair_list;
+template <typename T>
+std::vector<T>& operator+=(std::vector<T>& vector1, const std::vector<T>& vector2)
+{
+  vector1.insert(vector1.end(), vector2.begin(), vector2.end());
+  return vector1;
+}
 
-// Vector of pairs, same usage as pair_list
-typedef vector< pair<int, int> > pair_vector;
+// ----------------------------------------------------------------------------------------------------------------------------------------
+
+// Vector of pairs (for <level, v-index> or for <v-index, s-index>)
+typedef std::vector< std::pair<int, int> > pair_vector;
 
 // List containing v-indices OR v-indices together with levels
-typedef pair< list<int>, pair_list > flex_list;
+typedef std::pair< std::vector<int>, pair_vector > flex_vector;
 
 
 // ----------------------------------------------------------------------------------------------------------------------------------------
@@ -29,23 +29,19 @@ typedef pair< list<int>, pair_list > flex_list;
 class bnl
 {
 public:
-  bnl();
-  ~bnl();
-  
-  // Standard-BNL
-  list<int> run(vector<int>& indices, ppref& p);
+  static std::vector<int> run(const std::vector<int>& indices, const ppref& p);
   
   // BNL top(level) k without levels
-  list<int> run_topk(vector<int> v, ppref& p, topk_setting& ts);
+  static std::vector<int> run_topk(std::vector<int> v, const ppref& p, const topk_setting& ts);
   
   // BNL top(level) k with levels (do not use flexlist here, code is quite small!)
-  pair_list run_topk_lev(vector<int> v, ppref& p, topk_setting& ts);
+  static pair_vector run_topk_lev(std::vector<int> v, const ppref& p, const topk_setting& ts);
   
   // Helper function: Add levels to result
-  pair_list add_level(const list<int>& lst, const int level);
+  static pair_vector add_level(const std::vector<int>& lst, int level);
   
   // internal BNL variant for BNL top-k
-  list<int> run_remainder(vector<int>& v, vector<int>& remainder, ppref& p);
+  static std::vector<int> run_remainder(const std::vector<int>& v, std::vector<int>& remainder, const ppref& p);
   
   // ** BNL for Scalagon
   
@@ -53,9 +49,7 @@ public:
   // for each added tuple, remcount is incremented
   
   // special top-k BNL variant for Scalagon filtering step
-  pair_list run_remainder_paired(pair_vector& index_pairs, int paircount, 
-                                 pair_vector& remainder_pairs, int& remcount, ppref& p);
-  
+  static pair_vector run_remainder_paired(const pair_vector& index_pairs, pair_vector& remainder_pairs, const ppref& p);
 
 };
 
