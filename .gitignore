@@ -6,3 +6,5 @@ vignettes/*.R
 vignettes/.build.timestamp
 .Rhistory
 rPref.Rcheck/*
+/doc/
+/Meta/
