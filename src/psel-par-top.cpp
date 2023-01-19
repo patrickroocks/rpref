@@ -13,20 +13,24 @@ class Psel_worker_top : public Worker
 {
 public:
   // input
-  std::vector< std::vector<int> > vs;
+  std::vector<std::vector<int>> vs;
   ppref p;
   double alpha;
   topk_setting ts;
+  std::vector<std::vector<int>> results;
+  std::vector<std::vector<int>> samples_ind;
   
-  std::vector< std::vector<int> > results;
-  
-  std::vector< std::vector<int> > samples_ind;
-  
-  // initialize from Rcpp input and output matrixes (the RMatrix class
+  // initialize from Rcpp input and output matrices (the RMatrix class
   // can be automatically converted to from the Rcpp matrix type)
   Psel_worker_top(std::vector< std::vector<int> >& vs, ppref p, int N, double alpha, 
-                  topk_setting& ts, std::vector< std::vector<int> >& samples_ind) : 
-    vs(vs), p(p), results(N), alpha(alpha), ts(ts), samples_ind(samples_ind) {}
+                  topk_setting& ts, std::vector<std::vector<int>>& samples_ind) : 
+    vs(vs),
+    p(p),
+    alpha(alpha),
+    ts(ts),
+    results(N),
+    samples_ind(samples_ind) 
+    {}
    
   // function call operator that work for the specified range (begin/end)
   void operator()(std::size_t begin, std::size_t end)
@@ -52,16 +56,20 @@ public:
   ppref p;
   double alpha;
   topk_setting ts;
+  std::vector<pair_vector> results;
+  std::vector<std::vector<int>> samples_ind;
   
-  std::vector< pair_vector > results;
-  
-  std::vector< std::vector<int> > samples_ind;
-  
-  // initialize from Rcpp input and output matrixes (the RMatrix class
+  // initialize from Rcpp input and output matrices (the RMatrix class
   // can be automatically converted to from the Rcpp matrix type)
   Psel_worker_top_level(std::vector< std::vector<int> >& vs, ppref p, int N, double alpha,
                         topk_setting& ts, std::vector< std::vector<int> >& samples_ind) : 
-    vs(vs), p(p), results(N), alpha(alpha), ts(ts), samples_ind(samples_ind) {}
+    vs(vs), 
+    p(p), 
+    alpha(alpha),
+    ts(ts),
+    results(N),
+    samples_ind(samples_ind) 
+    {}
    
    // function call operator that work for the specified range (begin/end)
   void operator()(std::size_t begin, std::size_t end)

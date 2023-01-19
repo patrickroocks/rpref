@@ -1,6 +1,6 @@
 Package: rPref
 Version: 1.4
-Date: 2020-01-04
+Date: 2023-01-11
 Title: Database Preferences and Skyline Computation
 Author: Patrick Roocks <mail@p-roocks.de>
 Maintainer: Patrick Roocks <mail@p-roocks.de>
@@ -16,7 +16,7 @@ Depends:
 Imports:
     Rcpp (>= 1.0.0),
     RcppParallel (>= 4.3.6),
-    dplyr (>= 0.8.0),
+    dplyr (>= 1.0.0),
     igraph (>= 1.0.1),
     lazyeval (>= 0.2.1),
     methods,
@@ -45,5 +45,5 @@ Collate:
     'visualize.r'
     'pred-succ.r'
 VignetteBuilder: knitr
-RoxygenNote: 6.1.1
+RoxygenNote: 7.2.3
 Encoding: UTF-8

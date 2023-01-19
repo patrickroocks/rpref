@@ -1,15 +1,13 @@
 #include "scalagon.h"
 
-using namespace std;
-
 // There is no scalagon_implementation here, this is done in psel-par.cpp and psel-par-top.cpp
 
-// Helper for getting random numbers (R specific)
-// should not be in the worker thread, as this accesses the R API (unif_rand())
-vector<int> get_sample(int ntuples)
+// Helper for getting random numbers (R specific),
+// should not be in the worker thread, as this accesses the R API (unif_rand()).
+std::vector<int> get_sample(int ntuples)
 {
-  if (ntuples < scalagon::scalagon_min_tuples) return vector<int>(); // no sample needed, not enough tuples
-  vector<int> res;
+  if (ntuples < scalagon::scalagon_min_tuples) return std::vector<int>(); // no sample needed, not enough tuples
+  std::vector<int> res;
   res.reserve(scalagon::sample_size);
   ntuples--;
   for (int i = 0; i < scalagon::sample_size; i++) {
@@ -23,8 +21,10 @@ vector<int> get_sample(int ntuples)
 // Main class of the Scalagon Algorithm
 //
 // See "Scalagon: An Efficient Skyline Algorithm for all Seasons",
-// M.Endres, P.Roocks, W.Kiessling
-// 20th International Conference on Database Systems for Advanced Applications(DASFAA 2015), Hanoi, Vietnam
+// M.Endres, P.Roocks, W.Kiessling,
+// 20th International Conference on Database Systems for Advanced Applications(DASFAA 2015), Hanoi, Vietnam,
+// 10.1007/978-3-319-18123-3_18.
+
 
 // --------------------------------------------------------------------------------------------------------------------------------
 
@@ -32,16 +32,16 @@ vector<int> get_sample(int ntuples)
 // Constructors / Destructors
 scalagon::scalagon(bool sample_precalc) : sample_precalc(sample_precalc) {}
 
-// Put all pareto/intersection preferences of a tree into a vector
+// Put all pareto/intersection preferences of a tree into a std::vector
 // Returns true if successful, false if not (found non-productpref), results are in m_prefs
 bool scalagon::get_prefs(const ppref& p)
 {
   // Try to cast to productpref (pareto or intersection)
-  shared_ptr<productpref> pref = dynamic_pointer_cast<productpref>(p); 
+  std::shared_ptr<productpref> pref = std::dynamic_pointer_cast<productpref>(p); 
   
   if (pref == 0) { 
     // Now we assume a scorepref
-    shared_ptr<scorepref> spref = dynamic_pointer_cast<scorepref>(p); 
+    std::shared_ptr<scorepref> spref = std::dynamic_pointer_cast<scorepref>(p); 
     if (spref != 0) {
       m_prefs.push_back(spref);
       return true;
@@ -55,12 +55,12 @@ bool scalagon::get_prefs(const ppref& p)
 }
 
 // Interface to Scalagon/BNl for non-top k - top-k has other return type! (pair_vector)
-vector<int> scalagon::run(const vector<int>& v, const ppref& p, double alpha)
+std::vector<int> scalagon::run(const std::vector<int>& v, const ppref& p, double alpha)
 {
   if (init(v, p, alpha)) { // return false if input does not suit
     
     // *** Domination phase
-    dominate(vector<int>(), p); // empty vecor - no index needed for non-topk scalagon
+    dominate(std::vector<int>(), p); // empty vecor - no index needed for non-topk Scalagon
     
     // **** Filtering: Add all not dominated tuples to filtered result (outliers are already in, done by init!)
     const int scount = m_stuples_v.size();
@@ -85,16 +85,16 @@ vector<int> scalagon::run(const vector<int>& v, const ppref& p, double alpha)
 
 
 // scalagon top k with/without levels
-flex_vector scalagon::run_topk(const vector<int>& v, const ppref& p, const topk_setting& ts, double alpha, bool show_levels)
+flex_vector scalagon::run_topk(const std::vector<int>& v, const ppref& p, const topk_setting& ts, double alpha, bool show_levels)
 {
 
   if (ts.is_simple) {
     //return std scalagon WITHOUT levels - finalt_result_pair_vector is empty!
     if (!show_levels) return flex_vector(run(v, p, alpha), pair_vector()); 
-    else              return flex_vector(vector<int>(), bnl_alg.add_level(run(v, p, alpha), 1)); // ... WITH LEVELS, final_result_vector is empty
+    else              return flex_vector(std::vector<int>(), bnl_alg.add_level(run(v, p, alpha), 1)); // ... WITH LEVELS, final_result_vector is empty
   }
   
-  vector<int> final_result_vector;
+  std::vector<int> final_result_vector;
   pair_vector final_result_pair_vector; // Pairs of level and tuple index
 
   const int ntuples = v.size();  
@@ -113,12 +113,12 @@ flex_vector scalagon::run_topk(const vector<int>& v, const ppref& p, const topk_
 
     // Add outliers to pair_vector
     for (int u : m_filt_res) {
-      index_pairs.push_back(pair<int, int>(u, -1)); // outliers => they have no s-index
+      index_pairs.push_back(std::pair<int, int>(u, -1)); // outliers => they have no s-index
     }
     m_filt_res.clear(); // this is not needed anymore!
     
     // indices for scalagon
-    vector<int> s_indices(s_ind_count);
+    std::vector<int> s_indices(s_ind_count);
     for (int i = 0; i < s_ind_count; i++) s_indices[i] = i;
 
     // Level and result set counter
@@ -134,11 +134,11 @@ flex_vector scalagon::run_topk(const vector<int>& v, const ppref& p, const topk_
       for (int cur_s_sind : s_indices) {
         int btg_ind = get_index_tuples(cur_s_sind); // get from stuples [0,...,scount-1]
         if (!m_btg[btg_ind]) {
-          // Add v-number and s-index to the index_pair vector
-          index_pairs.push_back(pair<int, int>(v[m_stuples_v[cur_s_sind]], cur_s_sind));
+          // Add v-number and s-index to the index_pair std::vector
+          index_pairs.push_back(std::pair<int, int>(v[m_stuples_v[cur_s_sind]], cur_s_sind));
         } else {
           // not in Scalagon filtered tuples => add to remainder
-          remainder_pairs.push_back(pair<int, int>(v[m_stuples_v[cur_s_sind]], cur_s_sind));
+          remainder_pairs.push_back(std::pair<int, int>(v[m_stuples_v[cur_s_sind]], cur_s_sind));
         }
       }
 
@@ -153,8 +153,8 @@ flex_vector scalagon::run_topk(const vector<int>& v, const ppref& p, const topk_
       nres += rsize;
 
       // Add to final results
-      for (const pair<int,int>& u : res) {
-        if (show_levels) final_result_pair_vector.push_back(pair<int, int>(level, u.first));
+      for (const std::pair<int,int>& u : res) {
+        if (show_levels) final_result_pair_vector.push_back(std::pair<int, int>(level, u.first));
         else             final_result_vector     .push_back(u.first);
       }
 
@@ -206,26 +206,26 @@ int scalagon::get_index_tuples(int ind)
   return res;
 }
 
-int scalagon::get_index_pt(const vector<int>& pt)
+int scalagon::get_index_pt(const std::vector<int>& pt)
 {
   int res = pt[0];
   for (int i = 1; i < m_dim; i++) res += m_weights[i] * pt[i];
   return res;
 }
 
-// Calculate the scale vector for a given domain size and btg size
-vector<int> scalagon::iterated_scaling(const vector<int>& domain_size, double btg_size)
+// Calculate the scale std::vector for a given domain size and btg size
+std::vector<int> scalagon::iterated_scaling(const std::vector<int>& domain_size, double btg_size)
 {
-  vector<bool> reached_domain_limit;
+  std::vector<bool> reached_domain_limit;
   
   // Initialization
-  vector<int> scale_fct(m_dim);
+  std::vector<int> scale_fct(m_dim);
   for (int k = 0; k < m_dim; k++) {
     // Use ceil (not floor) to avoid that 1.9 is floored to 1 - Lattice calculation would become senseless!
     scale_fct[k] = (int)ceil(pow(btg_size, 1.0 / m_dim));
   }
   
-  reached_domain_limit = vector<bool>(m_dim);
+  reached_domain_limit = std::vector<bool>(m_dim);
   
   int num_reached = 0;
   
@@ -272,7 +272,7 @@ vector<int> scalagon::iterated_scaling(const vector<int>& domain_size, double bt
 - true, if the initialization was successful
 */
 
-bool scalagon::init(const vector<int>& v, const ppref& p, double alpha)
+bool scalagon::init(const std::vector<int>& v, const ppref& p, double alpha)
 {
   // consts for sampling
   const int lower_quantile = 19; // 2 % and 98 % quantile
@@ -296,22 +296,22 @@ bool scalagon::init(const vector<int>& v, const ppref& p, double alpha)
   if (!sample_precalc) sample_ind = get_sample(ntuples);
   
   // lower and upper bounds for the "center" where most tuples are expected
-  vector<double> upper_bound(m_dim);
-  vector<double> lower_bound(m_dim);
+  std::vector<double> upper_bound(m_dim);
+  std::vector<double> lower_bound(m_dim);
   
   // estimation of domain size
-  vector<int> est_domain_size(m_dim);
+  std::vector<int> est_domain_size(m_dim);
   
   // Calculate upper/lower bound by considering the sample in each dimension
   // Note that sample_ind is already calculated (is given to the constructor)
   for (int k = 0; k < m_dim; k++) {
     
     // Set for calculating domain size
-    set<double> sample_set;
-    set<double>::iterator it;
+    std::set<double> sample_set;
+    std::set<double>::iterator it;
     
     // Vector for calculating quantiles
-    vector<double> sample(sample_size);
+    std::vector<double> sample(sample_size);
     
     // Pick sample
     for (int i = 0; i < sample_size; i++) {
@@ -321,7 +321,7 @@ bool scalagon::init(const vector<int>& v, const ppref& p, double alpha)
     }
     
     // Sort sample to calculate quantiles
-    sort(sample.begin(), sample.end());
+    std::sort(sample.begin(), sample.end());
     double add_dist = (sample[upper_quantile] - sample[lower_quantile]) * add_spread_fct;
     lower_bound[k] = sample[lower_quantile] - add_dist;
     upper_bound[k] = sample[upper_quantile] + add_dist;
@@ -349,7 +349,7 @@ bool scalagon::init(const vector<int>& v, const ppref& p, double alpha)
   
   // Calculate Downscalingfactor for "center" of tuples (lower/upper bound) 
   // (everything will be scaled to [0, ..., scale_fct-1])
-  vector<double> fct(m_dim);
+  std::vector<double> fct(m_dim);
   for (int k = 0; k < m_dim; k++) {
     fct[k] = 1.0 * m_scale_fct[k] / (upper_bound[k] - lower_bound[k]);
   }
@@ -357,9 +357,9 @@ bool scalagon::init(const vector<int>& v, const ppref& p, double alpha)
   // **** Scaling
   
   // Prepare vectors for scaled tuples
-  m_stuples = vector< vector<int> >(m_dim); // class variable
-  for (int k = 0; k < m_dim; k++) m_stuples[k] = vector<int>(ntuples);
-  m_stuples_v = vector<int>(ntuples); // local variable for v-indices
+  m_stuples = std::vector< std::vector<int> >(m_dim); // class variable
+  for (int k = 0; k < m_dim; k++) m_stuples[k] = std::vector<int>(ntuples);
+  m_stuples_v = std::vector<int>(ntuples); // local variable for v-indices
   
   // Do the scaling
   int scount = 0;
@@ -391,7 +391,7 @@ bool scalagon::init(const vector<int>& v, const ppref& p, double alpha)
   for (int k = 0; k < m_dim; k++) m_btg_size *= m_scale_fct[k];
   
   // Calculate weights
-  m_weights = vector<int>(m_dim);
+  m_weights = std::vector<int>(m_dim);
   m_weights[0] = 1;
   for (int k = 1; k < m_dim; k++) {
     m_weights[k] = m_scale_fct[k - 1] * m_weights[k - 1];
@@ -411,10 +411,10 @@ bool scalagon::init(const vector<int>& v, const ppref& p, double alpha)
 */
 
 // mark all dominated nodes with true in m_btg
-void scalagon::dominate(const vector<int>& s_ind, const ppref& p)
+void scalagon::dominate(const std::vector<int>& s_ind, const ppref& p)
 {
   // Create BTG and fill with zeros
-  m_btg = vector<bool>(m_btg_size);
+  m_btg = std::vector<bool>(m_btg_size);
   
   // Number of scaled tuples
   
@@ -422,11 +422,11 @@ void scalagon::dominate(const vector<int>& s_ind, const ppref& p)
   const int scount = use_ind ? s_ind.size() : m_stuples_v.size();
   
   // Helper variables for domination
-  vector<int> start_dom(m_dim);
-  vector<int> pt(m_dim); // temporary point
-  vector<int> stop_dom(m_dim); // stop coordinates (may be outside of btg!)
-  vector<int> domcount(m_dim); // Counter 
-  vector<int> domsteps(m_dim); // Steps to dominate
+  std::vector<int> start_dom(m_dim);
+  std::vector<int> pt(m_dim); // temporary point
+  std::vector<int> stop_dom(m_dim); // stop coordinates (may be outside of btg!)
+  std::vector<int> domcount(m_dim); // Counter 
+  std::vector<int> domsteps(m_dim); // Steps to dominate
   
   int cind;  // Counter for domination phase
   int stop0; // Stop number for dimension 0

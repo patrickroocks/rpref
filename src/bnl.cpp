@@ -1,16 +1,14 @@
 #include "bnl.h"
 
-using namespace std;
-
-vector<int> bnl::run(const vector<int>& indices, const ppref& p)
+std::vector<int> bnl::run(const std::vector<int>& indices, const ppref& p)
 {
   bool dominated;
   int ntuples = indices.size();
   
-  if (ntuples == 0) return vector<int>();
+  if (ntuples == 0) return std::vector<int>();
   
-  vector<int> window;
-  vector<int> window_next;
+  std::vector<int> window;
+  std::vector<int> window_next;
   
   window.reserve(ntuples);
   window_next.reserve(ntuples);
@@ -40,13 +38,13 @@ vector<int> bnl::run(const vector<int>& indices, const ppref& p)
 // --------------------------------------------------------------------------------------------------------------------------------
 
 // Standard BNL with remainder, for top(level) k calculation WITHOUT using Scalagon
-vector<int> bnl::run_remainder(const vector<int>& vec, vector<int>& remainder, const ppref& p)
+std::vector<int> bnl::run_remainder(const std::vector<int>& vec, std::vector<int>& remainder, const ppref& p)
 {
   const int ntuples = vec.size();
-  if (ntuples == 0) return vector<int>();
+  if (ntuples == 0) return std::vector<int>();
   
-  vector<int> window;
-  vector<int> window_next;
+  std::vector<int> window;
+  std::vector<int> window_next;
   window.reserve(ntuples);
   window_next.reserve(ntuples);
   
@@ -76,11 +74,11 @@ vector<int> bnl::run_remainder(const vector<int>& vec, vector<int>& remainder, c
 
 
 // Helper function: Add levels to result
-pair_vector bnl::add_level(const vector<int>& vec, int level)
+pair_vector bnl::add_level(const std::vector<int>& vec, int level)
 {
   pair_vector res;
   res.reserve(vec.size());
-  for (int u : vec) res.push_back(pair<int, int>(level, u));
+  for (int u : vec) res.push_back(std::pair<int, int>(level, u));
   return res;
 }
 
@@ -89,19 +87,19 @@ pair_vector bnl::add_level(const vector<int>& vec, int level)
 
 // Internal top-k BNL (v is NOT a reference, will be edited!) returning NO LEVELS
 // special cases (level=1, no topk) are handled by scalagon!
-vector<int> bnl::run_topk(vector<int> v, const ppref& p, const topk_setting& ts)
+std::vector<int> bnl::run_topk(std::vector<int> v, const ppref& p, const topk_setting& ts)
 {
   const int ntuples = v.size();
   int nres = 0;
   
-  vector<int> final_result;
-  vector<int> remainder;
+  std::vector<int> final_result;
+  std::vector<int> remainder;
   final_result.reserve(ntuples);
   remainder.reserve(ntuples);
   
   int level = 1;
   while (true) {
-    vector<int> res = run_remainder(v, remainder, p);
+    std::vector<int> res = run_remainder(v, remainder, p);
     const int rsize = res.size();
     if (rsize == 0) break; // no more tuples
     nres += rsize;
@@ -118,11 +116,11 @@ vector<int> bnl::run_topk(vector<int> v, const ppref& p, const topk_setting& ts)
 
 // Internal top-k BNL (v is NOT a reference, will be edited!) returning levels
 // special cases (level=1, no topk) are handled before!
-pair_vector bnl::run_topk_lev(vector<int> vec, const ppref& p, const topk_setting& ts)
+pair_vector bnl::run_topk_lev(std::vector<int> vec, const ppref& p, const topk_setting& ts)
 {
   const int ntuples = vec.size();
   
-  vector<int> remainder;
+  std::vector<int> remainder;
   pair_vector final_result;
   
   final_result.reserve(ntuples);
@@ -146,7 +144,7 @@ pair_vector bnl::run_topk_lev(vector<int> vec, const ppref& p, const topk_settin
 
 // --------------------------------------------------------------------------------------------------------------------------------
 
-// BNL for top-k calculation with remainder and additional index vector for scalagon
+// BNL for top-k calculation with remainder and additional index std::vector for scalagon
 // add remainder beginnung at remcount
 pair_vector bnl::run_remainder_paired(const pair_vector& index_pairs, pair_vector& remainder_pairs, const ppref& p)
 {
@@ -158,10 +156,10 @@ pair_vector bnl::run_remainder_paired(const pair_vector& index_pairs, pair_vecto
   window.reserve(ntuples);
   window_next.reserve(ntuples);
   
-  for (const pair<int,int> & u : index_pairs) {
+  for (const std::pair<int,int>& u : index_pairs) {
     
     bool dominated = false;
-    for (const pair<int,int> & v : window) {
+    for (const std::pair<int,int>& v : window) {
       if (p->cmp(v.first, u.first)) { // v (window element) is better
         dominated = true;
         break;
@@ -172,7 +170,7 @@ pair_vector bnl::run_remainder_paired(const pair_vector& index_pairs, pair_vecto
       }
     }
     if (!dominated) {
-      swap(window, window_next);
+      std::swap(window, window_next);
       window.push_back(u);
     } else {
       remainder_pairs.push_back(u);

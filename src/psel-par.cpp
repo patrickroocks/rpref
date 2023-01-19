@@ -13,17 +13,17 @@ using namespace Rcpp;
 class Psel_worker : public Worker {
 public:
   // input
-  std::vector< std::vector<int> > vs;
+  std::vector<std::vector<int>> vs;
   ppref p;
   double alpha;
   
-  std::vector< std::vector<int> > results;
-  std::vector< std::vector<int> > samples_ind;
+  std::vector<std::vector<int>> results;
+  std::vector<std::vector<int>> samples_ind;
   
   // initialize from Rcpp input and output matrixes (the RMatrix class
   // can be automatically converted to from the Rcpp matrix type)
-  Psel_worker(std::vector< std::vector<int> >& vs, ppref p, int N, double alpha, std::vector< std::vector<int> >& samples_ind) : 
-    vs(vs), p(p), results(N), alpha(alpha), samples_ind(samples_ind) {}
+  Psel_worker(std::vector< std::vector<int> >& vs, ppref p, int N, double alpha, std::vector<std::vector<int>>& samples_ind) : 
+    vs(vs), p(p), alpha(alpha), results(N), samples_ind(samples_ind) {}
    
    // function call operator that work for the specified range (begin/end)
   void operator()(std::size_t begin, std::size_t end)
@@ -151,7 +151,7 @@ NumericVector grouped_pref_sel_impl(List indices, DataFrame scores, List serial_
     scalagon scal_alg;
   
     for (int i=0; i<nind; i++) {
-      std::vector<int> group_indices = as< std::vector<int> >(indices[i]);
+      std::vector<int> group_indices = as<std::vector<int>>(indices[i]);
       res += scal_alg.run(group_indices, p, alpha);
     }
   }

@@ -1,6 +1,5 @@
 #include "hasse.h"
 
-using namespace std;
 using namespace Rcpp;
 
 // Return hasse diagramm for given dataframe and preference
@@ -15,10 +14,10 @@ NumericVector get_hasse_impl(DataFrame scores, List serial_pref)
   ppref p = CreatePreference(serial_pref, scores);
 
   // Get edgelist (concatenated, to be transformed to a matrix afterwards)
-  list<int> edges = get_transitive_reduction(p, ntuples);
+  std::list<int> edges = get_transitive_reduction(p, ntuples);
     
   NumericMatrix res(2, edges.size()/2);
-  copy(edges.begin(), edges.end(), res.begin());
+  std::copy(edges.begin(), edges.end(), res.begin());
   
   return res;
 }
@@ -26,10 +25,10 @@ NumericVector get_hasse_impl(DataFrame scores, List serial_pref)
 
 // Return transitive reduction as 1-dim list (x1,x2,x3,x4) means
 // x1 < x2 and x3 < x4 in the sense of the transitive reduction
-list<int> get_transitive_reduction(const ppref& p, int ntuples)
+std::list<int> get_transitive_reduction(const ppref& p, int ntuples)
 {
   // The edgelist
-  list<int> edges;
+  std::list<int> edges;
 
   // Naive approach for transitive reduction: Check all pairs and check if there exists some element between them
   for (int i = 0; i < ntuples; i++) {

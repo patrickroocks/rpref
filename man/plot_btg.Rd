@@ -6,15 +6,30 @@
 \alias{get_btg_dot}
 \title{Better-Than-Graphs}
 \usage{
-plot_btg(df, pref, labels = 1:nrow(df), flip.edges = FALSE,
-  levelwise = TRUE, use_dot = "Rgraphviz" \%in\%
-  rownames(installed.packages()))
+plot_btg(
+  df,
+  pref,
+  labels = 1:nrow(df),
+  flip.edges = FALSE,
+  levelwise = TRUE,
+  use_dot = "Rgraphviz" \%in\% rownames(installed.packages())
+)
 
-get_btg(df, pref, flip.edges = FALSE, use_dot = "Rgraphviz" \%in\%
-  rownames(installed.packages()))
+get_btg(
+  df,
+  pref,
+  flip.edges = FALSE,
+  use_dot = "Rgraphviz" \%in\% rownames(installed.packages())
+)
 
-get_btg_dot(df, pref, labels = 1:nrow(df), flip.edges = FALSE,
-  levelwise = TRUE, file = NULL)
+get_btg_dot(
+  df,
+  pref,
+  labels = 1:nrow(df),
+  flip.edges = FALSE,
+  levelwise = TRUE,
+  file = NULL
+)
 }
 \arguments{
 \item{df}{A data frame.}

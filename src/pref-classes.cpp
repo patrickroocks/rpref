@@ -1,6 +1,5 @@
 #include "pref-classes.h"
 
-using namespace std;
 using namespace Rcpp;
 
 // Special score preference
@@ -9,11 +8,11 @@ using namespace Rcpp;
 // Scorepref and maker
 // -------------------
 
-scorepref::scorepref(const NumericVector& data_) : data(as<vector<double>>(data_)) {}
+scorepref::scorepref(const NumericVector& data_) : data(as<std::vector<double>>(data_)) {}
 
 ppref scorepref::make(const NumericVector& data_)
 {
-  return (ppref)(make_shared<scorepref>(data_));
+  return std::make_shared<scorepref>(data_);
 }
 
 // Reversepref and maker
@@ -23,7 +22,7 @@ reversepref::reversepref(ppref p_) : p(p_) {}
 
 ppref reversepref::make(ppref p_)
 {
-  return (ppref)(make_shared<reversepref>(p_));
+  return std::make_shared<reversepref>(p_);
 }
 
 
@@ -43,22 +42,22 @@ intersectionpref::intersectionpref(ppref p1_, ppref p2_) : productpref(p1_, p2_)
 
 ppref pareto::make(ppref p1_, ppref p2_)
 {
-  return (ppref)(make_shared<pareto>(p1_, p2_));
+  return (ppref)(std::make_shared<pareto>(p1_, p2_));
 }
 
 ppref prior::make(ppref p1_, ppref p2_)
 {
-  return (ppref)(make_shared<prior>(p1_, p2_));
+  return (ppref)(std::make_shared<prior>(p1_, p2_));
 }
 
 ppref intersectionpref::make(ppref p1_, ppref p2_)
 {
-  return (ppref)(make_shared<intersectionpref>(p1_, p2_));
+  return (ppref)(std::make_shared<intersectionpref>(p1_, p2_));
 }
 
 ppref unionpref::make(ppref p1_, ppref p2_)
   {
-  return (ppref)(make_shared<unionpref>(p1_, p2_));
+  return (ppref)(std::make_shared<unionpref>(p1_, p2_));
 }
 
 
@@ -113,10 +112,10 @@ bool unionpref::cmp(int i, int j) const
 
 
 // Only internal: Recursively create preference
-pprefnum DoCreatePreference(const List& pref_lst, const DataFrame& scores, int next_id)
+ppref_with_id DoCreatePreference(const List& pref_lst, const DataFrame& scores, int next_id)
 {
   char pref_kind = as<char>(pref_lst["kind"]);
-  pprefnum pair_res1, pair_res2;
+  ppref_with_id pair_res1, pair_res2;
   
   if (pref_kind == '*' || pref_kind == '&' || pref_kind == '|' || pref_kind == '+') {
     
@@ -133,29 +132,29 @@ pprefnum DoCreatePreference(const List& pref_lst, const DataFrame& scores, int n
       case '+': res = unionpref::make(       pair_res1.first, pair_res2.first); break;
     }
     
-    return pprefnum(res, pair_res2.second);
+    return ppref_with_id(res, pair_res2.second);
     
   } else if (pref_kind == '-') {
     
     pair_res1 = DoCreatePreference(as<List>(pref_lst["p"]), scores, next_id);
     ppref res = reversepref::make(pair_res1.first);
-    return pprefnum(res, pair_res1.second);
+    return ppref_with_id(res, pair_res1.second);
     
   } else if (pref_kind == 's') {
     
     // Score (base) preference, scorevector is const!
     ppref res = scorepref::make(as<NumericVector>(scores[next_id]));
     next_id++;
-    return pprefnum(res, next_id);
+    return ppref_with_id(res, next_id);
     
   } 
   
   stop("Error during deserialization of preference: Unexpected preference!");
-  return pprefnum(0, 0);
+  return ppref_with_id(0, 0);
 }
 
 // Interface to be called in the ..._impl function (psel-par(-top))
 ppref CreatePreference(const List& pref_lst, const DataFrame& scores)
 {
-  return move(DoCreatePreference(pref_lst, scores, 0).first);
+  return std::move(DoCreatePreference(pref_lst, scores, 0).first);
 }

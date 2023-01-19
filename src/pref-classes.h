@@ -9,15 +9,16 @@
 class pref
 {
 public:
-  pref() {};
-  virtual ~pref() {};
+  pref() = default;
+  virtual ~pref() = default;
   
   virtual bool cmp(int, int) const = 0;
   virtual bool eq(int, int) const = 0;
 }; 
 
 // shared pointer on preferences
-typedef std::shared_ptr<pref> ppref;
+using ppref = std::shared_ptr<pref>;
+using ppref_with_id = std::pair<ppref, int>;
 
 class complexpref : public pref
 {
@@ -30,7 +31,7 @@ public:
   bool eq(int i, int j) const override;
 };
 
-// Common Superclass for Pareto and intersection 
+// Common superclass for Pareto and intersection 
 // as they can both handled by Scalagon
 class productpref : public complexpref
 {
@@ -106,9 +107,6 @@ public:
   bool cmp(int i, int j) const override;
   bool eq(int i, int j) const override;
 };
-
-
-typedef std::pair<ppref, int> pprefnum;
 
 
 // Deserialize preference 

@@ -3,7 +3,6 @@
 \docType{package}
 \name{rPref}
 \alias{rPref}
-\alias{rPref-package}
 \title{Summary of the rPref Package}
 \description{
 rPref contains routines to select and visualize the maxima for a given strict

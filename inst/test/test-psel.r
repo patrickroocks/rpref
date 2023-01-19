@@ -74,7 +74,7 @@ for (parallelity in c(FALSE, TRUE)) {
   test_that("Behavior of group_by function from dplyr package", {
     expect_equal(colnames(attr(group_by(mtcars[1:5,], cyl), 'groups')), c('cyl', '.rows'))
     expect_equal(attr(group_by(mtcars[1:5,], cyl), 'groups')[[1]], c(4, 6, 8))
-    expect_equal(attr(group_by(mtcars[1:5,], cyl), 'groups')[[2]], list(3, c(1,2,4), 5))
+    expect_equal(as.list(attr(group_by(mtcars[1:5,], cyl), 'groups')[[2]]), list(3, c(1,2,4), 5))
   })
   
   
