@@ -3,7 +3,7 @@
 #' Better-Than-Graphs
 #' 
 #' Returns/plots a Hasse diagram of a preference order (also called the Better-Than-Graph, short BTG) on a given data set. 
-#' Ploting within R relies on the igraph package or the Rgraphviz package.
+#' Plotting within R relies on the igraph package or the Rgraphviz package.
 #' Alternatively, a dot file for an external graphviz/dot interpreter can be generated.
 #' 
 #' @param df A data frame.
@@ -60,7 +60,7 @@
 #' 
 #' @section Direct Plotting:
 #' 
-#' In both cases (wheter Rgraphviz is used or not), 
+#' In both cases (whether Rgraphviz is used or not), 
 #' the function \code{plot_btg} directly plots the Better-Than-Graph.
 #' There is an additional parameter \code{labels}, specifying the node labels. 
 #' The default are the row numbers (not the \code{rownames} of the data frame),
@@ -312,7 +312,7 @@ check.plot.base <- function(df, pref, labels = NULL) {
 
 # ---------------------------------------------------------------------------------------------
 
-#' Adjacency List of Hasse diagramm
+#' Adjacency List of Hasse diagram
 #' 
 #' Returns the adjacency list of the Hasse diagram of a preference as an (n x 2) matrix. 
 #' This is the transitive reduction of the preference relation.
@@ -338,7 +338,7 @@ get_hasse_diag <- function(df, pref) {
   
   df.pref.check(df, pref)
   
-  # Calculate Hasse diagramm for pref on df
+  # Calculate Hasse diagram for pref on df
   res <- get_scores(pref, 1, df)
   scores <- res$scores
   pref_serial <- pserialize(res$p)

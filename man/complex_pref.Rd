@@ -115,7 +115,7 @@ as well as
 \code{p <- high(mpg) * high(hp, df = mtcars)}
 
 both result in the same complex preference which is associated with \code{mtcars}. 
-A partial evaluation is also invoked for all preferenced which are added. 
+A partial evaluation is also invoked for all preferences which are added. 
 For example, using this \code{p}, 
 
 \code{p <- p * true(cyl == max(mtcars$cyl))}

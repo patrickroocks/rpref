@@ -45,7 +45,7 @@ Before any of the successor/predecessor functions can be used the initialization
 There \code{p} is a preference object and \code{df} a data frame. 
 When this done, the data frame \code{df} is associated with \code{p}, i.e.,
 implicitly \code{\link{assoc.df}} is called. 
-If the preference has already an associcated data frame, \code{df} can be omitted. For example
+If the preference has already an associated data frame, \code{df} can be omitted. For example
 
 \code{p <- low(mpg, df = mtcars)} \cr
 \code{init_pred_succ(p)}

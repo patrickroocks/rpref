@@ -24,7 +24,7 @@
 #' There \code{p} is a preference object and \code{df} a data frame. 
 #' When this done, the data frame \code{df} is associated with \code{p}, i.e.,
 #' implicitly \code{\link{assoc.df}} is called. 
-#' If the preference has already an associcated data frame, \code{df} can be omitted. For example
+#' If the preference has already an associated data frame, \code{df} can be omitted. For example
 #' 
 #' \code{p <- low(mpg, df = mtcars)} \cr
 #' \code{init_pred_succ(p)}
@@ -130,7 +130,7 @@ init_pred_succ_internal <- function(p, df, df_call) {
   
   pref.df.check(p, df)
     
-  # Overwrite associcated data frame, do partial evaluation
+  # Overwrite associated data frame, do partial evaluation
   if (!is.null(df)) {
     p@df_src <- compose.df(df, df_call)
     p <- evaluate(p, get_static_terms(p@df_src$df))

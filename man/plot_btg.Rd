@@ -54,7 +54,7 @@ given file path. If not specified, the graph specification is returned as a stri
 }
 \description{
 Returns/plots a Hasse diagram of a preference order (also called the Better-Than-Graph, short BTG) on a given data set. 
-Ploting within R relies on the igraph package or the Rgraphviz package.
+Plotting within R relies on the igraph package or the Rgraphviz package.
 Alternatively, a dot file for an external graphviz/dot interpreter can be generated.
 }
 \details{
@@ -100,7 +100,7 @@ This object can also be plotted using \code{plot(...)}.
 \section{Direct Plotting}{
 
 
-In both cases (wheter Rgraphviz is used or not), 
+In both cases (whether Rgraphviz is used or not), 
 the function \code{plot_btg} directly plots the Better-Than-Graph.
 There is an additional parameter \code{labels}, specifying the node labels. 
 The default are the row numbers (not the \code{rownames} of the data frame),

@@ -1,6 +1,6 @@
 
 
-test_that("Test computation of Hasse diagramm", {
+test_that("Test computation of Hasse diagram", {
 
   expect_equal(get_hasse_diag(mtcars[1:10,], low(mpg) * low(hp)), 
               t(matrix(c(1,4,2,4,3,9,6,1,6,2,6,5,6,10),2)))
@@ -72,7 +72,7 @@ test_that("Test predecessors and successors", {
   expect_identical(as.character(p), 
                    '((true(id == 1) * true(id == 2)) & true(id == 3)) * (true(id == 2) & -true(id %in% c(1, 2, 3)) & -true(id == 5))')
   
-  # We have to init p after evaluation! (but df is already associcated!)
+  # We have to init p after evaluation! (but df is already associated!)
   init_pred_succ(p)
   expect_equal(all_succ(p, 1), 3)
   expect_equal(all_pred(p, 5), c(2,4))

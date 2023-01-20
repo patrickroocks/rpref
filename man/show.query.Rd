@@ -12,7 +12,7 @@ show.query(p, dialect = "EXASOL", df = NULL)
 \item{dialect}{The preference query dialect, which determines the syntax of the returned query. 
        This has to be one of the following (not case sensitive):
 \describe{
-   \item{\code{'EXASOL'}:}{Syntax of the "Skyline" feature of the commercial database EXASOL EXASolution 5.}
+   \item{\code{'EXASOL'}:}{Syntax of the "Skyline" feature of the commercial database Exasol EXASolution 5.}
    \item{\code{'Preference SQL'} or \code{'PSQL'}:}{Syntax of the Preference SQL system. 
      This is a research prototype developed at the Chair of Databases and Information Systems of the University of Augsburg. 
      See references for details.}
