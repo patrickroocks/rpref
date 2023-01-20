@@ -8,3 +8,4 @@ vignettes/.build.timestamp
 rPref.Rcheck/*
 /doc/
 /Meta/
+src/symbols.rds

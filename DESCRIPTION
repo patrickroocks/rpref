@@ -23,7 +23,6 @@ Imports:
     utils
 SystemRequirements: C++11, GNU make, Windows: cmd.exe and cscript.exe
 License: GPL (>= 2)
-LazyData: true
 LinkingTo: Rcpp, RcppParallel
 Suggests:
     testthat,

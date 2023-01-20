@@ -2,7 +2,7 @@
 % Please edit documentation in R/visualize.r
 \name{get_hasse_diag}
 \alias{get_hasse_diag}
-\title{Adjacency List of Hasse diagramm}
+\title{Adjacency List of Hasse diagram}
 \usage{
 get_hasse_diag(df, pref)
 }
