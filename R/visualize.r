@@ -2,7 +2,7 @@
 
 #' Better-Than-Graphs
 #' 
-#' Returns/plots a Hasse diagram of a preference order (also called the Better-Than-Graph, short BTG) on a given data set. 
+#' Returns or plots a Hasse diagram of a preference order (also called the Better-Than-Graph, short BTG) on a given data set. 
 #' Plotting within R relies on the igraph package or the Rgraphviz package.
 #' Alternatively, a dot file for an external graphviz/dot interpreter can be generated.
 #' 
@@ -16,7 +16,7 @@
 #'        If \code{FALSE}, the row arrangement is subject to the dot layouter.
 #' @param use_dot (optional) If \code{TRUE}, the dot layouter from Rgraphviz is used. 
 #'        If \code{FALSE}, igraph is used.
-#'        By default this is \code{TRUE} iff Rgraphviz is available.
+#'        By default this is \code{TRUE} if and only if Rgraphviz is available.
 #' @param file (optional) If specified, then \code{get_btg_dot} writes the graph specification to 
 #'        given file path. If not specified, the graph specification is returned as a string.
 #'        
@@ -87,31 +87,31 @@
 #' 
 #' @examples
 #' 
-#' # pick a small data set and create preference and BTG 
+#' # Pick a small data set and create preference and BTG.
 #' df <- mtcars[1:10,]
 #' pref <- high(mpg) * low(wt)
 #' 
-#' # directly plot the BTG with row numbers as labels
-#' # uses Rgraphviz if available and igraph otherwise
+#' # Directly plot the BTG with row numbers as labels.
+#' # This uses Rgraphviz if available and igraph otherwise.
 #' plot_btg(df, pref) 
 #' 
-#' # plot the graph with labels with relevant values
+#' # Plot the graph with labels with relevant values.
 #' labels <- paste0(df$mpg, "; ", df$wt)
 #' plot_btg(df, pref, labels)
 #'      
-#' # show lattice structure of 3-dimensional Pareto preference
+#' # Show lattice structure of a 3-dimensional Pareto preference.
 #' df <- merge(merge(data.frame(x = 1:3), data.frame(y = 1:3)), data.frame(z = 1:2))
 #' labels <- paste0(df$x, ",", df$y, ",", df$z)
 #' plot_btg(df, low(x) * low(y) * low(z), labels)
 #'      
-#' # Create a graph with external Graphviz (requires installed Graphviz)
+#' # Create a graph with external Graphviz (requires installed Graphviz).
 #' \dontrun{
-#' # creates tmpgraph.dot in the current working directoy
+#' # Vreates tmpgraph.dot in the current working directoy
 #' get_btg_dot(df, pref, labels, file = "tmpgraph.dot")
-#' # convert to diagram tmpgraph.png using Graphviz
+#' # Convert to diagram tmpgraph.png using Graphviz
 #' shell(paste0('"C:/Program Files (x86)/Graphviz2.38/bin/dot.exe"',
 #'              ' -Tpng tmpgraph.dot -o tmpgraph.png'))
-#' # open resulting image
+#' # Open resulting image
 #' shell("tmpgraph.png")}
 #' 
 #' @importFrom utils installed.packages

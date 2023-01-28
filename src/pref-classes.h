@@ -23,8 +23,8 @@ using ppref_with_id = std::pair<ppref, int>;
 class complexpref : public pref
 {
 public:
-  ppref p1;
-  ppref p2;
+  const ppref p1;
+  const ppref p2;
   
   complexpref(ppref, ppref);
   
@@ -80,7 +80,7 @@ public:
 class reversepref : public pref
 {
 public:
-  ppref p;
+  const ppref p;
   
   reversepref(ppref p);
   

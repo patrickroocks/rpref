@@ -1,7 +1,7 @@
 
 #' Predecessor and Successor Functions
 #' 
-#' Function for traversing the BTG (Better-Than-Graph or Hasse diagram) of a preference. 
+#' Functions for traversing the BTG (Better-Than-Graph or Hasse diagram) of a preference. 
 #' 
 #' @name pred_succ
 #' @param df (optional) A data frame characterizing the set wherein predecessors/successors are searched. 
@@ -58,17 +58,17 @@
 #' 
 #' @examples
 #' 
-#' # preference on mtcars for high mpg and low weight
+#' # Preference on mtcars for high mpg and low weight
 #' p <- high(mpg) * low(wt)
 #' init_pred_succ(p, mtcars)
 #' 
-#' # helper to show mpg/hp values
+#' # Helper to show mpg/hp values
 #' show_vals <- function(x) mtcars[x,c('mpg','wt')]
 #' 
-#' # pick some tuple "in the middle"
+#' # Pick some tuple "in the middle":
 #' show_vals(10)
 #' 
-#' # show (direct) predecessors/successors of tuple 10
+#' # Show (direct) predecessors/successors of tuple 10:
 #' show_vals(hasse_pred(p, 10)) # Next better car
 #' show_vals(hasse_succ(p, 10)) # Next worse car
 #' show_vals(all_pred(p, 10))   # All better cars

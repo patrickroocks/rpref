@@ -15,10 +15,10 @@ std::vector<T>& operator+=(std::vector<T>& vector1, const std::vector<T>& vector
 // ----------------------------------------------------------------------------------------------------------------------------------------
 
 // Vector of pairs (for <level, v-index> or for <v-index, s-index>)
-typedef std::vector< std::pair<int, int> > pair_vector;
+using pair_vector = std::vector<std::pair<int, int>>;
 
 // List containing v-indices OR v-indices together with levels
-typedef std::pair< std::vector<int>, pair_vector > flex_vector;
+using flex_vector = std::pair<std::vector<int>, pair_vector>;
 
 
 // ----------------------------------------------------------------------------------------------------------------------------------------
@@ -26,15 +26,14 @@ typedef std::pair< std::vector<int>, pair_vector > flex_vector;
 // Block Nested Loop (BNL) algorithm for comparison based preference selection
 // plus some variants for Scalagon
 
-class bnl
+struct bnl
 {
-public:
   static std::vector<int> run(const std::vector<int>& indices, const ppref& p);
   
-  // BNL top(level) k without levels
+  // BNL top(level) k without levels (intentional copy of v)
   static std::vector<int> run_topk(std::vector<int> v, const ppref& p, const topk_setting& ts);
   
-  // BNL top(level) k with levels (do not use flexlist here, code is quite small!)
+  // BNL top(level) k with levels (do not use flexlist here, code is quite small, intentional copy of v)
   static pair_vector run_topk_lev(std::vector<int> v, const ppref& p, const topk_setting& ts);
   
   // Helper function: Add levels to result

@@ -42,22 +42,22 @@ intersectionpref::intersectionpref(ppref p1_, ppref p2_) : productpref(p1_, p2_)
 
 ppref pareto::make(ppref p1_, ppref p2_)
 {
-  return (ppref)(std::make_shared<pareto>(p1_, p2_));
+  return std::make_shared<pareto>(p1_, p2_);
 }
 
 ppref prior::make(ppref p1_, ppref p2_)
 {
-  return (ppref)(std::make_shared<prior>(p1_, p2_));
+  return std::make_shared<prior>(p1_, p2_);
 }
 
 ppref intersectionpref::make(ppref p1_, ppref p2_)
 {
-  return (ppref)(std::make_shared<intersectionpref>(p1_, p2_));
+  return std::make_shared<intersectionpref>(p1_, p2_);
 }
 
 ppref unionpref::make(ppref p1_, ppref p2_)
   {
-  return (ppref)(std::make_shared<unionpref>(p1_, p2_));
+  return std::make_shared<unionpref>(p1_, p2_);
 }
 
 
@@ -114,7 +114,7 @@ bool unionpref::cmp(int i, int j) const
 // Only internal: Recursively create preference
 ppref_with_id DoCreatePreference(const List& pref_lst, const DataFrame& scores, int next_id)
 {
-  char pref_kind = as<char>(pref_lst["kind"]);
+  const char pref_kind = as<char>(pref_lst["kind"]);
   ppref_with_id pair_res1, pair_res2;
   
   if (pref_kind == '*' || pref_kind == '&' || pref_kind == '|' || pref_kind == '+') {
@@ -123,29 +123,30 @@ ppref_with_id DoCreatePreference(const List& pref_lst, const DataFrame& scores, 
     pair_res2 = DoCreatePreference(as<List>(pref_lst["p2"]), scores, pair_res1.second);
     
     // Binary complex preference
-    ppref res = NULL;
+    const ppref res_pref = [&]() -> ppref {
+      switch(pref_kind) {
+        case '*': return pareto::make(          pair_res1.first, pair_res2.first);
+        case '&': return prior::make(           pair_res1.first, pair_res2.first);
+        case '|': return intersectionpref::make(pair_res1.first, pair_res2.first);
+        case '+': return unionpref::make(       pair_res1.first, pair_res2.first);
+      }
+      return nullptr; // cannot happen
+    }();
     
-    switch(pref_kind) {
-      case '*': res = pareto::make(          pair_res1.first, pair_res2.first); break;
-      case '&': res = prior::make(           pair_res1.first, pair_res2.first); break;
-      case '|': res = intersectionpref::make(pair_res1.first, pair_res2.first); break;
-      case '+': res = unionpref::make(       pair_res1.first, pair_res2.first); break;
-    }
-    
-    return ppref_with_id(res, pair_res2.second);
+    return ppref_with_id(res_pref, pair_res2.second);
     
   } else if (pref_kind == '-') {
     
     pair_res1 = DoCreatePreference(as<List>(pref_lst["p"]), scores, next_id);
-    ppref res = reversepref::make(pair_res1.first);
-    return ppref_with_id(res, pair_res1.second);
+    ppref res_pref = reversepref::make(pair_res1.first);
+    return ppref_with_id(res_pref, pair_res1.second);
     
   } else if (pref_kind == 's') {
     
     // Score (base) preference, scorevector is const!
-    ppref res = scorepref::make(as<NumericVector>(scores[next_id]));
+    ppref res_pref = scorepref::make(as<NumericVector>(scores[next_id]));
     next_id++;
-    return ppref_with_id(res, next_id);
+    return ppref_with_id(res_pref, next_id);
     
   } 
   

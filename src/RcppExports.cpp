@@ -11,25 +11,25 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // get_hasse_impl
-NumericVector get_hasse_impl(DataFrame scores, List serial_pref);
+NumericVector get_hasse_impl(const DataFrame& scores, List serial_pref);
 RcppExport SEXP _rPref_get_hasse_impl(SEXP scoresSEXP, SEXP serial_prefSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< DataFrame >::type scores(scoresSEXP);
+    Rcpp::traits::input_parameter< const DataFrame& >::type scores(scoresSEXP);
     Rcpp::traits::input_parameter< List >::type serial_pref(serial_prefSEXP);
     rcpp_result_gen = Rcpp::wrap(get_hasse_impl(scores, serial_pref));
     return rcpp_result_gen;
 END_RCPP
 }
 // pref_select_top_impl
-DataFrame pref_select_top_impl(DataFrame scores, List serial_pref, int N, double alpha, int top, int at_least, int toplevel, bool and_connected, bool show_levels);
+DataFrame pref_select_top_impl(const DataFrame& scores, const List& serial_pref, int N, double alpha, int top, int at_least, int toplevel, bool and_connected, bool show_levels);
 RcppExport SEXP _rPref_pref_select_top_impl(SEXP scoresSEXP, SEXP serial_prefSEXP, SEXP NSEXP, SEXP alphaSEXP, SEXP topSEXP, SEXP at_leastSEXP, SEXP toplevelSEXP, SEXP and_connectedSEXP, SEXP show_levelsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< DataFrame >::type scores(scoresSEXP);
-    Rcpp::traits::input_parameter< List >::type serial_pref(serial_prefSEXP);
+    Rcpp::traits::input_parameter< const DataFrame& >::type scores(scoresSEXP);
+    Rcpp::traits::input_parameter< const List& >::type serial_pref(serial_prefSEXP);
     Rcpp::traits::input_parameter< int >::type N(NSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< int >::type top(topSEXP);
@@ -42,14 +42,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // grouped_pref_sel_top_impl
-DataFrame grouped_pref_sel_top_impl(List indices, DataFrame scores, List serial_pref, int N, double alpha, int top, int at_least, int toplevel, bool and_connected, bool show_levels);
+DataFrame grouped_pref_sel_top_impl(const List& indices, const DataFrame& scores, const List& serial_pref, int N, double alpha, int top, int at_least, int toplevel, bool and_connected, bool show_levels);
 RcppExport SEXP _rPref_grouped_pref_sel_top_impl(SEXP indicesSEXP, SEXP scoresSEXP, SEXP serial_prefSEXP, SEXP NSEXP, SEXP alphaSEXP, SEXP topSEXP, SEXP at_leastSEXP, SEXP toplevelSEXP, SEXP and_connectedSEXP, SEXP show_levelsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type indices(indicesSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type scores(scoresSEXP);
-    Rcpp::traits::input_parameter< List >::type serial_pref(serial_prefSEXP);
+    Rcpp::traits::input_parameter< const List& >::type indices(indicesSEXP);
+    Rcpp::traits::input_parameter< const DataFrame& >::type scores(scoresSEXP);
+    Rcpp::traits::input_parameter< const List& >::type serial_pref(serial_prefSEXP);
     Rcpp::traits::input_parameter< int >::type N(NSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< int >::type top(topSEXP);
@@ -62,13 +62,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // pref_select_impl
-NumericVector pref_select_impl(DataFrame scores, List serial_pref, int N, double alpha);
+NumericVector pref_select_impl(const DataFrame& scores, const List& serial_pref, int N, double alpha);
 RcppExport SEXP _rPref_pref_select_impl(SEXP scoresSEXP, SEXP serial_prefSEXP, SEXP NSEXP, SEXP alphaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< DataFrame >::type scores(scoresSEXP);
-    Rcpp::traits::input_parameter< List >::type serial_pref(serial_prefSEXP);
+    Rcpp::traits::input_parameter< const DataFrame& >::type scores(scoresSEXP);
+    Rcpp::traits::input_parameter< const List& >::type serial_pref(serial_prefSEXP);
     Rcpp::traits::input_parameter< int >::type N(NSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
     rcpp_result_gen = Rcpp::wrap(pref_select_impl(scores, serial_pref, N, alpha));
@@ -76,14 +76,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // grouped_pref_sel_impl
-NumericVector grouped_pref_sel_impl(List indices, DataFrame scores, List serial_pref, int N, double alpha);
+NumericVector grouped_pref_sel_impl(const List& indices, const DataFrame& scores, const List& serial_pref, int N, double alpha);
 RcppExport SEXP _rPref_grouped_pref_sel_impl(SEXP indicesSEXP, SEXP scoresSEXP, SEXP serial_prefSEXP, SEXP NSEXP, SEXP alphaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type indices(indicesSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type scores(scoresSEXP);
-    Rcpp::traits::input_parameter< List >::type serial_pref(serial_prefSEXP);
+    Rcpp::traits::input_parameter< const List& >::type indices(indicesSEXP);
+    Rcpp::traits::input_parameter< const DataFrame& >::type scores(scoresSEXP);
+    Rcpp::traits::input_parameter< const List& >::type serial_pref(serial_prefSEXP);
     Rcpp::traits::input_parameter< int >::type N(NSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
     rcpp_result_gen = Rcpp::wrap(grouped_pref_sel_impl(indices, scores, serial_pref, N, alpha));

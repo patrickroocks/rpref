@@ -51,7 +51,7 @@ returns the maximal elements of a data set for a given preference order.
 The difference between the three variants of the preference selection is:
 
 \itemize{
-\item The \code{psel} function returns a subset of the data set which are the maxima according to the given preference. 
+\item The \code{psel} function returns a subset of the data set which contains the maxima according to the given preference. 
 \item The function \code{psel.indices} returns just the row indices of the maxima 
 (except top-k queries with \code{show_level = TRUE}, see top-k preference selection).
 Hence \code{psel(df, pref)} is equivalent to \code{df[psel.indices(df, pref),]} for non-grouped data frames. 
@@ -69,7 +69,7 @@ For a given \code{top} value of k the k best elements and their level values are
 \itemize{
 \item{All the maxima of a data set w.r.t. a preference have level 1.}
 \item{The maxima of the remainder, i.e., the data set without the level 1 maxima, have level 2.}
-\item{The n-th iteration of "Take the maxima from the remainder" leads to tuples of level n.}
+\item{The n-th iteration of "Take the maxima from the remainder" returns tuples of level n.}
 }
 
 By default, \code{psel.indices} does not return the level values. By setting \code{show_level = TRUE} this function
@@ -79,7 +79,7 @@ then all level values are equal to 1.
 
 By definition, a top-k preference selection is non-deterministic. 
 A top-1 query of two equivalent tuples (equivalence according to \code{pref})
-can return on both of these tuples. 
+can return both of these tuples. 
 For example, a \code{top=1} preference selection on the tuples {(a=1, b=1), (a=1, b=2)}
 w.r.t. \code{low(a)} preference can return either the 'b=1' or the 'b=2' tuple. 
 
@@ -129,25 +129,25 @@ To set the number of threads to the value of 4, use:
 
 \examples{
 
-# Skyline and top-k/at-least skyline
+# Skyline and top-k/at-least Skyline
 psel(mtcars, low(mpg) * low(hp))
 psel(mtcars, low(mpg) * low(hp), top = 5)
 psel(mtcars, low(mpg) * low(hp), at_least = 5)
 
-# preference with associated data frame and evaluation
+# Preference with associated data frame and evaluation
 p <- low(mpg, df = mtcars) * (high(cyl) & high(gear))
 peval(p)
 
-# visualize the skyline in a plot
+# Visualizes the Skyline in a plot.
 sky1 <- psel(mtcars, high(mpg) * high(hp))
 plot(mtcars$mpg, mtcars$hp)
 points(sky1$mpg, sky1$hp, lwd=3)
 
-# grouped preference with dplyr
+# Grouped preference with dplyr.
 library(dplyr)
 psel(group_by(mtcars, cyl), low(mpg))
 
-# return size of each maxima group
+# Returns the size of each maxima group.
 summarise(psel(group_by(mtcars, cyl), low(mpg)), n())
 
 }

@@ -43,10 +43,10 @@
 #' just when the preference selection via \code{psel} is called.
 #'
 #' @examples 
-#' # search for cars where mpg is near to 25
+#' # Search for cars where mpg is near to 25.
 #' psel(mtcars, around(mpg, 25))
 #' 
-#' # cyl = 2 and cyl = 4 are equally good, cyl = 6 is worse
+#' # Consider cyl = 2 and cyl = 4 as equally good, while cyl = 6 is worse.
 #' psel(mtcars, layered(cyl, c(2, 4), 6))
 NULL
 

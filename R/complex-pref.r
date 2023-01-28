@@ -20,7 +20,7 @@
 #' is given as follows:
 #' 
 #' \itemize{
-#' \item A query in the syntax from Borzsonyi et. al (2001) like
+#' \item A query in the syntax from Börzsönyi et. al (2001) like
 #' 
 #' "\code{... SKYLINE OF a MAX, b MIN, c MAX}" 
 #' 
@@ -109,14 +109,14 @@
 #' 16th Conference on Database Systems for Business, Technology, and Web.
 #' 
 #' @examples
-#' # define preference for cars with low consumption (high mpg-value) 
-#' # and simultaneously high horsepower
+#' # Defines a preference for cars with low consumption (high mpg-value)
+#' # and simultaneously high horsepower.
 #' p1 <- high(mpg) * high(hp)  
 #' 
-#' # perform the preference search
+#' # Performs the preference search.
 #' psel(mtcars, p1)
 #' 
-#' # alternative way: create preference with associated data set
+#' # Alternative way: create preference with associated data set.
 #' p2 <- high(mpg, df = mtcars) * high(hp)  
 #' peval(p2)
 NULL
@@ -190,7 +190,7 @@ reverse <- function(p) {
 
 # S3 style hack for an unary operator:
 # This entry has no @rdname as "-" is just used unary!
-# (it is exported, but invisible in the documentation
+# (it is exported, but invisible in the documentation)
 #' @export
 "-.preference" <- function(p1, p2) {
   if (nargs() == 1) return(reverse(p1)) # calls reverse from above

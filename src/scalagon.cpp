@@ -279,7 +279,7 @@ bool scalagon::init(const std::vector<int>& v, const ppref& p, double alpha)
   const int upper_quantile = 979;
   const double add_spread_fct = 0.2; // Add to lower/upper quantiles 
   
-  // **** Get preferences / priliminary checks
+  // **** Get preferences / preliminary checks
   
   if (alpha <= 0) return false; // reject alpha=-1, alpha=0
   m_prefs.clear(); // clear preference list
@@ -347,7 +347,7 @@ bool scalagon::init(const std::vector<int>& v, const ppref& p, double alpha)
   m_filt_res.clear();
   m_filt_res.reserve(ntuples);
   
-  // Calculate Downscalingfactor for "center" of tuples (lower/upper bound) 
+  // Calculate downscaling factor for "center" of tuples (lower/upper bound) 
   // (everything will be scaled to [0, ..., scale_fct-1])
   std::vector<double> fct(m_dim);
   for (int k = 0; k < m_dim; k++) {
@@ -357,7 +357,7 @@ bool scalagon::init(const std::vector<int>& v, const ppref& p, double alpha)
   // **** Scaling
   
   // Prepare vectors for scaled tuples
-  m_stuples = std::vector< std::vector<int> >(m_dim); // class variable
+  m_stuples = std::vector<std::vector<int>>(m_dim); // class variable
   for (int k = 0; k < m_dim; k++) m_stuples[k] = std::vector<int>(ntuples);
   m_stuples_v = std::vector<int>(ntuples); // local variable for v-indices
   
@@ -418,28 +418,23 @@ void scalagon::dominate(const std::vector<int>& s_ind, const ppref& p)
   
   // Number of scaled tuples
   
-  bool use_ind = !s_ind.empty(); // is only true if s_ind is set - just for topk!
+  bool use_ind = !s_ind.empty(); // is only true if s_ind is set - just for top-k!
   const int scount = use_ind ? s_ind.size() : m_stuples_v.size();
   
   // Helper variables for domination
   std::vector<int> start_dom(m_dim);
-  std::vector<int> pt(m_dim); // temporary point
+  std::vector<int> pt(m_dim);       // temporary point
   std::vector<int> stop_dom(m_dim); // stop coordinates (may be outside of btg!)
   std::vector<int> domcount(m_dim); // Counter 
   std::vector<int> domsteps(m_dim); // Steps to dominate
-  
-  int cind;  // Counter for domination phase
-  int stop0; // Stop number for dimension 0
-  
-  int cur_s_ind;
   
   // **** Run productorder hexagon
   for (int i = 0; i < scount; i++) {
     
     [&]() {
       // Get index
-      if (use_ind) cur_s_ind = s_ind[i]; // use index (topk)
-      else cur_s_ind = i; // dont use index (no top k)
+      const int cur_s_ind = use_ind ? s_ind[i] // use index (topk)
+                                    : i; // don't use index (no top k)
       
       // ** Read tuple and preliminary checks
       int ind = get_index_tuples(cur_s_ind); // get from stuples [0,...,scount-1]
@@ -482,8 +477,8 @@ void scalagon::dominate(const std::vector<int>& s_ind, const ppref& p)
       }
       
       // ** Do the domination
-      cind = get_index_pt(pt);
-      stop0 = cind + domsteps[0];
+      int cind = get_index_pt(pt); // Counter for domination phase
+      int stop0 = cind + domsteps[0]; // Stop number for dimension 0
       
       while (true) {
         m_btg[cind] = true;
@@ -500,7 +495,9 @@ void scalagon::dominate(const std::vector<int>& s_ind, const ppref& p)
               // Prepare for next dimension
               domcount[k] = 0;
               cind -= domsteps[k] * m_weights[k];
-            } else break;
+            } else {
+              break;
+            }
           }
           stop0 = cind + domsteps[0];
         }

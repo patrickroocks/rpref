@@ -38,13 +38,13 @@
 #' 
 #' @examples 
 #' 
-#' # Same as low(a) * low(b)
+#' # Same as low(a) * low(b).
 #' p <- low(a) * low(b) * empty()
 #' 
-#' # returns 2, as empty() does not count
+#' # Returns 2, as empty() does not count.
 #' length(p)
 #' 
-#' # the preference expression (without empty())
+#' # The preference expression (without empty()).
 #' as.expression(p)
 #' 
 NULL

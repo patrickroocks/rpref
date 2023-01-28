@@ -42,7 +42,7 @@ private:
   int m_dim = 0; // Number of dimensions
   
   // All pareto / product order preferences
-  std::vector< std::shared_ptr<scorepref> > m_prefs;
+  std::vector<std::shared_ptr<scorepref>> m_prefs;
   
   // convert preferences from tree into vector
   bool get_prefs(const ppref& p);
@@ -55,7 +55,7 @@ private:
   
   // scaled tuples, filtered to "center"
   std::vector<int> m_stuples_v;
-  std::vector< std::vector<int> > m_stuples;
+  std::vector<std::vector<int>> m_stuples;
   
   // calculate index (according to weights) of tuple
   int get_index_pt(const std::vector<int>& pt);

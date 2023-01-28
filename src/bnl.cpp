@@ -2,9 +2,7 @@
 
 std::vector<int> bnl::run(const std::vector<int>& indices, const ppref& p)
 {
-  bool dominated;
-  int ntuples = indices.size();
-  
+  const int ntuples = indices.size();
   if (ntuples == 0) return std::vector<int>();
   
   std::vector<int> window;
@@ -15,7 +13,7 @@ std::vector<int> bnl::run(const std::vector<int>& indices, const ppref& p)
   
   for (int u : indices) {
     
-    dominated = false;
+    bool dominated = false;
     for (int v : window) {
       if (p->cmp(v, u)) { // v (window element) is better
         dominated = true;
@@ -25,7 +23,7 @@ std::vector<int> bnl::run(const std::vector<int>& indices, const ppref& p)
       }
     }
     if (!dominated) {
-      swap(window, window_next);
+      std::swap(window, window_next);
       window.push_back(u);
     }
     window_next.clear();
@@ -61,7 +59,7 @@ std::vector<int> bnl::run_remainder(const std::vector<int>& vec, std::vector<int
       }
     }
     if (!dominated) {
-      swap(window, window_next);
+      std::swap(window, window_next);
       window.push_back(u);
     } else {
       remainder.push_back(u);
@@ -104,7 +102,7 @@ std::vector<int> bnl::run_topk(std::vector<int> v, const ppref& p, const topk_se
     if (rsize == 0) break; // no more tuples
     nres += rsize;
     final_result += res;
-    swap(v, remainder);
+    std::swap(v, remainder);
     remainder.clear();
     if (ts.do_break(level, nres)) break;
     level++;
@@ -131,7 +129,7 @@ pair_vector bnl::run_topk_lev(std::vector<int> vec, const ppref& p, const topk_s
     pair_vector res = add_level(run_remainder(vec, remainder, p), level);
     if (res.empty()) break; // no more tuples
     final_result += res;
-    swap(vec, remainder);
+    std::swap(vec, remainder);
     remainder.clear();
     if (ts.do_break(level, final_result.size())) break;
     level++;

@@ -4,14 +4,14 @@ using namespace Rcpp;
 
 // Return hasse diagramm for given dataframe and preference
 // [[Rcpp::export]]
-NumericVector get_hasse_impl(DataFrame scores, List serial_pref)
+NumericVector get_hasse_impl(const DataFrame& scores, List serial_pref)
 {
   
   NumericVector col1 = scores[0];  
   const int ntuples = col1.size();
   
   // De-Serialize preference
-  ppref p = CreatePreference(serial_pref, scores);
+  const ppref p = CreatePreference(serial_pref, scores);
 
   // Get edgelist (concatenated, to be transformed to a matrix afterwards)
   std::list<int> edges = get_transitive_reduction(p, ntuples);

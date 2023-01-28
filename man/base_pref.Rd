@@ -122,20 +122,20 @@ The partial evaluation can be done manually by \code{\link{partial.eval.pref}}.
 }
 
 \examples{
-# define a preference with a score value combining mpg and hp
+# Defines a preference with a score value combining mpg and hp.
 p1 <- high(4 * mpg + hp)
-# perform the preference selection
+# Perform the preference selection:
 psel(mtcars, p1)
 
-# define a preference with a given function
+# Defines a preference with a given function.
 f <- function(x, y) (abs(x - mean(x))/max(x) + abs(y - mean(y))/max(y))
 p2 <- low(f(mpg, hp))
 psel(mtcars, p2)
 
-# use partial evaluation for weighted scoring
+# Use partial evaluation for weighted scoring.
 p3 <- high(mpg/sum(mtcars$mpg) + hp/sum(mtcars$hp), df = mtcars)
 p3
-# select Pareto optima
+# Select Pareto optima.
 peval(p3)
 }
 \seealso{

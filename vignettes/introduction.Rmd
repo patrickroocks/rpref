@@ -15,11 +15,11 @@ suppressPackageStartupMessages(library(dplyr))
 ```
 
 
-rPref allows an efficient computation of Pareto frontiers (also known as *Skylines* in the context of databases) and slight generalizations (*database preferences*). This vignette will explain how to compose Skyline queries / preferences and evaluate them on a data set (i.e., the preference selection).
+rPref allows an efficient computation of Pareto frontiers (also known as *Skylines* in the context of databases) and slight generalizations (*database preferences*). This vignette will explain how to compose Skyline queries and preferences, which are finally evaluated on a data set, i.e., the optimal objects from the data set are selected.
 
 ## A first Skyline example
 
-A classical Skyline query optimizes two dimensions of a data set simultaneously. Usually these dimensions tend to anticorrelate. Consider the `mtcars` data set and the dimensions `mpg` (miles per gallon, i.e., inverse fuel consumption) and `hp` (horsepower). To get those cars with a low fuel consumption (i.e., high mpg value) and high power we create the preference and evaluate it on `mtcars`. Using `select` from the dplyr package we restrict our attention to the relevant columns:
+A classical Skyline query optimizes two dimensions of a data set simultaneously. Usually these dimensions tend to anticorrelate. Consider the `mtcars` data set and the dimensions `mpg` (miles per gallon, i.e., inverse fuel consumption) and `hp` (horsepower). To get those cars with a low fuel consumption (i.e., high `mpg` value) and high power we create the preference and evaluate it on `mtcars`. Using `select` from the dplyr package we restrict our attention to the relevant columns:
 
 ```{r, results='asis'}
 p <- high(mpg) * high(hp)
@@ -35,14 +35,14 @@ We can add a third optimization goal like minimizing the 1/4 mile time of a car.
 p <- high(mpg, df = mtcars) * high(hp) * low(qsec)
 p
 ```
-creates a 3-dimensional Pareto preference which is associated with `mtcars`. We can evaluate this using `peval(p)` which returns the Pareto optima:
+creates a 3-dimensional Pareto preference which is associated with `mtcars`. We can evaluate this preference using `peval(p)` which returns the Pareto optima:
 
 ```{r, results='asis'}
 res <- peval(p)
 knitr::kable(select(res, mpg, hp, qsec))
 ```
 
-Using `psel` instead of `peval` we can evaluate the preference on another data set (which does not change the association of `p`). Using dplyr we can first pick all cars with automatic transmission (`am == 0`) and then get the Pareto optima:
+Using `psel` instead of `peval` we can evaluate the preference on another data set (which does not change the association of `p`). Using the `filter` function from dplyr we can first pick all cars with automatic transmission (`am == 0`) and then get the Pareto optima:
 
 ```{r, results='asis'}
 res <- mtcars %>% filter(am == 0) %>% psel(p)
@@ -57,17 +57,24 @@ Database preferences allow some generalizations of Skyline queries like combinin
 p <- true(am == 1) & high(gear)
 ```
 
-where `true` is a Boolean preference, where those tuples are preferred fulfilling the logical condition. The `&` operator is the non-commutative "Prioritization" creating a lexicographical order.
+where `true` is a Boolean preference, where those tuples are preferred fulfilling the logical condition. The `&` is a non-commutative operator creating a lexicographical order, also called *Prioritization* in the context of database preferences.
 
-The constructs `high`, `low` and `true` are the three base preferences. They also accept arbitrary arithmetic expressions (and accordingly logical, for `true`). For example, we can Pareto-combine `p` with a wish for an high power per cylinder ratio:
+We evaluate this preference on the `mtcars` data set:
 
 ```{r, results='asis'}
-p <- p * high(hp/cyl)
 res <- psel(mtcars, p)
 knitr::kable(select(res, am, gear, hp, cyl))
 ```
 
-Here the two goals of the lexicographical order, as defined above, and the high `hp/cyl` ratio are simultaneously optimized.
+The constructs `high`, `low` and `true` are the three base preferences. They also accept arbitrary arithmetic expressions (and accordingly logical, for `true`). For example, we can Pareto-combine the lexicographical order from above with a wish for an high power per cylinder ratio:
+
+```{r, results='asis'}
+p <- (true(am == 1) & high(gear)) * high(hp/cyl)
+res <- psel(mtcars, p)
+knitr::kable(select(res, am, gear, hp, cyl))
+```
+
+According to this preference there is only one Pareto-optimal car.
 
 ## Top-k selections
 
@@ -94,7 +101,7 @@ Using the grouping functionality from the dplyr package, we can perform a prefer
 
 ```{r, results='asis'}
 grouped_df <- group_by(mtcars, cyl)
-res <- psel(grouped_df, low(hp) * low(mpg))
+res <- psel(grouped_df, high(hp) * high(mpg))
 knitr::kable(select(res, cyl, hp, mpg))
 ```
 
