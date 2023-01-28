@@ -64,7 +64,7 @@ To learn the basics of rPref, start with the vignettes:
 \section{Further Information}{
 
 
-The rPref homepage is \url{http://www.p-roocks.de/rpref}. 
+The rPref website is \url{http://www.p-roocks.de/rpref/}. 
 To submit bugs, feature requests or other comments, feel free to write a mail to me.
 }
 

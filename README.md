@@ -1,6 +1,6 @@
 rPref
 =====
 
-Development repository of the rPref package
+Development repository of the rPref package.
 
-Website of rPref: http://www.p-roocks.de/rPref
+Website of rPref: http://www.p-roocks.de/rPref/

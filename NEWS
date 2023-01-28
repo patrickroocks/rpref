@@ -1,5 +1,5 @@
-rPref 1.4
-=========
+rPref 1.4.0
+===========
 
 * Performance optimizations / code cleanup in the C++ code
 * Fixed compiler warning in clang

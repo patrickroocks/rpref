@@ -1,5 +1,5 @@
 Package: rPref
-Version: 1.4
+Version: 1.4.0
 Date: 2023-01-28
 Title: Database Preferences and Skyline Computation
 Author: Patrick Roocks <mail@p-roocks.de>
@@ -10,7 +10,7 @@ Description: Routines to select and visualize the maxima for a given strict
     (2001) <doi:10.1109/ICDE.2001.914855>), and some generalizations 
     known as database preferences (see Kießling (2002) 
     <doi:10.1016/B978-155860869-6/50035-4>).
-URL: https://www.p-roocks.de/rpref
+URL: https://www.p-roocks.de/rpref/
 Depends:
     R (>= 3.1.2)
 Imports:
