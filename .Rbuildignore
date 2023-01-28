@@ -1,3 +1,5 @@
 ^Meta$
 ^doc$
 ^\.travis\.yml$
+^CRAN-SUBMISSION$
+^cran-comments\.md$
