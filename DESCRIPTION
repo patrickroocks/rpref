@@ -1,6 +1,6 @@
 Package: rPref
 Version: 1.5.0
-Date: 2025-08-07
+Date: 2025-08-08
 Title: Database Preferences and Skyline Computation
 Encoding: UTF-8
 Authors@R: person(given = "Patrick",

@@ -29,7 +29,7 @@ knitr::kable(select(res, mpg, hp))
 
 The `*` operator is the Pareto composition. The result contains all cars from `mtcars` which are not Pareto-dominated according to this preference. This means, we are not interested in those cars, which are strictly worse in at least one dimension and worse/equal in the other dimension (i.e., they are *dominated*).
 
-We can add a third optimization goal like minimizing the 1/4 mile time of a car. Additionally to the preference selection via `psel`, preference objects can be associated with data sets and then processed via `peval` (preference evaluation). For example
+We can add a third optimization objective like minimizing the 1/4 mile time of a car. Additionally to the preference selection via `psel`, preference objects can be associated with data sets and then processed via `peval` (preference evaluation). For example
 
 ```{r, collapse = TRUE}
 p <- high(mpg, df = mtcars) * high(hp) * low(qsec)
@@ -45,7 +45,9 @@ knitr::kable(select(res, mpg, hp, qsec))
 Using `psel` instead of `peval` we can evaluate the preference on another data set (which does not change the association of `p`). Using the `filter` function from dplyr we can first pick all cars with automatic transmission (`am == 0`) and then get the Pareto optima:
 
 ```{r, results='asis'}
-res <- mtcars %>% filter(am == 0) %>% psel(p)
+res <- mtcars %>%
+  filter(am == 0) %>%
+  psel(p)
 knitr::kable(select(res, am, mpg, hp, qsec))
 ```
 
@@ -69,7 +71,7 @@ knitr::kable(select(res, am, gear, hp, cyl))
 The constructs `high`, `low` and `true` are the three base preferences. They also accept arbitrary arithmetic expressions (and accordingly logical, for `true`). For example, we can Pareto-combine the lexicographical order from above with a wish for an high power per cylinder ratio:
 
 ```{r, results='asis'}
-p <- (true(am == 1) & high(gear)) * high(hp/cyl)
+p <- (true(am == 1) & high(gear)) * high(hp / cyl)
 res <- psel(mtcars, p)
 knitr::kable(select(res, am, gear, hp, cyl))
 ```

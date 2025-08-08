@@ -23,7 +23,7 @@ partial.eval.pref(p, df = NULL)
 \arguments{
 \item{p, x}{The preference to be shown or partially evaluated.}
 
-\item{df}{(optional) A data frame on which the preference operates. Used for partial evaluation.}
+\item{df}{(Optional) A data frame or data frame extension (e.g., a tibble) on which the preference operates. Used for partial evaluation.}
 
 \item{...}{Optional arguments passed to \code{as.character}.}
 }

@@ -41,28 +41,28 @@ is.preference(x)
 
 \item{...}{Optional arguments passed to \code{as.expression}.}
 
-\item{value}{A data frame to associate with a preference object.}
+\item{value}{A data frame or data frame extension (e.g., a tibble) to associate with a preference object.}
 }
 \description{
 Collection of some useful functions which are applicable to all preference objects.
 }
 \details{
-The empty preference \code{empty()} is a neutral element for the complex preference compositions \code{{*, &, +}}. 
+The empty preference \code{empty()} is a neutral element for the complex preference compositions \code{{*, &, +}}.
 It holds that \code{empty() * p} and \code{empty() & p} is equal to \code{p} for all preferences \code{p}.
 
 The function \code{length(p)} returns the term length of the preference term \code{p}
 which is defined as the number of base preferences
-in a complex preference term. The empty preference \code{empty()} has length 0, 
+in a complex preference term. The empty preference \code{empty()} has length 0,
 and all base preferences have length 1.
 
-With \code{as.expression(p)} for a preference \code{p} the call to the preference is constructed. 
+With \code{as.expression(p)} for a preference \code{p} the call to the preference is constructed.
 This means, \code{eval(as.expression(p))} returns the preference \code{p}, evaluated in the current environment.
 
-The function \code{is.empty_pref} returns \code{TRUE} if \code{x} is the empty preference object 
+The function \code{is.empty_pref} returns \code{TRUE} if \code{x} is the empty preference object
 \code{empty()} and \code{FALSE} otherwise.
 
 With \code{assoc.df} the associated data frame of a preference can be retrieved or set.
-Setting the associated data frame means that a partial evaluation based on this data frame is done. 
+Setting the associated data frame means that a partial evaluation based on this data frame is done.
 See \code{\link{show.pref}} for details on partial evaluation of preferences.
 Next, the preference is linked to that data frame, such that \code{\link{peval}(p)} can be used instead of \code{psel(df, p)}.
 It returns \code{NULL} if no data frame is associated.
@@ -82,6 +82,6 @@ as.expression(p)
 }
 \seealso{
 See \code{\link{base_pref}} for the construction of base preferences,
-and \code{\link{complex_pref}} for the construction of complex preferences. 
+and \code{\link{complex_pref}} for the construction of complex preferences.
 See \code{\link{show.pref}} for string output and partial evaluation of preference terms.
 }

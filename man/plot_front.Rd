@@ -7,12 +7,12 @@
 plot_front(df, pref, ...)
 }
 \arguments{
-\item{df}{The data frame for which the Pareto front is plotted. This may be already a maximal set w.r.t. the preference \code{pref},
+\item{df}{The data frame or data frame extension (e.g., a tibble) containing the tuples for which the Pareto front is plotted.
+This may be already a maximal set w.r.t. the preference \code{pref},
 but anyway the maximal set is recalculated via \code{psel(df, pref)}.}
 
-\item{pref}{The preference representing the Skyline goals. This must be a Pareto composition (\code{p1 * p2}) or
-   intersection composition (\code{p1 | p2}) of
-two \code{\link{low}} or \code{\link{high}} preferences.}
+\item{pref}{The preference representing the Skyline objectives. This must be a Pareto composition (\code{p1 * p2}) or
+intersection composition (\code{p1 | p2}) of two \code{\link{low}} or \code{\link{high}} preferences.}
 
 \item{...}{Additional graphic parameters which are passed to the \code{\link{segments}} function (internally used to plot the front).}
 }

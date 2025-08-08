@@ -32,25 +32,25 @@ get_btg_dot(
 )
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{A data frame or data frame extension (e.g., a tibble) which shall be visualized in the diagram.}
 
 \item{pref}{A preference on the columns of \code{df}, see \code{\link{psel}} for details.}
 
-\item{labels}{(optional) Labels for the vertices. Default values are the row indices.}
+\item{labels}{(Optional) Labels for the vertices. Default values are the row indices.}
 
-\item{flip.edges}{(optional) Flips the orientation of edges,
+\item{flip.edges}{(Optional) Flips the orientation of edges,
 if \code{TRUE} than arrows point from worse nodes to better nodes.}
 
-\item{levelwise}{(optional) Only relevant is the dot layouter is used.
+\item{levelwise}{(Optional) Only relevant is the dot layouter is used.
 If \code{TRUE}, all tuples from the same level are placed on one row.
 If \code{FALSE}, the row arrangement is subject to the dot layouter.}
 
-\item{use_dot}{(optional) If \code{TRUE}, the dot layouter from
+\item{use_dot}{(Optional) If \code{TRUE}, the dot layouter from
 \href{https://bioconductor.org/packages/Rgraphviz/}{Rgraphviz} is used.
 If \code{FALSE}, \href{https://CRAN.R-project.org/package=igraph}{igraph} is used.
 By default this is \code{TRUE} if and only if Rgraphviz is available.}
 
-\item{file}{(optional) If specified, then \code{get_btg_dot} writes the graph specification to
+\item{file}{(Optional) If specified, then \code{get_btg_dot} writes the graph specification to
 given file path. If not specified, the graph specification is returned as a string.}
 }
 \description{

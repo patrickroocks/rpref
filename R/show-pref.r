@@ -11,7 +11,8 @@
 #'      This is a research prototype developed at the Chair of Databases and Information Systems of the University of Augsburg.
 #'      See references for details.}
 #' }
-#' @param df Optional parameter to specify a data frame on which the preference operates causing a partial evaluation. See \code{\link{show.pref}} for details.
+#' @param df (Optional) A data frame or data frame extension (e.g., a tibble) on which the preference operates causing a partial evaluation.
+#'        See \code{\link{show.pref}} for details.
 #'
 #' @details
 #'
@@ -69,7 +70,7 @@ show.query <- function(p, dialect = "EXASOL", df = NULL) {
 #'
 #' @name show.pref
 #' @param p,x The preference to be shown or partially evaluated.
-#' @param df (optional) A data frame on which the preference operates. Used for partial evaluation.
+#' @param df (Optional) A data frame or data frame extension (e.g., a tibble) on which the preference operates. Used for partial evaluation.
 #' @param ... Optional arguments passed to \code{as.character}.
 #'
 #' @details The function \code{pref.str} (or \code{as.character(p)} for a preference \code{p}) returns the preference string

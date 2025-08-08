@@ -15,7 +15,7 @@
 #'         It has to be of the same type (numeric, logical, character, ...) as \code{expr}.
 #' @param ... Layers (sets) for a \code{layered} preference. Each parameter corresponds to a layer
 #'            and the first one characterizes the most preferred values.
-#' @param df (optional) Data frame for partial evaluation and association of preference and data set.
+#' @param df (Optional) A data frame or data frame extension (e.g., a tibble) for partial evaluation and association of the preference with a data set.
 #'           See \code{\link{base_pref}} for details.
 #'
 #' @section Definition of the Preference Macros:

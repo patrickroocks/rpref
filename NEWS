@@ -3,5 +3,5 @@ rPref 1.5.0
 
 * Fixed links in documentation according to new CRAN guidelines
 * Added support for "top = Inf" in top-k selection
-* Added parameter "show_level" to preference selection
 * Changed column name "indices" to "index" for consistency in preference selection results
+* Added parameter "show_index" to preference selection to enforce the "index" column

@@ -4,19 +4,19 @@
 #' Plotting within R relies on the igraph package or the Rgraphviz package.
 #' Alternatively, a dot file for an external Graphviz/dot interpreter can be generated.
 #'
-#' @param df A data frame.
+#' @param df A data frame or data frame extension (e.g., a tibble) which shall be visualized in the diagram.
 #' @param pref A preference on the columns of \code{df}, see \code{\link{psel}} for details.
-#' @param flip.edges (optional) Flips the orientation of edges,
+#' @param flip.edges (Optional) Flips the orientation of edges,
 #'        if \code{TRUE} than arrows point from worse nodes to better nodes.
-#' @param labels (optional) Labels for the vertices. Default values are the row indices.
-#' @param levelwise (optional) Only relevant is the dot layouter is used.
+#' @param labels (Optional) Labels for the vertices. Default values are the row indices.
+#' @param levelwise (Optional) Only relevant is the dot layouter is used.
 #'        If \code{TRUE}, all tuples from the same level are placed on one row.
 #'        If \code{FALSE}, the row arrangement is subject to the dot layouter.
-#' @param use_dot (optional) If \code{TRUE}, the dot layouter from
+#' @param use_dot (Optional) If \code{TRUE}, the dot layouter from
 #'        \href{https://bioconductor.org/packages/Rgraphviz/}{Rgraphviz} is used.
 #'        If \code{FALSE}, \href{https://CRAN.R-project.org/package=igraph}{igraph} is used.
 #'        By default this is \code{TRUE} if and only if Rgraphviz is available.
-#' @param file (optional) If specified, then \code{get_btg_dot} writes the graph specification to
+#' @param file (Optional) If specified, then \code{get_btg_dot} writes the graph specification to
 #'        given file path. If not specified, the graph specification is returned as a string.
 #'
 #' @details
@@ -318,7 +318,7 @@ check.plot.base <- function(df, pref, labels = NULL) {
 #' Returns the adjacency list of the Hasse diagram of a preference as an (n x 2) matrix.
 #' This is the transitive reduction of the preference relation.
 #'
-#' @param df A data frame.
+#' @param df A data frame or data frame extension (e.g., a tibble) for which the Hasse diagram is calculated.
 #' @param pref A preference on the columns of \code{df}, see \code{\link{psel}} for details.
 #'
 #' @details
@@ -351,11 +351,11 @@ get_hasse_diag <- function(df, pref) {
 #'
 #' Connects the points of a Pareto front (also known as Pareto frontier) and hence visualizes the dominance region of a Skyline.
 #'
-#' @param df The data frame for which the Pareto front is plotted. This may be already a maximal set w.r.t. the preference \code{pref},
+#' @param df The data frame or data frame extension (e.g., a tibble) containing the tuples for which the Pareto front is plotted.
+#'           This may be already a maximal set w.r.t. the preference \code{pref},
 #'           but anyway the maximal set is recalculated via \code{psel(df, pref)}.
-#' @param pref The preference representing the Skyline goals. This must be a Pareto composition (\code{p1 * p2}) or
-#'                intersection composition (\code{p1 | p2}) of
-#'             two \code{\link{low}} or \code{\link{high}} preferences.
+#' @param pref The preference representing the Skyline objectives. This must be a Pareto composition (\code{p1 * p2}) or
+#'             intersection composition (\code{p1 | p2}) of two \code{\link{low}} or \code{\link{high}} preferences.
 #' @param ... Additional graphic parameters which are passed to the \code{\link{segments}} function (internally used to plot the front).
 #'
 #' @details

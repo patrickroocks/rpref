@@ -3,3 +3,5 @@
 ^\.travis\.yml$
 ^CRAN-SUBMISSION$
 ^cran-comments\.md$
+^\.lintr$
+^\.github/

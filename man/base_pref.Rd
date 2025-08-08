@@ -31,7 +31,7 @@ The objective is to search for minimal/maximal values of this expression (for \c
 logical \code{TRUE} values (for \code{true}).
 For \code{low_}, \code{high_} and \code{true_}, the argument must be an expression, a call or a string.}
 
-\item{df}{(optional) A data frame, having the same structure (i.e., columns)
+\item{df}{(Optional) A data frame or data frame extension (e.g., a tibble), having the same structure (i.e., columns)
 like that data frame, where this preference is evaluated later on.
 Causes a partial evaluation of the preference and the preference is associated with this data frame.
 See below for details.}
@@ -39,7 +39,7 @@ See below for details.}
 \item{x}{An object to be tested if it is a base preference.}
 }
 \description{
-Base preferences are used to describe the different goals (dimensions, in case of a Skyline query)
+Base preferences are used to describe the different objectives (also called dimensions, in the context of a Skyline query)
 of a preference query.
 }
 \details{

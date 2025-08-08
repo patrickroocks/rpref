@@ -18,7 +18,8 @@ show.query(p, dialect = "EXASOL", df = NULL)
      See references for details.}
 }}
 
-\item{df}{Optional parameter to specify a data frame on which the preference operates causing a partial evaluation. See \code{\link{show.pref}} for details.}
+\item{df}{(Optional) A data frame or data frame extension (e.g., a tibble) on which the preference operates causing a partial evaluation.
+See \code{\link{show.pref}} for details.}
 }
 \description{
 For a given preference this shows the \code{PREFERRING} clause of a database query in different SQL dialects which support preferences.

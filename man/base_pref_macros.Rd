@@ -24,7 +24,7 @@ Regarding attributes, functions and variables, the same requirements as for \cod
 
 \item{center}{Preferred numerical value for \code{around}.}
 
-\item{df}{(optional) Data frame for partial evaluation and association of preference and data set.
+\item{df}{(Optional) A data frame or data frame extension (e.g., a tibble) for partial evaluation and association of the preference with a data set.
 See \code{\link{base_pref}} for details.}
 
 \item{left}{Lower limit (numerical) of the preferred interval for \code{between}.}

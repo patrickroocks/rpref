@@ -13,35 +13,31 @@ psel.indices(df, pref, ...)
 peval(pref, ...)
 }
 \arguments{
-\item{df}{A data frame or, for a grouped preference selection, a grouped data frame. See below for details.}
+\item{df}{A data frame, data frame extension (e.g. a tibble), or a grouped data frame from \code{\link[dplyr]{group_by}}.}
 
-\item{pref}{The preference order constructed via \code{\link{complex_pref}} and \code{\link{base_pref}}.
-All variables occurring in the definition of \code{pref} must be either columns of the data frame \code{df}
+\item{pref}{A preference object. See \code{\link{complex_pref}} and \code{\link{base_pref}} for details.
+All variables occurring in the definition of \code{pref} must be either columns of \code{df}
 or variables/functions of the environment where \code{pref} was defined.}
 
 \item{...}{Additional optional parameters:
  \describe{
-   \item{\code{top}}{A \code{top} value of k means that the k-best tuples of the data set are returned.
-     This may be non-deterministic, see below for details.}
-   \item{\code{at_least}}{An \code{at_least} value of k returns the top-k tuples and additionally all tuples which are
+   \item{\code{top}}{Integer. A \code{top} value of k means that the k-best tuples of the data set are returned.
+     For \code{top = Inf} all tuples are returned.}
+   \item{\code{at_least}}{Integer. An \code{at_least} value of k returns the top-k tuples and additionally all tuples which are
      not dominated by the worst tuple (i.e. the minima) of the Top-k set.
      The number of tuples returned is greater or equal than
      \code{at_least}. In contrast to top-k, this is deterministic.}
-   \item{\code{top_level}}{A \code{top_level} value of k returns all tuples from the k-best levels. See below for the definition of a level.}
-   \item{\code{and_connected}}{Logical value, which is only relevant if more than one of the above \{\code{top}, \code{at_least}, \code{top_level}\}
+   \item{\code{top_level}}{Integer. A \code{top_level} value of k returns all tuples from the k-best levels. See below for the definition of a level.}
+   \item{\code{and_connected}}{Logical value. This is only relevant if more than one of the above \{\code{top}, \code{at_least}, \code{top_level}\}
      values is given, otherwise it will be ignored.
      Then \code{and_connected = TRUE} (which is the default) means that all top-conditions
-     must hold for the returned tuples:
-     Let \code{cond1} and \code{cond2} be top-conditions like \code{top=2} or \code{top_level=3}, then
-     \code{psel([...], cond1, cond2)} is equivalent to the intersection of \code{psel([...], cond1)} and \code{psel([...], cond2)}. If we have
-     \code{and_connected = FALSE}, these conditions are or-connected.
-     This corresponds to the union of \code{psel([...], cond1)} and \code{psel([...], cond2)}.}
+     must hold for the returned tuples.}
    \item{\code{show_level}}{Logical value. If \code{TRUE}, a column \code{.level}
-     is added to the returned data frame, containing all level values.
+     is added to the result, containing all level values.
      If at least one of the \{\code{top}, \code{at_least}, \code{top_level}\} values are given,
      then \code{show_level} is \code{TRUE} by default for the \code{psel} function.
      Otherwise, and for \code{psel.indices} in all cases, this option is \code{FALSE} by default.}
-   \item{\code{show_index}}{Logical value. If \code{TRUE}, a column \code{.index} is added to the returned data frame.
+   \item{\code{show_index}}{Logical value. If \code{TRUE}, a column \code{.index} is added to the result.
      Not applicable for \code{psel.indices}.}
 }}
 }
@@ -53,14 +49,11 @@ returns the maximal elements of a data set for a given preference order.
 The difference between the three variants of the preference selection is:
 
 \itemize{
-\item The \code{psel} function returns a subset of the data set which contains the maxima according to the given preference.
-\item The function \code{psel.indices} returns just the row indices of the maxima
-(except top-k queries with \code{show_level = TRUE}, see top-k preference selection).
-Hence \code{psel(df, pref)} is equivalent to \code{df[psel.indices(df, pref),]} for non-grouped data frames.
-\item Finally, \code{peval} does the same like \code{psel}, but assumes that \code{p} has an associated data frame
-       which is used for the preference selection.
-       Consider \code{\link{base_pref}} to see how base preferences are associated with data sets
-       or use \code{\link{assoc.df}} to explicitly associate a preference with a data frame.
+  \item{\code{psel}: Returns a subset of the data set containing the maxima according to the given preference.}
+  \item{\code{psel.indices}: Returns just the row indices of the maxima (except top-k queries with \code{show_level = TRUE}, see top-k preference selection).
+        Hence, \code{psel(df, pref)} is equivalent to \code{df[psel.indices(df, pref), ]} for non-grouped data frames.}
+  \item{\code{peval}: Does the same as \code{psel}, but assumes that \code{pref} has an associated data frame which is used for the preference selection.
+        See \code{\link{base_pref}} for details, or use \code{\link{assoc.df}} to explicitly associate a preference with a data frame.}
 }
 }
 \section{Top-k Preference Selection}{
@@ -87,7 +80,7 @@ can return both of these tuples.
 
 Consider the following example:
 
-\code{df <- data.frame(a=c(1, 1, 3), b=c(1, 2, 3))}
+\code{df <- data.frame(a = c(1, 1, 3), b = c(1, 2, 3))}
 
 The query \code{psel(df, low(a))} returns:
 
@@ -120,6 +113,14 @@ In addition, the we can set \code{top = Inf} to return all tuples, i.e., \code{p
   2 1 2      1
   3 3 3      2
 }
+
+By setting \code{top_level = 2} we return the first two levels, i.e., all tuples in this case.
+
+If multiple top-k parameters are specified, their interaction is controlled by \code{and_connected}.
+Let \code{cond1} and \code{cond2} be top-conditions like \code{top=2} or \code{top_level=3}, then
+\code{psel([...], cond1, cond2)} is equivalent to the intersection of \code{psel([...], cond1)} and \code{psel([...], cond2)}. If we have
+\code{and_connected = FALSE}, these conditions are or-connected.
+This corresponds to the union of \code{psel([...], cond1)} and \code{psel([...], cond2)}.
 }
 
 \section{Grouped Preference Selection}{
