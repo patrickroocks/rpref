@@ -2,6 +2,7 @@
 % Please edit documentation in R/rPref.r
 \docType{package}
 \name{rPref}
+\alias{rPref-package}
 \alias{rPref}
 \title{Summary of the rPref Package}
 \description{
@@ -48,7 +49,7 @@ generalizations (database preferences).
 \section{Vignettes}{
 
 
-To learn the basics of rPref, start with the vignettes:
+To learn the basics of rPref, start with the vignettes: 
 
 \itemize{
 \item A general introduction and some examples are given in 
@@ -68,6 +69,13 @@ The rPref website is \url{http://www.p-roocks.de/rpref/}.
 To submit bugs, feature requests or other comments, feel free to write a mail to me.
 }
 
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://www.p-roocks.de/rpref/}
+}
+
+}
 \author{
 Patrick Roocks, \email{mail@p-roocks.de}
 }

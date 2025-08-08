@@ -41,68 +41,69 @@ get_btg_dot(
 \item{flip.edges}{(optional) Flips the orientation of edges,
 if \code{TRUE} than arrows point from worse nodes to better nodes.}
 
-\item{levelwise}{(optional) Only relevant is the dot layouter is used. 
+\item{levelwise}{(optional) Only relevant is the dot layouter is used.
 If \code{TRUE}, all tuples from the same level are placed on one row.
 If \code{FALSE}, the row arrangement is subject to the dot layouter.}
 
-\item{use_dot}{(optional) If \code{TRUE}, the dot layouter from Rgraphviz is used. 
-If \code{FALSE}, igraph is used.
+\item{use_dot}{(optional) If \code{TRUE}, the dot layouter from
+\href{https://bioconductor.org/packages/Rgraphviz/}{Rgraphviz} is used.
+If \code{FALSE}, \href{https://CRAN.R-project.org/package=igraph}{igraph} is used.
 By default this is \code{TRUE} if and only if Rgraphviz is available.}
 
-\item{file}{(optional) If specified, then \code{get_btg_dot} writes the graph specification to 
+\item{file}{(optional) If specified, then \code{get_btg_dot} writes the graph specification to
 given file path. If not specified, the graph specification is returned as a string.}
 }
 \description{
-Returns or plots a Hasse diagram of a preference order (also called the Better-Than-Graph, short BTG) on a given data set. 
+Returns or plots a Hasse diagram of a preference order (also called the Better-Than-Graph, short BTG) on a given data set.
 Plotting within R relies on the igraph package or the Rgraphviz package.
-Alternatively, a dot file for an external graphviz/dot interpreter can be generated.
+Alternatively, a dot file for an external Graphviz/dot interpreter can be generated.
 }
 \details{
 The Hasse diagram of a preference visualizes all the better-than-relationships on a given data set.
 All edges which can be retrieved by transitivity of the order are omitted in the graph.
 
-The functions \code{get_btg} and \code{plot_btg} either use the \link{igraph}
-package (if \code{use_dot = FALSE}) or the dot layouter from the Rgraphviz package 
-(if \code{use_dot = TRUE}). 
+The functions \code{get_btg} and \code{plot_btg} either use the igraph
+package (if \code{use_dot = FALSE}) or the dot layouter from the Rgraphviz package
+(if \code{use_dot = TRUE}).
 If Rgraphviz is available it is used by default, otherwise the igraph Package is used.
 Note that Rgraphviz is only available on BioConductor and not on CRAN.
 
 The dot layouter from Rgraphviz is more appropriate for Better-Than-Graphs than the igraph layouter,
-as all edges will be directed in the same direction (rank based ordering). 
+as all edges will be directed in the same direction (rank based ordering).
 Using \code{levelwise = TRUE} (the default), all tuples of the same level are placed on the same row.
 }
 \section{BTGs with igraph}{
 
 
-If used with \code{use_dot = FALSE}, 
+If used with \code{use_dot = FALSE},
 the function \code{get_btg} returns a list \code{l} with the following list entries:
 
 \describe{
-  \item{\code{l$graph}}{An igraph object, created with the \code{\link{igraph}} package.}
+  \item{\code{l$graph}}{An igraph object, created with the igraph package.}
   \item{\code{l$layout}}{A typical Hasse diagram layout for plotting the graph, also created with igraph.}
 }
 
-To plot the resulting graph returned from \code{get_btg}, use the \code{plot} function as follows: 
+To plot the resulting graph returned from \code{get_btg}, use the \code{plot} function as follows:
 
-\code{plot(l$graph, layout = l$layout)} 
+\code{plot(l$graph, layout = l$layout)}
 
-For more details, see \code{\link{igraph.plotting}}.
+For more details, see \code{\link[igraph]{plot.igraph}}.
 }
 
 \section{BTGs with Rgraphviz}{
 
 
-If used with \code{use_dot = FALSE}, the function \code{get_btg} returns a \code{graphNEL} object from 
-the graph-package (Rgraphviz is build on top of that package). 
+If used with \code{use_dot = FALSE}, the function \code{get_btg} returns a \code{graphNEL} object from
+the graph-package (Rgraphviz is build on top of that package).
 This object can also be plotted using \code{plot(...)}.
 }
 
 \section{Direct Plotting}{
 
 
-In both cases (whether Rgraphviz is used or not), 
+In both cases (whether Rgraphviz is used or not),
 the function \code{plot_btg} directly plots the Better-Than-Graph.
-There is an additional parameter \code{labels}, specifying the node labels. 
+There is an additional parameter \code{labels}, specifying the node labels.
 The default are the row numbers (not the \code{rownames} of the data frame),
 ranging from \code{"1"} to \code{as.character(nrow(df))}.
 }
@@ -111,7 +112,7 @@ ranging from \code{"1"} to \code{as.character(nrow(df))}.
 
 
 The function \code{get_btg_dot} produces the source code of the Better-Than-Graph in the dot language
-of the Graphviz software. This is useful for an external dot interpreter. 
+of the Graphviz software. This is useful for an external dot interpreter.
 Depending on the \code{file} parameter the output is either written to a file
 (if a file path is given) or returned as a string (if \code{file = NULL}).
 }
@@ -119,12 +120,12 @@ Depending on the \code{file} parameter the output is either written to a file
 \section{Additional Parameters}{
 
 
-By default, the directed edges in the diagram point from better to worse nodes w.r.t. the preference. 
-This means an arrow can be read as "is better than". If \code{flip.edges = TRUE} is set, 
-then the arrows point from worse nodes to better nodes ("is worse than"). 
+By default, the directed edges in the diagram point from better to worse nodes w.r.t. the preference.
+This means an arrow can be read as "is better than". If \code{flip.edges = TRUE} is set,
+then the arrows point from worse nodes to better nodes ("is worse than").
 In any case, the better nodes are plotted at the top and the worse nodes at the bottom of the diagram.
 
-If Rgraphviz is used for \code{plot_btg} and for \code{get_btg_dot}, 
+If Rgraphviz is used for \code{plot_btg} and for \code{get_btg_dot},
 the option \code{levelwise} controls if all nodes of the same level are placed in one row.
 If this parameter is \code{FALSE}, then the vertical arrangement is subject to the dot layouter.
 }
@@ -132,30 +133,33 @@ If this parameter is \code{FALSE}, then the vertical arrangement is subject to t
 \examples{
 
 # Pick a small data set and create preference and BTG.
-df <- mtcars[1:10,]
+df <- mtcars[1:10, ]
 pref <- high(mpg) * low(wt)
 
 # Directly plot the BTG with row numbers as labels.
 # This uses Rgraphviz if available and igraph otherwise.
-plot_btg(df, pref) 
+plot_btg(df, pref)
 
 # Plot the graph with labels with relevant values.
 labels <- paste0(df$mpg, "; ", df$wt)
 plot_btg(df, pref, labels)
-     
+
 # Show lattice structure of a 3-dimensional Pareto preference.
 df <- merge(merge(data.frame(x = 1:3), data.frame(y = 1:3)), data.frame(z = 1:2))
 labels <- paste0(df$x, ",", df$y, ",", df$z)
 plot_btg(df, low(x) * low(y) * low(z), labels)
-     
+
 # Create a graph with external Graphviz (requires installed Graphviz).
 \dontrun{
 # Vreates tmpgraph.dot in the current working directoy
 get_btg_dot(df, pref, labels, file = "tmpgraph.dot")
 # Convert to diagram tmpgraph.png using Graphviz
-shell(paste0('"C:/Program Files (x86)/Graphviz2.38/bin/dot.exe"',
-             ' -Tpng tmpgraph.dot -o tmpgraph.png'))
+shell(paste0(
+  '"C:/Program Files (x86)/Graphviz2.38/bin/dot.exe"',
+  " -Tpng tmpgraph.dot -o tmpgraph.png"
+))
 # Open resulting image
-shell("tmpgraph.png")}
+shell("tmpgraph.png")
+}
 
 }

@@ -28,26 +28,26 @@ partial.eval.pref(p, df = NULL)
 \item{...}{Optional arguments passed to \code{as.character}.}
 }
 \description{
-Functions to substitute variables and functions in preferences 
+Functions to substitute variables and functions in preferences
 which can be calculated before the preference is evaluated on a data frame
 and character output of preferences.
 }
 \details{
-The function \code{pref.str} (or \code{as.character(p)} for a preference \code{p}) returns the preference string 
+The function \code{pref.str} (or \code{as.character(p)} for a preference \code{p}) returns the preference string
 while \code{show.pref} outputs it directly to the console, preceded by \code{'[Preference]'}.
-If \code{df} is specified, then a partial evaluation of the preference is done before converting it to a string. 
+If \code{df} is specified, then a partial evaluation of the preference is done before converting it to a string.
 
 
-The function \code{partial.eval.pref} (with given data frame \code{df}) partially evaluates the internal preference expression and 
+The function \code{partial.eval.pref} (with given data frame \code{df}) partially evaluates the internal preference expression and
 returns again a preference object. All expressions in \code{p} are evaluated in the environment
-where \code{p} was defined, except the the column names in \code{df} (which are potential attributes in \code{p}) 
+where \code{p} was defined, except the the column names in \code{df} (which are potential attributes in \code{p})
 and except the special variable \code{df__}, which accesses the entire data set (see \code{\link{psel}}).
 The content of the data frame \code{df} does not matter; only \code{names(df)} is used to get the "free variables" in \code{p}.
 
-If \code{p} has already an associated data frame (see \code{\link{assoc.df}}), 
+If \code{p} has already an associated data frame (see \code{\link{assoc.df}}),
 then a partial evaluation was already done when the data frame was associated.
 In this case, the \code{df} parameter should not be used.
-The association will not be changed if one of these function are called 
+The association will not be changed if one of these function are called
 with a given data frame on a preference object having an associated data frame.
 }
 \section{Partial Evaluation Before String Output}{
@@ -65,7 +65,7 @@ The following equalities hold:
 
 \examples{
 
-f <- function(x) 2*x
+f <- function(x) 2 * x
 p <- true(cyl == f(1))
 
 # prints 'true(cyl == f(1))'

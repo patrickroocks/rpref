@@ -94,6 +94,8 @@ knitr::kable(select(res, am, gear, hp, cyl, .level))
 
 Additionally there is a `top_level` parameter which allows to explicitly state the number of iterations. The preference selection with `top_level = 3` is identical to the statement above in this case, because just one tuple resides in each of the levels 1 and 2.
 
+In addition, `top = Inf` can be used to return all levels.
+
 
 ## Grouped preference selection
 

@@ -1,15 +1,15 @@
 citHeader("To cite rPref in publications, please use:")
 
-citEntry(entry = "article",
-  author = "Patrick Roocks",
+bibentry(
+  bibtype = "Article",
+  author = person("Patrick", "Roocks"),
   title = "Computing Pareto Frontiers and Database Preferences with the rPref Package",
   journal = "The R Journal",
   year = "2016",
   volume = "8",
   number = "2",
   pages = "393--404",
-  month = "dec",
+  month = "December",
   doi = "10.32614/RJ-2016-054",
-  url = "https://doi.org/10.32614/RJ-2016-054",
-  textVersion = "P. Roocks. Computing Pareto Frontiers and Database Preferences with the rPref Package. The R-Journal, 8(2):393-404, Dec. 2016."
+  url = "https://doi.org/10.32614/RJ-2016-054"
 )

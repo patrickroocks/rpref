@@ -21,7 +21,7 @@ std::vector<int> get_sample(int ntuples)
 // Main class of the Scalagon Algorithm
 //
 // See "Scalagon: An Efficient Skyline Algorithm for all Seasons",
-// M.Endres, P.Roocks, W.Kiessling,
+// M.Endres, P.Roocks, W.Kießling,
 // 20th International Conference on Database Systems for Advanced Applications(DASFAA 2015), Hanoi, Vietnam,
 // 10.1007/978-3-319-18123-3_18.
 

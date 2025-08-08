@@ -37,7 +37,7 @@
 #' 
 #' @section Vignettes:
 #' 
-#' To learn the basics of rPref, start with the vignettes:
+#' To learn the basics of rPref, start with the vignettes: 
 #' 
 #' \itemize{
 #' \item A general introduction and some examples are given in 
@@ -57,11 +57,10 @@
 #' 
 #' @author Patrick Roocks, \email{mail@@p-roocks.de}
 #'
-#' @docType package
 #' @name rPref
 #' @useDynLib rPref
 #' @importFrom Rcpp cppFunction
 #' @importFrom RcppParallel RcppParallelLibs
 #' @importFrom methods new
 #' @import igraph
-NULL
+"_PACKAGE"

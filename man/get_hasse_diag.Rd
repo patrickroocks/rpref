@@ -12,7 +12,7 @@ get_hasse_diag(df, pref)
 \item{pref}{A preference on the columns of \code{df}, see \code{\link{psel}} for details.}
 }
 \description{
-Returns the adjacency list of the Hasse diagram of a preference as an (n x 2) matrix. 
+Returns the adjacency list of the Hasse diagram of a preference as an (n x 2) matrix.
 This is the transitive reduction of the preference relation.
 }
 \details{

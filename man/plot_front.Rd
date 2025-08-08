@@ -7,11 +7,11 @@
 plot_front(df, pref, ...)
 }
 \arguments{
-\item{df}{The data frame for which the Pareto front is plotted. This may be already a maximal set w.r.t. the preference \code{pref}, 
+\item{df}{The data frame for which the Pareto front is plotted. This may be already a maximal set w.r.t. the preference \code{pref},
 but anyway the maximal set is recalculated via \code{psel(df, pref)}.}
 
 \item{pref}{The preference representing the Skyline goals. This must be a Pareto composition (\code{p1 * p2}) or
-   intersection composition (\code{p1 | p2}) of 
+   intersection composition (\code{p1 | p2}) of
 two \code{\link{low}} or \code{\link{high}} preferences.}
 
 \item{...}{Additional graphic parameters which are passed to the \code{\link{segments}} function (internally used to plot the front).}
@@ -23,7 +23,7 @@ Connects the points of a Pareto front (also known as Pareto frontier) and hence 
 \code{plot_front} assumes that there is an existing plot, where the value of the first preference was plotted as x-coordinate
 and the value of the second preference as y-coordinate.
 
-Note that \code{plot_front} is only recommended if you want to use the plotting functionality from base R. 
+Note that \code{plot_front} is only recommended if you want to use the plotting functionality from base R.
 If you prefer to use ggplot2, we recommend using \code{geom_step} for plotting the Pareto front.
 See \code{vignette("visualization", package = "rPref")} for examples.
 }
@@ -38,13 +38,12 @@ show_front <- function(pref) {
 }
 
 # do this for all four combinations of Pareto compositions
-show_front(low(hp)  * low(mpg))
-show_front(low(hp)  * high(mpg))
+show_front(low(hp) * low(mpg))
+show_front(low(hp) * high(mpg))
 show_front(high(hp) * low(mpg))
 show_front(high(hp) * high(mpg))
 
 # compare this to the front of a intersection preference
 show_front(high(hp) | high(mpg))
-
 
 }

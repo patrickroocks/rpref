@@ -1,5 +1,7 @@
-rPref 1.4.0
+rPref 1.5.0
 ===========
 
-* Performance optimizations / code cleanup in the C++ code
-* Fixed compiler warning in clang
+* Fixed links in documentation according to new CRAN guidelines
+* Added support for "top = Inf" in top-k selection
+* Added parameter "show_level" to preference selection
+* Changed column name "indices" to "index" for consistency in preference selection results
