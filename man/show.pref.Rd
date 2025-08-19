@@ -40,7 +40,7 @@ If \code{df} is specified, then a partial evaluation of the preference is done b
 
 The function \code{partial.eval.pref} (with given data frame \code{df}) partially evaluates the internal preference expression and
 returns again a preference object. All expressions in \code{p} are evaluated in the environment
-where \code{p} was defined, except the the column names in \code{df} (which are potential attributes in \code{p})
+where \code{p} was defined, except the column names in \code{df} (which are potential attributes in \code{p})
 and except the special variable \code{df__}, which accesses the entire data set (see \code{\link{psel}}).
 The content of the data frame \code{df} does not matter; only \code{names(df)} is used to get the "free variables" in \code{p}.
 
